@@ -62,3 +62,4 @@ export const ICONS = {
     <circle cx="12" cy="12" r="2" fill="currentColor"></circle>
   </svg>`
 };
+

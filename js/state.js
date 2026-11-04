@@ -435,7 +435,7 @@ class StateManager {
   }
 
   /**
-   * Generate client-side placeholder verification hash.
+   * DEV-ONLY: Generate client-side placeholder verification hash.
    * NOTE: In production, this must be cryptographically generated and signed
    * on the server (e.g. HMAC-SHA256) to prevent client-side forgery.
    */
@@ -462,7 +462,7 @@ class StateManager {
     return `FQ26-JU-${teamSlug}-S${summary.solved}-H${summary.hintsUsed}-${hex}`;
   }
 
-  // ===================== DEV MODE HELPERS =====================
+  // DEV-ONLY: ===================== DEV MODE HELPERS =====================
   devSolve(id) {
     if (!CONFIG.DEV_MODE || !this.state || !this.state.blocks[id]) return;
     const block = this.state.blocks[id];

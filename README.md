@@ -12,13 +12,14 @@ Built strictly according to contest specification as a dense, practical competit
 Future Quest/
 ├── index.html          # Semantic HTML5 single-page application entry point
 ├── styles.css          # Clean dark graphite design system and responsive grid
+├── DEV_CLEANUP.md      # Inventory and instructions for dev/test feature removal
 ├── js/
 │   ├── config.js       # Central CONFIG: timers, mock puzzles, mock answers, clues
 │   ├── state.js        # Single state manager module with localStorage cache
-│   ├── router.js       # Hash-based SPA router with guards (#/home, #/grid, #/puzzle/:id, #/vault, #/rules)
+│   ├── router.js       # Hash-based SPA router with guards (#/landing, #/register, #/grid, #/puzzle/:id, #/vault, #/rules)
 │   ├── icons.js        # Inline SVG icon definitions (lock, check, cross, hint, clock, etc.)
 │   ├── modal.js        # Accessible, focus-trapping modal dialog manager
-│   ├── screens.js      # View renderers for Entry, Grid, Puzzle, Vault, and Rules screens
+│   ├── screens.js      # View renderers for Landing, Register, Grid, Puzzle, Vault, and Rules screens
 │   └── app.js          # Main coordinator, sticky navbar updates, and master timer loop
 └── README.md           # Documentation and local running instructions
 ```
@@ -116,7 +117,9 @@ All timing constants reside in the `CONFIG` object:
 - Directs teams to the final Google Form submission link.
 
 ### 5. Testing & Developer Tools (`DEV_MODE = true`)
-When `DEV_MODE` is set to `true` in `js/config.js`, a developer toolbar appears inside the puzzle view providing:
-- **Mark Solved (dev):** Instantly marks the puzzle solved and reveals its clue.
-- **Mark Failed (dev):** Instantly fails the puzzle and locks it.
-- **Skip timer to 10s:** Fast-forwards puzzle time to test auto-fail and timeout handling.
+When `DEV_MODE` is set to `true` in `js/config.js`, the following testing tools are active (see `DEV_CLEANUP.md` for complete cleanup documentation):
+- **Dev Reset Bar (`#dev-reset-bar`):** A fixed bar at the bottom-right of every screen with a `DEV` tag and "Reset all progress" button. Opens a confirmation modal that clears `localStorage`, resets all timers and notice flags, and returns the platform to `#/landing` in a clean state.
+- **Puzzle Screen Toolbar:**
+  - **Mark Solved (dev):** Instantly marks the puzzle solved and reveals its clue.
+  - **Mark Failed (dev):** Instantly fails the puzzle and locks it.
+  - **Skip timer to 10s:** Fast-forwards puzzle time to test auto-fail and timeout handling.

@@ -22,13 +22,13 @@ export const CONFIG = {
   MAX_ATTEMPTS: 3,
   TOTAL_HINTS: 3,
 
-  // Development helpers toggle
+  // DEV-ONLY: Development helpers & UI toggle
   DEV_MODE: true,
 
-  // Style test: fixed tile order toggle (false for comparing tile styles)
+  // DEV-ONLY: Style test flag for fixed tile order (false = sequential 1..11, true = randomized)
   SHUFFLE_TILES: false,
 
-  // Submission Form URL (Placeholder)
+  // DEV-ONLY: Submission Form URL placeholder
   POSTER_FORM_URL: "https://docs.google.com/forms/d/e/1FAIpQLSc_JU_SFT_FQ2026_SUBMISSION_PLACEHOLDER/viewform",
 
   /**
@@ -70,7 +70,7 @@ export const CONFIG = {
     puzzle_11: "CAP"
   },
 
-  // Realistic mock puzzle prompts, what-to-do instructions, and hints for STEM teams
+  // DEV-ONLY: Realistic mock puzzle prompts, what-to-do instructions, and hints for STEM teams
   PUZZLES: {
     puzzle_1: {
       id: "puzzle_1",

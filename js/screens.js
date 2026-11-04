@@ -112,21 +112,143 @@ export const Screens = {
   },
 
   // =========================================================================
-  // 1. ENTRY SCREEN (#/home)
+  // 0. LANDING SCREEN (#/landing)
   // =========================================================================
-  renderHome(container, router) {
+  renderLanding(container, router) {
+    if (this.activePuzzleInterval) {
+      clearInterval(this.activePuzzleInterval);
+      this.activePuzzleInterval = null;
+    }
+
+    // Build static 12-tile preview (tiles 1 to 11 purple gradient, tile 12 flat red Submit)
+    let previewTilesHtml = '';
+    for (let i = 1; i <= 11; i++) {
+      const numStr = String(i).padStart(2, '0');
+      previewTilesHtml += `
+        <div class="preview-tile preview-tile-gradient">
+          <span class="preview-tile-tag">Task ${i}</span>
+          <span class="preview-tile-num mono">${numStr}</span>
+        </div>
+      `;
+    }
+    previewTilesHtml += `
+      <div class="preview-tile preview-tile-submit">
+        <span class="preview-submit-icon">${ICONS.lock}</span>
+        <span class="preview-submit-label">Submit</span>
+      </div>
+    `;
+
+    container.innerHTML = `
+      <section class="screen-container landing-screen" aria-labelledby="landing-title">
+        <header class="landing-header">
+          <div class="brand-institution">Jain University - School of Future Technology</div>
+          <h1 id="landing-title" class="landing-title">Future Quest 2026</h1>
+          <p class="landing-sentence">
+            An online puzzle round for school teams. Solve puzzles, collect clues, then rebuild the hidden poster.
+          </p>
+          <div class="landing-actions">
+            <a href="#/register" class="btn btn-primary btn-lg">Start Event</a>
+            <a href="#/rules" class="btn btn-secondary btn-lg">Read the rules</a>
+          </div>
+        </header>
+
+        <!-- Compact Facts Row (Monospace Values) -->
+        <div class="landing-facts-grid" role="region" aria-label="Contest Facts">
+          <div class="fact-cell">
+            <span class="fact-label">Eligibility</span>
+            <span class="fact-val mono">Grades 11 and 12</span>
+          </div>
+          <div class="fact-cell">
+            <span class="fact-label">Team Size</span>
+            <span class="fact-val mono">Teams of 3 to 5</span>
+          </div>
+          <div class="fact-cell">
+            <span class="fact-label">Duration</span>
+            <span class="fact-val mono">2 hours</span>
+          </div>
+          <div class="fact-cell">
+            <span class="fact-label">Format</span>
+            <span class="fact-val mono">11 puzzles + submission</span>
+          </div>
+        </div>
+
+        <!-- How it Works & Before You Start -->
+        <div class="landing-details-grid">
+          <div class="landing-card">
+            <h2 class="landing-section-title">How it works</h2>
+            <ol class="landing-steps-list">
+              <li class="landing-step-item">
+                <span class="step-badge mono">1</span>
+                <span class="step-text">Register your team.</span>
+              </li>
+              <li class="landing-step-item">
+                <span class="step-badge mono">2</span>
+                <span class="step-text">Open any task in any order and solve it before its timer runs out.</span>
+              </li>
+              <li class="landing-step-item">
+                <span class="step-badge mono">3</span>
+                <span class="step-text">Every solved task unlocks a clue for the poster.</span>
+              </li>
+              <li class="landing-step-item">
+                <span class="step-badge mono">4</span>
+                <span class="step-text">Open Submit when you are done and send your poster.</span>
+              </li>
+            </ol>
+          </div>
+
+          <div class="landing-card">
+            <h2 class="landing-section-title">Before you start</h2>
+            <ul class="landing-checklist">
+              <li class="landing-check-item">
+                <span class="check-icon">${ICONS.check}</span>
+                <span class="check-text">Whole team present</span>
+              </li>
+              <li class="landing-check-item">
+                <span class="check-icon">${ICONS.check}</span>
+                <span class="check-text">One shared device</span>
+              </li>
+              <li class="landing-check-item">
+                <span class="check-icon">${ICONS.check}</span>
+                <span class="check-text">Stable internet</span>
+              </li>
+              <li class="landing-check-item">
+                <span class="check-icon">${ICONS.check}</span>
+                <span class="check-text">The timer cannot be paused once it starts</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Static Non-clickable Grid Preview -->
+        <div class="landing-preview-card">
+          <div class="landing-preview-header">
+            <h2 class="landing-section-title" style="border:none; padding:0; margin:0;">Grid preview</h2>
+            <span class="text-muted" style="font-size: 11px; font-family: var(--font-mono);">12 Slots &bull; Fixed Preview</span>
+          </div>
+          <div class="landing-preview-grid" aria-hidden="true">
+            ${previewTilesHtml}
+          </div>
+        </div>
+      </section>
+    `;
+  },
+
+  // =========================================================================
+  // 1. REGISTRATION SCREEN (#/register)
+  // =========================================================================
+  renderRegister(container, router) {
     if (this.activePuzzleInterval) {
       clearInterval(this.activePuzzleInterval);
       this.activePuzzleInterval = null;
     }
 
     container.innerHTML = `
-      <section class="screen-container entry-screen" aria-labelledby="entry-title">
+      <section class="screen-container entry-screen" aria-labelledby="register-title">
         <div class="entry-card">
           <header class="entry-header">
-            <div class="brand-institution">Jain University &bull; School of Future Technology</div>
-            <h1 id="entry-title" class="entry-title">Future Quest 2026</h1>
-            <p class="entry-subtitle">Online Puzzle Competition for 11th & 12th Grade Teams</p>
+            <div class="brand-institution">Jain University - School of Future Technology</div>
+            <h1 id="register-title" class="entry-title">Future Quest 2026</h1>
+            <p class="entry-subtitle">Team Registration & Round Access</p>
           </header>
 
           <form id="entry-form" class="entry-form" novalidate>
@@ -163,12 +285,12 @@ export const Screens = {
             <div class="entry-notice">
               <span class="notice-icon">${ICONS.clock}</span>
               <p class="notice-text">
-                The 2-hour contest timer starts immediately when you click <strong>Start Competition</strong>. Ensure your entire team is assembled before proceeding.
+                The 2-hour contest timer starts immediately when you click <strong>Begin Round</strong>. Ensure your entire team is assembled before proceeding.
               </p>
             </div>
 
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary btn-block">Start Competition</button>
+              <button type="submit" class="btn btn-primary btn-block">Begin Round</button>
             </div>
           </form>
 
@@ -221,6 +343,11 @@ export const Screens = {
     });
   },
 
+  // Backward compatibility alias
+  renderHome(container, router) {
+    return this.renderRegister(container, router);
+  },
+
   // =========================================================================
   // 2. GRID SCREEN (#/grid)
   // =========================================================================
@@ -232,7 +359,7 @@ export const Screens = {
 
     const state = GameState.state;
     if (!state) {
-      router.navigate('/home');
+      router.navigate('/landing');
       return;
     }
 
@@ -632,9 +759,9 @@ export const Screens = {
             ${clueHtml}
           </div>
 
-          <!-- DEV MODE TOOLS -->
+          <!-- DEV-ONLY: DEV MODE TOOLS -->
           ${CONFIG.DEV_MODE ? `
-            <div class="dev-toolbar" role="region" aria-label="Development Testing Tools">
+            <div class="dev-toolbar dev-only" role="region" aria-label="Development Testing Tools">
               <div class="dev-label">DEV_MODE Testing Tools:</div>
               <div class="dev-buttons">
                 <button type="button" class="btn btn-secondary btn-sm" id="btn-dev-solve">Mark Solved (dev)</button>
@@ -714,7 +841,7 @@ export const Screens = {
         });
       }
 
-      // Dev mode buttons
+      // DEV-ONLY: Dev mode testing button handlers
       if (CONFIG.DEV_MODE) {
         const devSolve = container.querySelector('#btn-dev-solve');
         const devFail = container.querySelector('#btn-dev-fail');
@@ -999,7 +1126,7 @@ export const Screens = {
           <article class="rule-block">
             <h2 class="rule-heading">2. Contest Master Time Limit</h2>
             <p class="rule-text">
-              The competition has a strict <strong>2-hour (7,200 seconds)</strong> master countdown. The timer begins the moment your team clicks <em>Start Competition</em> and runs continuously in the background across tab reloads or network drops. When the master countdown reaches zero, the puzzle phase terminates immediately and your session is locked into the Submission Vault.
+              The competition has a strict <strong>2-hour (7,200 seconds)</strong> master countdown. The timer begins the moment your team clicks <em>Begin Round</em> and runs continuously in the background across tab reloads or network drops. When the master countdown reaches zero, the puzzle phase terminates immediately and your session is locked into the Submission Vault.
             </p>
           </article>
 
@@ -1039,8 +1166,8 @@ export const Screens = {
             </p>
           </article>
 
-          <!-- SCORING RULES: To be defined by competition committee -->
-          <article class="rule-block scoring-placeholder-block">
+          <!-- DEV-ONLY: SCORING RULES placeholder to be finalized by committee -->
+          <article class="rule-block scoring-placeholder-block dev-only">
             <h2 class="rule-heading">7. Scoring & Evaluation Rubric</h2>
             <div class="alert alert-neutral">
               <strong>[SCORING RUBRIC NOTICE]</strong> The official weighted scoring rubric (balancing puzzle solve count, completion speed, and poster technical compliance) will be published by the Jain University SFT Evaluation Committee prior to the round commencement.
@@ -1052,7 +1179,7 @@ export const Screens = {
           ${hasSession ? `
             <a href="#/grid" class="btn btn-primary">Return to Grid</a>
           ` : `
-            <a href="#/home" class="btn btn-primary">Proceed to Registration</a>
+            <a href="#/register" class="btn btn-primary">Proceed to Registration</a>
           `}
         </div>
       </section>

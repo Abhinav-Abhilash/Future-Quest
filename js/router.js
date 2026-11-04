@@ -71,19 +71,15 @@ export class Router {
 
     // Route Guards
     if (!hasSession) {
-      // No active session: force to #/home (rules is also accessible for preview)
-      if (targetRoute !== 'home' && targetRoute !== 'rules') {
-        this.navigate('/home');
-        return;
-      }
-      if (targetRoute === '') {
-        this.navigate('/home');
+      // With no session, only #/landing, #/register and #/rules are reachable.
+      // The bare URL and anything else redirects to #/landing.
+      if (targetRoute !== 'landing' && targetRoute !== 'register' && targetRoute !== 'rules') {
+        this.navigate('/landing');
         return;
       }
     } else {
-      // Active session exists
-      if (targetRoute === '' || targetRoute === 'home') {
-        // Skip entry screen if session exists
+      // With a session, #/landing, #/register and the bare URL redirect straight to #/grid.
+      if (targetRoute === '' || targetRoute === 'landing' || targetRoute === 'register' || targetRoute === 'home') {
         this.navigate('/grid');
         return;
       }
@@ -127,3 +123,4 @@ export class Router {
     this.handleHashChange();
   }
 }
+

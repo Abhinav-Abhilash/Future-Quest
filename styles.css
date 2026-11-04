@@ -11,7 +11,9 @@
 /* ==========================================================================
    1. CSS Reset & Design Tokens
    ========================================================================== */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -94,7 +96,12 @@ body {
 /* ==========================================================================
    2. Typography & Base Elements
    ========================================================================== */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--text-primary);
   font-weight: 600;
   line-height: 1.25;
@@ -116,7 +123,9 @@ a:hover {
   text-decoration: underline;
 }
 
-code, pre, .mono {
+code,
+pre,
+.mono {
   font-family: var(--font-mono);
   font-size: 13px;
 }
@@ -340,7 +349,8 @@ code, pre, .mono {
   font-size: 14px;
 }
 
-.mobile-drawer-link:hover, .mobile-drawer-link.active {
+.mobile-drawer-link:hover,
+.mobile-drawer-link.active {
   color: var(--text-primary);
   background-color: var(--bg-card);
   text-decoration: none;
@@ -474,7 +484,8 @@ code, pre, .mono {
   white-space: nowrap;
 }
 
-.btn:disabled, .btn[aria-disabled="true"] {
+.btn:disabled,
+.btn[aria-disabled="true"] {
   opacity: 0.45;
   cursor: not-allowed;
   pointer-events: none;
@@ -505,6 +516,22 @@ code, pre, .mono {
   background-color: var(--bg-card-hover);
   border-color: var(--border-emphasis);
   text-decoration: none;
+}
+
+.btn-danger {
+  background-color: #dc2626;
+  color: #ffffff;
+  border-color: #b91c1c;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #b91c1c;
+  border-color: #991b1b;
+  text-decoration: none;
+}
+
+.btn-danger:active:not(:disabled) {
+  background-color: #991b1b;
 }
 
 .btn-sm {
@@ -627,7 +654,511 @@ code, pre, .mono {
 }
 
 /* ==========================================================================
-   7. Screen 1: Entry Screen (#/home)
+   6.5. Screen 0: Landing Screen (#/landing)
+   ========================================================================== */
+.landing-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 860px;
+  margin: 0 auto;
+  padding: var(--space-6) 0 var(--space-12) 0;
+}
+
+.landing-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.landing-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: var(--space-1);
+  letter-spacing: -0.3px;
+}
+
+.landing-sentence {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 680px;
+  margin-top: var(--space-1);
+}
+
+.landing-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.landing-facts-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.fact-cell {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fact-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.fact-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.landing-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.landing-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.landing-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.landing-steps-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.landing-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-default);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.landing-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.landing-check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.check-icon {
+  display: inline-flex;
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.landing-preview-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.landing-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.preview-tile {
+  min-height: 72px;
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.preview-tile-gradient {
+  background: linear-gradient(135deg, #A57EF0 0%, #5A3792 40%, #3A2166 70%, #24133F 100%);
+  border: 1px solid rgba(165, 126, 240, 0.4);
+}
+
+.preview-tile-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.preview-tile-num {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.preview-tile-submit {
+  background-color: #dc2626;
+  border: 1px solid #b91c1c;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.preview-tile-submit .preview-submit-icon {
+  display: flex;
+  align-items: center;
+}
+
+/* Responsive adjustments for Landing Screen */
+@media (max-width: 768px) {
+  .landing-facts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .landing-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-preview-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+}
+
+@media (max-width: 420px) {
+  .landing-facts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ==========================================================================
+   7. Screen 1: Registration Screen (#/register)
+   ========================================================================== */
+.landing-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 860px;
+  margin: 0 auto;
+  padding: var(--space-6) 0 var(--space-12) 0;
+}
+
+.landing-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.landing-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: var(--space-1);
+  letter-spacing: -0.3px;
+}
+
+.landing-sentence {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 680px;
+  margin-top: var(--space-1);
+}
+
+.landing-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.landing-facts-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.fact-cell {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fact-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.fact-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.landing-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.landing-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.landing-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.landing-steps-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.landing-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-default);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.landing-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.landing-check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.check-icon {
+  display: inline-flex;
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.landing-preview-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.landing-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.preview-tile {
+  min-height: 72px;
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.preview-tile-gradient {
+  background: linear-gradient(135deg, #A57EF0 0%, #5A3792 40%, #3A2166 70%, #24133F 100%);
+  border: 1px solid rgba(165, 126, 240, 0.4);
+}
+
+.preview-tile-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.preview-tile-num {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.preview-tile-submit {
+  background-color: #dc2626;
+  border: 1px solid #b91c1c;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.preview-tile-submit .preview-submit-icon {
+  display: flex;
+  align-items: center;
+}
+
+/* Responsive adjustments for Landing Screen */
+@media (max-width: 768px) {
+  .landing-facts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .landing-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-preview-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+}
+
+@media (max-width: 420px) {
+  .landing-facts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ==========================================================================
+   7. Screen 1: Registration Screen (#/register)
    ========================================================================== */
 .entry-screen {
   display: flex;
@@ -768,7 +1299,8 @@ code, pre, .mono {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: calc(100% - 95px); /* Never overlaps the top-right status badge */
+  max-width: calc(100% - 95px);
+  /* Never overlaps the top-right status badge */
 }
 
 /* Bottom-left large white monospace number */
@@ -1184,7 +1716,8 @@ code, pre, .mono {
   font-size: 13px;
 }
 
-.spec-table th, .spec-table td {
+.spec-table th,
+.spec-table td {
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--border-subtle);
   text-align: left;
@@ -1711,10 +2244,83 @@ code, pre, .mono {
   }
 
   .tile-corner-badge .badge-text {
-    display: none; /* Icon-only on narrow mobile screens to avoid overlap */
+    display: none;
+    /* Icon-only on narrow mobile screens to avoid overlap */
   }
 
   .metrics-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ==========================================================================
+   DEV-ONLY: Developer Reset Bar & Diagnostic Tools
+   ========================================================================== */
+.dev-reset-bar {
+  position: fixed;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: var(--bg-surface);
+  border: 1px dashed var(--border-emphasis);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.dev-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 5px;
+  background-color: rgba(37, 99, 235, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  border-radius: 2px;
+}
+
+/* DEV-ONLY: Universal rule to immediately hide all dev UI elements if dev mode is disabled */
+body:not(.dev-mode) .dev-only {
+  display: none !important;
+}
+
+/* ==========================================================================
+   DEV-ONLY: Developer Reset Bar & Diagnostic Tools
+   ========================================================================== */
+.dev-reset-bar {
+  position: fixed;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: var(--bg-surface);
+  border: 1px dashed var(--border-emphasis);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.dev-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 5px;
+  background-color: rgba(37, 99, 235, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  border-radius: 2px;
+}
+
+/* DEV-ONLY: Universal rule to immediately hide all dev UI elements if dev mode is disabled */
+body:not(.dev-mode) .dev-only {
+  display: none !important;
 }

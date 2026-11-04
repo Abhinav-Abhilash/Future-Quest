@@ -10,6 +10,7 @@ import { GameState } from './state.js';
 import { Router } from './router.js';
 import { Screens } from './screens.js';
 import { ICONS } from './icons.js';
+import { Modal } from './modal.js';
 
 class App {
   constructor() {
@@ -19,7 +20,7 @@ class App {
     this.notified5Min = false;
     this.mobileMenuOpen = false;
 
-    // Expose only when CONFIG.DEV_MODE is true for testing/inspection
+    // DEV-ONLY: Expose only when CONFIG.DEV_MODE is true for testing/inspection
     if (CONFIG.DEV_MODE) {
       window.GameState = GameState;
       window.CONFIG = CONFIG;
@@ -29,6 +30,8 @@ class App {
   init() {
     const mainContainer = document.getElementById('app-main');
     const navContainer = document.getElementById('app-navbar');
+
+    document.body.classList.toggle('dev-mode', !!CONFIG.DEV_MODE);
 
     this.router = new Router({}, (route, params) => {
       this.closeMobileMenu();
@@ -46,6 +49,93 @@ class App {
     GameState.subscribe(() => {
       this.updateNavbar(navContainer, this.router.currentRoute);
     });
+
+    // DEV-ONLY: Initialize fixed dev reset bar at bottom-right
+    this.initDevResetBar();
+  }
+
+  /**
+   * DEV-ONLY: Mount fixed dev reset bar at bottom-right of screen.
+   */
+  initDevResetBar() {
+    const existing = document.getElementById('dev-reset-bar');
+    if (existing) existing.remove();
+
+    if (!CONFIG.DEV_MODE) return;
+
+    const barEl = document.createElement('aside');
+    barEl.id = 'dev-reset-bar';
+    barEl.className = 'dev-reset-bar dev-only';
+    barEl.setAttribute('aria-label', 'Developer Reset Bar');
+    barEl.innerHTML = `
+      <span class="dev-tag mono">DEV</span>
+      <button type="button" class="btn btn-secondary btn-sm" id="btn-dev-reset-all">Reset all progress</button>
+    `;
+
+    document.body.appendChild(barEl);
+
+    const resetBtn = barEl.querySelector('#btn-dev-reset-all');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        Modal.showDevResetConfirmation(() => {
+          this.performDevReset();
+        });
+      });
+    }
+  }
+
+  /**
+   * DEV-ONLY: Perform complete wipe of progress and reset timers.
+   */
+  performDevReset() {
+    // 1. Remove every localStorage key the app uses
+    try {
+      localStorage.removeItem('future_quest_2026_state');
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('future_quest') || key === 'future_quest_2026_state')) {
+          localStorage.removeItem(key);
+        }
+      }
+    } catch (e) {
+      console.warn('Dev reset error clearing storage:', e);
+    }
+
+    // 2. Clear all running intervals
+    if (this.masterInterval) {
+      clearInterval(this.masterInterval);
+      this.masterInterval = null;
+    }
+    if (Screens.activePuzzleInterval) {
+      clearInterval(Screens.activePuzzleInterval);
+      Screens.activePuzzleInterval = null;
+    }
+
+    // 3. Reset 10 and 5 minute notice flags
+    this.notified10Min = false;
+    this.notified5Min = false;
+
+    // 4. Dismiss any notice banners
+    const noticeContainer = document.getElementById('notice-banner-root');
+    if (noticeContainer) {
+      noticeContainer.innerHTML = '';
+    }
+
+    // 5. Close any open modal
+    Modal.close();
+
+    // 6. Set the state to null
+    GameState.resetSession();
+
+    // 7. Rebuild the nav bar
+    const navContainer = document.getElementById('app-navbar');
+    this.updateNavbar(navContainer, 'landing');
+
+    // 8. Navigate to #/landing
+    this.router.navigate('/landing');
+
+    // Re-start master timer loop (will idle safely while hasSession() is false)
+    this.startMasterTimerLoop(navContainer);
   }
 
   /**
@@ -55,8 +145,11 @@ class App {
     window.scrollTo({ top: 0, behavior: 'instant' });
 
     switch (route) {
-      case 'home':
-        Screens.renderHome(container, this.router);
+      case 'landing':
+        Screens.renderLanding(container, this.router);
+        break;
+      case 'register':
+        Screens.renderRegister(container, this.router);
         break;
       case 'grid':
         Screens.renderGrid(container, this.router);
@@ -70,11 +163,18 @@ class App {
       case 'rules':
         Screens.renderRules(container, this.router);
         break;
+      case 'home':
+        if (GameState.hasSession()) {
+          this.router.navigate('/grid');
+        } else {
+          this.router.navigate('/landing');
+        }
+        break;
       default:
         if (GameState.hasSession()) {
           this.router.navigate('/grid');
         } else {
-          this.router.navigate('/home');
+          this.router.navigate('/landing');
         }
         break;
     }
@@ -88,14 +188,14 @@ class App {
     const state = GameState.state;
 
     if (!hasSession) {
-      // Entry screen pre-session: keep minimal clean header
+      // Landing & registration pre-session: keep minimal clean header (wordmark plus Rules)
       navContainer.innerHTML = `
-        <header class="app-nav nav-pre-entry">
+        <header class="app-nav nav-pre-entry" role="banner">
           <div class="nav-inner">
-            <div class="nav-brand">
+            <a href="#/landing" class="nav-brand" aria-label="Future Quest 2026">
               <span class="brand-text">Future Quest 2026</span>
               <span class="brand-badge">SFT</span>
-            </div>
+            </a>
             <div class="nav-links">
               <a href="#/rules" class="nav-link ${currentRoute === 'rules' ? 'active' : ''}">Rules</a>
             </div>
@@ -289,3 +389,4 @@ document.addEventListener('DOMContentLoaded', () => {
   const app = new App();
   app.init();
 });
+
