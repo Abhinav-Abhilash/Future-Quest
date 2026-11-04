@@ -565,9 +565,9 @@ export const CONFIG = {
       type: "wordsearch",
       title: "Clue Word Search: 8 Tech Frontiers",
       category: "Systems Architecture",
-      whatToDo: "Solve each definition clue in the list, then search for and select its keyword in the 15×15 matrix.",
+      whatToDo: "Solve each definition clue in the list, then search for and select its keyword in the 12×12 matrix.",
       prompt: "Find the 8 frontier technology words matching the clues in the sidebar.",
-      hint: "Clues correspond to QUANTUM, ROBOTICS, VIRTUAL, SCIENCE, SUSTAINABLE, TECHNOLOGY, REALITY, RAPID.",
+      hint: "Clues correspond to NETWORK, CIPHER, KERNEL, BINARY, MATRIX, PACKET, SENSOR, MEMORY.",
       clueType: "text",
       clue: {
         title: "Official Final Verification Token",
@@ -578,31 +578,28 @@ export const CONFIG = {
         id: "puzzle_11",
         isClueMode: true,
         grid: [
-          ['D','P','Y','M','A','F','A','A','R','S','P','V','O','M','J'],
-          ['N','X','G','E','N','S','L','R','E','U','M','E','F','I','L'],
-          ['U','K','O','D','E','N','K','T','S','S','A','K','Y','K','M'],
-          ['O','A','L','D','C','O','G','I','H','T','W','A','X','C','J'],
-          ['R','T','O','E','N','I','I','F','A','A','L','C','Y','E','M'],
-          ['A','A','N','G','E','T','M','I','P','I','S','R','T','N','C'],
-          ['L','D','H','D','I','A','N','C','E','N','G','O','I','T','Q'],
-          ['Y','I','C','E','C','V','B','I','F','A','N','B','L','E','U'],
-          ['I','D','E','B','S','O','V','A','U','B','I','O','A','R','A'],
-          ['J','U','T','E','H','N','I','L','T','L','T','T','E','E','N'],
-          ['D','I','P','A','R','N','N','Q','U','E','U','I','R','D','T'],
-          ['D','A','I','L','Y','I','K','G','R','Y','P','C','L','Z','U'],
-          ['V','I','R','T','U','A','L','N','E','A','M','S','Z','Y','M'],
-          ['U','I','N','T','E','G','R','A','T','I','O','N','M','R','R'],
-          ['G','X','C','B','X','N','O','T','Y','E','C','U','J','P','B']
+          ['K','A','J','F','G','E','T','A','A','H','S','F'],
+          ['M','N','E','T','W','O','R','K','S','F','N','K'],
+          ['M','Z','H','J','E','V','G','Q','H','R','S','Q'],
+          ['M','C','E','K','E','R','N','E','L','Y','E','R'],
+          ['E','I','Y','N','C','X','V','L','P','G','N','B'],
+          ['M','P','G','B','I','N','A','R','Y','G','S','J'],
+          ['O','H','M','F','U','Q','P','T','C','T','O','Q'],
+          ['R','E','H','M','A','T','R','I','X','B','R','W'],
+          ['Y','R','S','C','W','R','D','B','Q','S','X','Z'],
+          ['C','T','E','P','A','C','K','E','T','V','A','Q'],
+          ['G','D','T','W','P','Y','Z','S','R','B','X','F'],
+          ['P','R','E','W','J','W','J','K','T','M','E','D']
         ],
         words: [
-          { word: "QUANTUM", clue: "Subatomic phenomena & computing beyond classical bits" },
-          { word: "ROBOTICS", clue: "Automated electromechanical machines & autonomous control" },
-          { word: "VIRTUAL", clue: "Simulated software environment or non-physical realm" },
-          { word: "SCIENCE", clue: "Systematic pursuit and structure of empirical knowledge" },
-          { word: "SUSTAINABLE", clue: "Enduring, renewable and low-carbon ecological systems" },
-          { word: "TECHNOLOGY", clue: "Practical application of engineering knowledge" },
-          { word: "REALITY", clue: "The physical state of things as they actually exist" },
-          { word: "RAPID", clue: "Characterized by high speed or accelerated velocity" }
+          { word: "NETWORK", clue: "Interconnected computing nodes and telemetry mesh" },
+          { word: "CIPHER", clue: "Algorithm for encryption or secret data conversion" },
+          { word: "KERNEL", clue: "Core central module of an operating system" },
+          { word: "BINARY", clue: "Base-2 numeral system of bits (0 and 1)" },
+          { word: "MATRIX", clue: "Rectangular array of data values or mathematical grid" },
+          { word: "PACKET", clue: "Formatted unit of data carried across a network" },
+          { word: "SENSOR", clue: "Edge device detecting physical input and signals" },
+          { word: "MEMORY", clue: "Hardware subsystem for runtime data storage" }
         ]
       }
     }
