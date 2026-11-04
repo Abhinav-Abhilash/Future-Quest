@@ -183,11 +183,11 @@ export function mount(root, data, ctx) {
         <!-- SVG Interactive Dial -->
         <div class="caesar-dial-svg-wrap">
           <svg class="caesar-svg-dial" id="caesar-svg-dial" viewBox="0 0 260 260" width="240" height="240">
-            <!-- Outer Fixed Ring (A-Z) -->
-            <circle cx="130" cy="130" r="120" fill="#161b22" stroke="#30363d" stroke-width="2"/>
-            <circle cx="130" cy="130" r="92" fill="#0d1117" stroke="#30363d" stroke-width="1.5"/>
+            <!-- Outer Fixed Ring (A-Z) - Brass & Dark Violet Enigma Rotor -->
+            <circle cx="130" cy="130" r="120" fill="#140E24" stroke="#4A3A75" stroke-width="2"/>
+            <circle cx="130" cy="130" r="92" fill="#0A0712" stroke="#3D3063" stroke-width="1.5"/>
             <!-- Outer Letters -->
-            <g class="outer-ring-letters mono" fill="#8b949e" font-size="11" font-weight="600" text-anchor="middle" dominant-baseline="central">
+            <g class="outer-ring-letters mono" fill="#A69CB8" font-size="11" font-weight="600" text-anchor="middle" dominant-baseline="central">
               ${Array.from({ length: 26 }, (_, i) => {
                 const angle = (i * (360 / 26) - 90) * (Math.PI / 180);
                 const x = 130 + 106 * Math.cos(angle);
@@ -198,9 +198,9 @@ export function mount(root, data, ctx) {
 
             <!-- Inner Rotating Ring -->
             <g id="dial-rotatable-inner" style="transform-origin: 130px 130px; transform: rotate(${caesarShift * (360 / 26)}deg); transition: transform ${isReducedMotion() ? '0ms' : '120ms ease-out'};">
-              <circle cx="130" cy="130" r="90" fill="#1c2128" stroke="#388bfd" stroke-width="2"/>
-              <circle cx="130" cy="130" r="54" fill="#0d1117" stroke="#30363d" stroke-width="1.5"/>
-              <g class="inner-ring-letters mono" fill="#58a6ff" font-size="11" font-weight="700" text-anchor="middle" dominant-baseline="central">
+              <circle cx="130" cy="130" r="90" fill="#271D42" stroke="#FFC928" stroke-width="2"/>
+              <circle cx="130" cy="130" r="54" fill="#0F0B1A" stroke="#4A3A75" stroke-width="1.5"/>
+              <g class="inner-ring-letters mono" fill="#FFC928" font-size="11" font-weight="700" text-anchor="middle" dominant-baseline="central">
                 ${Array.from({ length: 26 }, (_, i) => {
                   const angle = (i * (360 / 26) - 90) * (Math.PI / 180);
                   const x = 130 + 72 * Math.cos(angle);
@@ -209,12 +209,12 @@ export function mount(root, data, ctx) {
                 }).join('')}
               </g>
               <!-- Center Hub -->
-              <circle cx="130" cy="130" r="22" fill="#21262d" stroke="#388bfd" stroke-width="1.5"/>
-              <text x="130" y="131" fill="#e6edf3" font-size="10" font-family="'IBM Plex Mono', monospace" font-weight="700" text-anchor="middle" dominant-baseline="central">DIAL</text>
+              <circle cx="130" cy="130" r="22" fill="#171226" stroke="#FF9900" stroke-width="2"/>
+              <text x="130" y="131" fill="#FFC928" font-size="9" font-family="'IBM Plex Mono', monospace" font-weight="800" text-anchor="middle" dominant-baseline="central">ROTOR</text>
             </g>
 
             <!-- Alignment Pointer Arrow -->
-            <polygon points="130,3 124,14 136,14" fill="#388bfd"/>
+            <polygon points="130,3 124,14 136,14" fill="#FF9900"/>
           </svg>
         </div>
 

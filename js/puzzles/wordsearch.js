@@ -189,7 +189,7 @@ export function mount(root, data, ctx) {
     // Tile 7: Standard Word Chip with color dot and strike-through
     return `
       <li class="ws-list-item keycap ${isFound ? 'item-found' : ''}" id="ws-item-${idx}" data-word="${item.word}">
-        <span class="ws-color-dot" style="background: ${isFound ? wordColor : '#30363d'};"></span>
+        <span class="ws-color-dot" style="background: ${isFound ? wordColor : '#4A3578'};"></span>
         <span class="ws-word-text mono">${item.word}</span>
         <span class="ws-check-box mono">${isFound ? '✓' : ''}</span>
       </li>
@@ -214,7 +214,7 @@ export function mount(root, data, ctx) {
             <!-- SVG Rounded Capsule Overlay (viewBox 0 0 15 15 matches 15x15 grid) -->
             <svg class="ws-capsule-overlay" id="ws-capsule-overlay" viewBox="0 0 15 15" preserveAspectRatio="none" aria-hidden="true">
               <g id="ws-capsule-group"></g>
-              <line id="ws-preview-capsule" class="ws-preview-capsule" stroke-linecap="round" stroke-width="0.82" stroke="var(--accent, #388bfd)" stroke-opacity="0" x1="0" y1="0" x2="0" y2="0" />
+              <line id="ws-preview-capsule" class="ws-preview-capsule" stroke-linecap="round" stroke-width="0.82" stroke="var(--module-accent-signal, #FF9900)" stroke-opacity="0" x1="0" y1="0" x2="0" y2="0" />
             </svg>
             <!-- 15x15 button grid -->
             <div class="ws-matrix" id="ws-matrix">${cellsHtml}</div>
@@ -268,7 +268,7 @@ export function mount(root, data, ctx) {
       lineEl.setAttribute('y1', String(line.start[0] + 0.5));
       lineEl.setAttribute('x2', String(line.end[1] + 0.5));
       lineEl.setAttribute('y2', String(line.end[0] + 0.5));
-      lineEl.setAttribute('stroke', line.color || '#388bfd');
+      lineEl.setAttribute('stroke', line.color || '#FF9900');
       lineEl.setAttribute('stroke-width', '0.84');
       lineEl.setAttribute('stroke-linecap', 'round');
       lineEl.setAttribute('stroke-opacity', '0.40');

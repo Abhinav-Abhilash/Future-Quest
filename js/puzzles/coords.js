@@ -260,7 +260,7 @@ export function mount(root, data, ctx) {
                   <svg class="coords-route-svg-overlay" id="coords-route-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
                     <defs>
                       <marker id="route-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                        <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--accent, #388bfd)"/>
+                        <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--module-accent, #14B8A6)"/>
                       </marker>
                     </defs>
                     <g id="route-segments-group"></g>
@@ -385,9 +385,9 @@ export function mount(root, data, ctx) {
       justify-content: center;
       font-size: 18px;
       font-weight: 700;
-      color: #ffffff;
-      background: var(--accent, #388bfd);
-      border: 1px solid #60a5fa;
+      color: #FFFFFF;
+      background: var(--module-accent, #14B8A6);
+      border: 1px solid #2DD4BF;
       border-radius: 4px;
       z-index: 1000;
       pointer-events: none;
@@ -442,7 +442,7 @@ export function mount(root, data, ctx) {
       line.setAttribute('y1', p1.y);
       line.setAttribute('x2', p2.x);
       line.setAttribute('y2', p2.y);
-      line.setAttribute('stroke', 'var(--accent, #388bfd)');
+      line.setAttribute('stroke', 'var(--module-accent, #14B8A6)');
       line.setAttribute('stroke-width', '2.5');
       line.setAttribute('stroke-dasharray', '4 2');
       line.setAttribute('marker-end', 'url(#route-arrow)');

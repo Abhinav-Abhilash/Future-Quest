@@ -1,57 +1,71 @@
 /* ==========================================================================
    Future Quest 2026 - Puzzles UX & Interaction Styles
-   - Dark graphite theme with tactile keycaps (1px border + 2px bottom border)
-   - Flat colors only: NO gradients, glow, blur, glassmorphism, blobs, or emoji
-   - Flat #3A2166 puzzle header band matching purple grid tile
-   - Single-stage layout with sticky bottom action bar
-   - Sweeping crosshairs, responsive matrices, FLIP animations & 3D flips
-   - Full prefers-reduced-motion & body.lite-mode support
+   - Unified near-black violet palette: #0F0B1A, #171226, #1B1430, #100C1C
+   - Brand flyer accents: #FF9900, #FFC928, #A57EF0
+   - Multi-stop purple gradient puzzle header band matching grid tiles
+   - Hardware blueprint slot rack & obsidian control deck action bar
+   - Bespoke Workstation Themes:
+       * Theme 1: ASCII Decoder - Amber Phosphor Cryptographic Terminal
+       * Theme 2: BODMAS - Tactile Engineering Calculator & Tile Workbench
+       * Theme 3: Coordinates - Tactical Radar & Naval Telemetry Grid
+       * Theme 4: Word Search - Neural Pattern Scanner & 3D Dossier Deck
+   - Compositor-only motion (transform & opacity)
+   - Full prefers-reduced-motion and body.lite-mode compliance
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. GLOBAL KEYCAP & COMPONENT BASE
+   1. GLOBAL KEYCAP & WORKSTATION BASE
    -------------------------------------------------------------------------- */
-.keycap {
-  border: 1px solid var(--border-subtle, #30363d);
-  border-bottom: 3px solid #080b0f;
+.keycap,
+.keycap-btn {
+  border: 1px solid var(--border-default, #3D3063);
+  border-bottom: 3px solid #090610;
   border-radius: 4px;
-  background: var(--bg-surface, #161b22);
-  color: var(--text-primary, #e6edf3);
-  transition: transform 90ms ease, border-bottom-width 90ms ease, background-color 90ms ease, border-color 90ms ease;
+  background: var(--bg-surface, #171226);
+  color: var(--text-primary, #F0EDF6);
+  transition: transform 90ms ease, border-bottom-width 90ms ease, background-color 90ms ease, border-color 90ms ease, color 90ms ease;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.keycap:hover:not(:disabled) {
-  border-color: var(--accent, #388bfd);
-  background: #1c2128;
+.keycap:hover:not(:disabled),
+.keycap-btn:hover:not(:disabled) {
+  border-color: var(--module-accent, var(--accent, #FF9900));
+  background: var(--bg-card-hover, #231B3D);
+  color: #FFFFFF;
 }
 
-.keycap:active:not(:disabled) {
+.keycap:active:not(:disabled),
+.keycap-btn:active:not(:disabled) {
   transform: translateY(2px);
   border-bottom-width: 1px;
 }
 
-.keycap:disabled {
-  opacity: 0.6;
+.keycap:disabled,
+.keycap-btn:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
   border-bottom-width: 1px;
   transform: none !important;
 }
 
-/* Common shake animations */
+/* Shake animations for error feedback */
 @keyframes shakeX {
   0%, 100% { transform: translateX(0); }
   20%, 60% { transform: translateX(-4px); }
   40%, 80% { transform: translateX(4px); }
 }
 
-.input-shake, .chip-shake, .cell-wrong-shake, .btn-wrong-shake {
+.input-shake, 
+.chip-shake, 
+.cell-wrong-shake, 
+.btn-wrong-shake,
+.key-shake {
   animation: shakeX 380ms ease;
 }
 
 /* --------------------------------------------------------------------------
-   2. PUZZLE SCREEN LAYOUT & HEADER BAND
+   2. PUZZLE SCREEN LAYOUT & UPGRADED HEADER BAND
    -------------------------------------------------------------------------- */
 .puzzle-screen {
   display: flex;
@@ -63,13 +77,15 @@
   position: relative;
 }
 
-/* Flat #3A2166 Header Band matching purple grid tile */
+/* Multi-stop diagonal gradient matching purple grid tiles */
 .puzzle-header-band {
-  background: #3A2166;
-  border: 1px solid #48297a;
+  background: linear-gradient(135deg, #6B42B8 0%, #3A2166 55%, #1E1136 100%);
+  border: 1px solid rgba(165, 126, 240, 0.45);
+  border-bottom: 3px solid #090610;
   border-radius: 6px;
   padding: 12px 18px;
-  color: #ffffff;
+  color: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
 }
 
 .puzzle-header-band-inner {
@@ -96,16 +112,16 @@
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.05em;
-  color: #ffffff;
+  color: #FFFFFF;
 }
 
 .puzzle-category-tag {
   font-size: 11px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 3px;
   padding: 2px 8px;
-  color: #e6edf3;
+  color: #E6EDF3;
   display: none;
 }
 
@@ -121,13 +137,16 @@
   gap: 14px;
 }
 
+/* Watermarked / embossed stencil number */
 .puzzle-band-big-num {
-  font-size: 28px;
+  font-family: var(--font-mono, monospace);
+  font-size: 36px;
   font-weight: 800;
   line-height: 1;
-  color: rgba(255, 255, 255, 0.9);
-  min-width: 32px;
+  color: rgba(255, 201, 40, 0.25);
+  min-width: 42px;
   text-align: right;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 /* Timer Badge in Header */
@@ -135,8 +154,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: #100C1C;
+  border: 1px solid #3D3063;
   border-radius: 4px;
   padding: 4px 10px;
   font-size: 13px;
@@ -144,22 +163,42 @@
 
 .puzzle-timer-badge .timer-icon {
   display: inline-flex;
-  color: #8b949e;
+  color: var(--text-muted, #7E7492);
 }
 
 .puzzle-timer-badge .timer-value {
   font-weight: 700;
-  color: #e6edf3;
+  color: var(--text-primary, #F0EDF6);
 }
 
 .puzzle-timer-badge.timer-low {
-  border-color: #d29922;
-  background: #2b1f09;
+  border-color: #FF9900;
+  background: rgba(255, 153, 0, 0.12);
 }
 
 .puzzle-timer-badge.timer-low .timer-value,
 .puzzle-timer-badge.timer-low .timer-icon {
-  color: #e3b341;
+  color: #FFC928;
+}
+
+/* Per-puzzle Timer Progress Scale Track */
+.puzzle-timer-track {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.puzzle-timer-scale-bar {
+  height: 100%;
+  background: #A57EF0;
+  transform-origin: left center;
+  transition: transform 220ms ease;
+}
+
+.puzzle-timer-scale-bar.timer-amber {
+  background: #FF9900;
 }
 
 /* Neutral difficulty badge */
@@ -170,25 +209,28 @@
   font-family: var(--font-mono, monospace);
   font-weight: 600;
   padding: 2px 8px;
-  border: 1px solid #ffffff;
+  border: 1px solid #FFFFFF;
   border-radius: 3px;
-  color: #ffffff;
+  color: #FFFFFF;
   background: transparent;
   white-space: nowrap;
 }
 
 /* --------------------------------------------------------------------------
-   3. OBJECTIVE & HOW TO PLAY DRAWER
+   3. OBJECTIVE & MISSION BRIEFING BAR
    -------------------------------------------------------------------------- */
 .puzzle-instruction-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  background: var(--bg-surface, #161b22);
-  border: 1px solid var(--border-subtle, #30363d);
+  background: #140E24;
+  border: 1px solid #3D3063;
+  border-left: 4px solid var(--module-accent, var(--accent, #FF9900));
   border-radius: 6px;
   padding: 10px 14px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 12px 12px;
 }
 
 .puzzle-instruction-text {
@@ -202,9 +244,9 @@
 .instruction-label {
   font-size: 11px;
   font-weight: 700;
-  color: var(--accent, #388bfd);
-  background: var(--bg-input, #0d1117);
-  border: 1px solid var(--border-subtle, #30363d);
+  color: var(--module-accent, var(--accent, #FF9900));
+  background: #100C1C;
+  border: 1px solid #3D3063;
   border-radius: 3px;
   padding: 2px 6px;
   white-space: nowrap;
@@ -212,7 +254,7 @@
 
 .what-to-do-text {
   margin: 0;
-  color: var(--text-primary, #e6edf3);
+  color: var(--text-primary, #F0EDF6);
   line-height: 1.4;
 }
 
@@ -224,11 +266,21 @@
   font-size: 12px;
   cursor: pointer;
   white-space: nowrap;
+  background: #1B1430;
+  border: 1px solid #483873;
+  border-bottom: 3px solid #090610;
+  border-radius: 20px;
+  color: var(--text-primary, #F0EDF6);
+}
+
+.btn-toggle-howto:hover {
+  border-color: var(--module-accent, var(--accent, #FF9900));
+  color: #FFFFFF;
 }
 
 .howto-icon {
   font-weight: 700;
-  color: var(--accent, #388bfd);
+  color: var(--module-accent, var(--accent, #FF9900));
 }
 
 /* How to Play Collapsible Drawer */
@@ -241,23 +293,23 @@
 }
 
 .puzzle-howto-drawer.drawer-expanded {
-  max-height: 400px;
+  max-height: 420px;
   opacity: 1;
   margin-top: -4px;
   margin-bottom: 6px;
 }
 
 .howto-drawer-inner {
-  background: var(--bg-input, #0d1117);
-  border: 1px solid var(--border-subtle, #30363d);
+  background: #100C1C;
+  border: 1px solid #3D3063;
   border-radius: 6px;
-  padding: 12px 16px;
+  padding: 14px 16px;
 }
 
 .howto-drawer-title {
   font-size: 11px;
   font-weight: 700;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted, #7E7492);
   letter-spacing: 0.05em;
   margin-bottom: 10px;
 }
@@ -269,8 +321,11 @@
 }
 
 .howto-step-card {
-  padding: 8px 10px;
-  background: var(--bg-surface, #161b22);
+  padding: 10px 12px;
+  background: #171226;
+  border: 1px solid #3D3063;
+  border-bottom: 3px solid #090610;
+  border-radius: 4px;
 }
 
 .howto-step-header {
@@ -283,21 +338,21 @@
 .step-badge {
   font-size: 10px;
   font-weight: 700;
-  color: #ffffff;
-  background: var(--accent, #388bfd);
+  color: #0F0B1A;
+  background: var(--module-accent, var(--accent, #FF9900));
   border-radius: 3px;
-  padding: 1px 5px;
+  padding: 1px 6px;
 }
 
 .step-title {
   font-size: 11px;
   font-weight: 700;
-  color: var(--text-primary, #e6edf3);
+  color: var(--text-primary, #F0EDF6);
 }
 
 .step-desc {
   font-size: 12px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-secondary, #A69CB8);
   margin: 0;
   line-height: 1.35;
 }
@@ -315,58 +370,53 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  background: #181d24;
-  border-left: 3px solid #d29922;
-  padding: 10px 14px;
+  background: #1C152E;
+  border: 1px solid #D29922;
+  border-left: 4px solid #FFC928;
+  border-radius: 4px;
+  padding: 12px 16px;
   margin-bottom: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .revealed-hint-box .hint-icon {
-  color: #d29922;
+  color: #FFC928;
   margin-top: 2px;
 }
 
 .revealed-hint-box .hint-content strong {
   font-size: 11px;
-  color: #d29922;
+  color: #FFC928;
   display: block;
   margin-bottom: 2px;
 }
 
 .revealed-hint-box .hint-text {
   font-size: 13px;
-  color: var(--text-primary, #e6edf3);
+  color: var(--text-primary, #F0EDF6);
   margin: 0;
 }
 
 /* --------------------------------------------------------------------------
-   4. PUZZLE STAGE (Single Surface)
+   4. HARDWARE BLUEPRINT SLOT RACK (.poster-strip-container)
    -------------------------------------------------------------------------- */
-.puzzle-stage-surface {
-  background: var(--bg-surface, #161b22);
-  border: 1px solid var(--border-subtle, #30363d);
-  border-radius: 6px;
-  padding: 16px;
-  position: relative;
-  min-height: 340px;
-}
-
-/* Poster Strip Container */
 .poster-strip-container {
-  background: var(--bg-input, #0d1117);
-  border: 1px solid var(--border-subtle, #30363d);
+  background: #0B0814;
+  border: 1px solid #2D234A;
   border-radius: 6px;
   padding: 10px 14px;
   margin-bottom: 16px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
 .poster-strip-title {
   font-size: 11px;
   font-family: var(--font-mono, monospace);
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted, #7E7492);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 8px;
+  font-weight: 600;
 }
 
 .poster-strip-slots {
@@ -375,41 +425,45 @@
   gap: 8px;
 }
 
+/* Empty microchip socket */
 .poster-slot {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-width: 64px;
-  min-height: 42px;
+  min-width: 68px;
+  min-height: 44px;
   padding: 4px 10px;
-  border: 1px dashed var(--border-subtle, #30363d);
+  border: 1px dashed #4A3A75;
   border-radius: 4px;
-  background: var(--bg-surface, #161b22);
-  transition: transform 220ms ease, border-color 220ms ease, background-color 220ms ease;
+  background: #120D22;
+  transition: transform 220ms ease, border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
 }
 
 .poster-slot .slot-label {
   font-size: 10px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted, #7E7492);
   white-space: nowrap;
 }
 
 .poster-slot .slot-content {
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-primary, #e6edf3);
+  color: var(--text-secondary, #A69CB8);
   min-height: 18px;
   letter-spacing: 0.05em;
 }
 
+/* Lit microchip module */
 .poster-slot.slot-filled {
   border-style: solid;
-  border-color: var(--accent, #388bfd);
-  background: #152238;
+  border-color: #FF9900;
+  background: rgba(255, 153, 0, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 201, 40, 0.35);
 }
 
 .poster-slot.slot-filled .slot-content {
-  color: #58a6ff;
+  color: #FFC928;
+  font-weight: 800;
 }
 
 .poster-slot.slot-stamped {
@@ -421,7 +475,9 @@
   100% { transform: scale(1); }
 }
 
-/* Reward Popup Overlay (positioned relative to #puzzle-stage) */
+/* --------------------------------------------------------------------------
+   5. REWARD POPUP OVERLAY
+   -------------------------------------------------------------------------- */
 .puzzle-reward-popup {
   position: absolute;
   top: 40%;
@@ -447,16 +503,17 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #161b22;
-  border: 1px solid var(--accent, #388bfd);
-  border-bottom: 3px solid #080b0f;
+  background: #1B1430;
+  border: 1px solid #FF9900;
+  border-bottom: 3px solid #090610;
   border-radius: 6px;
   padding: 12px 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 16px rgba(255, 153, 0, 0.25);
 }
 
 .reward-popup-icon {
   display: flex;
-  color: var(--accent, #388bfd);
+  color: #FFC928;
 }
 
 .reward-popup-text {
@@ -467,126 +524,33 @@
 .reward-popup-label {
   font-size: 10px;
   text-transform: uppercase;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted, #7E7492);
   letter-spacing: 0.05em;
 }
 
 .reward-popup-word {
   font-size: 16px;
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 800;
+  color: #FFC928;
+  font-family: var(--font-mono, monospace);
 }
 
 /* --------------------------------------------------------------------------
-   5. UNLOCKED CLUE CONTAINER (Slide in below stage)
-   -------------------------------------------------------------------------- */
-.puzzle-clue-container {
-  opacity: 0;
-  transform: translateY(12px);
-  pointer-events: none;
-  transition: transform 220ms ease-out, opacity 220ms ease-out;
-}
-
-.puzzle-clue-container.clue-visible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.clue-card {
-  padding: 16px;
-  background: var(--bg-surface, #161b22);
-}
-
-.clue-header {
-  margin-bottom: 12px;
-}
-
-.clue-tag {
-  font-size: 10px;
-  font-weight: 700;
-  color: #3fb950;
-  letter-spacing: 0.05em;
-  display: block;
-  margin-bottom: 4px;
-}
-
-.clue-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0;
-}
-
-.clue-caption {
-  font-size: 12px;
-  color: var(--text-muted, #8b949e);
-  margin: 4px 0 0 0;
-}
-
-.clue-body {
-  margin-bottom: 14px;
-}
-
-.spec-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.spec-table th, .spec-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border-subtle, #30363d);
-  font-size: 13px;
-  text-align: left;
-}
-
-.spec-label {
-  color: var(--text-muted, #8b949e);
-  width: 35%;
-}
-
-.spec-value code, .clue-pre code {
-  color: var(--accent, #388bfd);
-  background: var(--bg-input, #0d1117);
-  padding: 2px 6px;
-  border-radius: 3px;
-  border: 1px solid var(--border-subtle, #30363d);
-}
-
-.clue-pre {
-  margin: 0;
-  padding: 12px;
-  background: var(--bg-input, #0d1117);
-  border: 1px solid var(--border-subtle, #30363d);
-  border-radius: 4px;
-  font-size: 13px;
-  overflow-x: auto;
-}
-
-.svg-preview-box {
-  background: var(--bg-input, #0d1117);
-  border: 1px solid var(--border-subtle, #30363d);
-  border-radius: 4px;
-  padding: 12px;
-  display: flex;
-  justify-content: center;
-}
-
-/* --------------------------------------------------------------------------
-   6. STICKY BOTTOM ACTION BAR
+   6. CONTROL DECK STICKY ACTION BAR (.puzzle-sticky-action-bar)
    -------------------------------------------------------------------------- */
 .puzzle-sticky-action-bar {
   position: sticky;
   bottom: 0;
   left: 0;
   right: 0;
-  background: #161b22;
-  border: 1px solid var(--border-subtle, #30363d);
-  border-bottom: 3px solid #080b0f;
+  background: #130E21;
+  border: 1px solid #3D3063;
+  border-bottom: 4px solid #07050C;
   border-radius: 6px;
   padding: 10px 16px;
   z-index: 50;
-  margin-top: 8px;
+  margin-top: 10px;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.55);
 }
 
 .action-bar-inner {
@@ -606,37 +570,36 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 8px;
-  background: var(--bg-input, #0d1117);
-  border: 1px solid var(--border-subtle, #30363d);
+  padding: 4px 10px;
+  background: #0B0814;
+  border: 1px solid #3D3063;
   border-radius: 4px;
 }
 
 .action-bar-label {
   font-size: 10px;
   font-weight: 700;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted, #7E7492);
   letter-spacing: 0.05em;
 }
 
-.action-pips {
+.key-pips-row {
   display: flex;
   align-items: center;
   gap: 3px;
 }
 
-.action-pip {
+.key-pip {
   display: inline-flex;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
+  color: #FFC928;
+  transition: transform 160ms ease, opacity 160ms ease;
 }
 
-.action-pip.pip-remaining {
-  color: var(--accent, #388bfd);
-}
-
-.action-pip.pip-spent {
-  color: #30363d;
+.key-pip.key-snapped {
+  color: #4A3B72;
+  opacity: 0.45;
 }
 
 /* Hints button & mini pips */
@@ -644,11 +607,28 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  background: #1B1430;
+  border: 1px solid #483873;
+  border-bottom: 3px solid #090610;
+  color: #F0EDF6;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
 }
 
-.btn-hint-icon {
+.action-hint-btn:hover:not(:disabled) {
+  border-color: #FF9900;
+  background: #231B3D;
+  color: #FFFFFF;
+}
+
+.btn-hint-lantern {
   display: inline-flex;
-  color: #d29922;
+  color: #FFC928;
+}
+
+.btn-hint-lantern.lantern-dark {
+  color: #4A3B72;
 }
 
 .hint-mini-pips {
@@ -665,11 +645,11 @@
 }
 
 .hint-mini-pip.pip-active {
-  color: #d29922;
+  color: #FFC928;
 }
 
 .hint-mini-pip.pip-used {
-  color: #30363d;
+  color: #3D3063;
 }
 
 .action-bar-center {
@@ -682,12 +662,12 @@
 }
 
 .action-bar-notice.notice-success {
-  color: #3fb950;
+  color: #3FB950;
   font-weight: 700;
 }
 
 .action-bar-notice.notice-danger {
-  color: #f85149;
+  color: #F85149;
   font-weight: 700;
 }
 
@@ -697,20 +677,45 @@
   gap: 8px;
 }
 
+/* Mechanical Control Deck Trigger Button */
 .action-check-btn {
-  padding: 8px 18px;
+  padding: 8px 20px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  background: #FF9900;
+  color: #0F0B1A;
+  border: 1px solid #FFB833;
+  border-bottom: 3px solid #B36B00;
+  border-radius: 4px;
+  transition: transform 90ms ease, border-bottom-width 90ms ease, background-color 90ms ease;
+}
+
+.action-check-btn:hover:not(:disabled) {
+  background: #FFAA1A;
+}
+
+.action-check-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
+}
+
+.action-check-btn:disabled {
+  background: #2D224D;
+  color: #7E7492;
+  border-color: #3D3063;
+  border-bottom: 1px solid #090610;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Per-group clear button */
 .btn-group-clear {
   font-size: 11px;
   font-family: var(--font-mono, monospace);
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted, #7E7492);
   background: transparent;
-  border: 1px solid var(--border-subtle, #30363d);
+  border: 1px solid #3D3063;
   border-radius: 3px;
   padding: 2px 6px;
   cursor: pointer;
@@ -718,17 +723,160 @@
 }
 
 .btn-group-clear:hover {
-  color: #f85149;
-  border-color: #f85149;
+  color: #F85149;
+  border-color: #F85149;
 }
 
 /* --------------------------------------------------------------------------
-   7. ASCII DECODER PUZZLE MODULE
+   7. UNLOCKED HIGH-VALUE VAULT BLUEPRINT ARTIFACT (.puzzle-clue-container)
    -------------------------------------------------------------------------- */
-.puzzle-ascii {
+.puzzle-clue-container {
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: transform 220ms ease-out, opacity 220ms ease-out;
+}
+
+.puzzle-clue-container.clue-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.clue-card {
+  padding: 16px;
+  background: #161029;
+  border: 1px solid #3FB950;
+  border-top: 3px solid #3FB950;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.clue-header {
+  margin-bottom: 12px;
+}
+
+.clue-tag {
+  font-size: 10px;
+  font-weight: 800;
+  color: #3FB950;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.clue-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.clue-caption {
+  font-size: 12px;
+  color: var(--text-secondary, #A69CB8);
+  margin: 4px 0 0 0;
+}
+
+.clue-body {
+  margin-bottom: 14px;
+}
+
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #0D0918;
+  border: 1px solid #3D3063;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.spec-table th, 
+.spec-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #2D234A;
+  font-size: 13px;
+  text-align: left;
+}
+
+.spec-label {
+  color: #A69CB8;
+  width: 35%;
+}
+
+.spec-value code, 
+.clue-pre code {
+  color: #FFC928;
+  background: #1B1430;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid #5B488E;
+  font-family: var(--font-mono, monospace);
+}
+
+.clue-pre {
+  margin: 0;
+  padding: 12px;
+  background: #0D0918;
+  border: 1px solid #3D3063;
+  border-radius: 4px;
+  font-size: 13px;
+  overflow-x: auto;
+}
+
+.svg-preview-box {
+  background: #0D0918;
+  border: 1px solid #3D3063;
+  border-radius: 4px;
+  padding: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  justify-content: center;
+}
+
+/* Sealed Clue Card with 3D Flip */
+.sealed-clue-card {
+  perspective: 700px;
+  width: 100%;
+}
+
+.sealed-flipper {
+  position: relative;
+  width: 100%;
+  transform-style: preserve-3d;
+  transition: transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.sealed-clue-card.is-unsealed .sealed-flipper {
+  transform: rotateY(0deg);
+}
+
+
+/* ==========================================================================
+   8. BESPOKE THEME 1: ASCII DECODER & CIPHER WORKSTATION
+   "Amber Phosphor Cryptographic Terminal"
+   ========================================================================== */
+.theme-ascii,
+.puzzle-ascii,
+[data-puzzle-type="ascii"],
+.puzzle-ascii-wrap {
+  --module-accent: #FFC928;
+  --module-accent-soft: rgba(255, 201, 40, 0.12);
+  --module-border: #664D00;
+}
+
+/* CRT scanline / terminal grid stage */
+.puzzle-stage-surface.theme-ascii,
+.theme-ascii .puzzle-stage-surface {
+  background: #120D22;
+  background-image: 
+    repeating-linear-gradient(0deg, rgba(255, 201, 40, 0.02) 0px, rgba(255, 201, 40, 0.02) 1px, transparent 1px, transparent 4px),
+    radial-gradient(ellipse at 50% 0%, rgba(255, 201, 40, 0.05) 0%, transparent 70%);
+  border: 1px solid #4A3A75;
+  border-bottom: 3px solid #0A0614;
+  border-radius: 6px;
+  padding: 16px;
+  position: relative;
+  min-height: 340px;
 }
 
 .ascii-main-layout {
@@ -751,44 +899,66 @@
   gap: 14px;
 }
 
-.ascii-words-container {
+.ascii-toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ascii-words-container,
+.ascii-words-stage {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
 }
 
+/* Word Group Circuit Block */
 .ascii-word-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 10px 12px;
-  background: var(--bg-surface, #161b22);
-  border: 1px solid var(--border-subtle, #30363d);
+  background: #161026;
+  border: 1px solid #3D3063;
   border-radius: 6px;
+  transition: border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
 }
 
+/* Locked Word Group: Emerald Circuit Block */
+.ascii-word-group.word-bar-locked,
 .ascii-word-group.word-locked {
-  border-color: #238636;
-  background: #0f1d14;
+  border-color: #3FB950;
+  background: rgba(63, 185, 80, 0.08);
+  box-shadow: 0 0 12px rgba(63, 185, 80, 0.12);
 }
 
+.ascii-word-group.word-bar-locked .ascii-keycap-input,
+.ascii-word-group.word-locked .ascii-input {
+  color: #4ADE80 !important;
+}
+
+.word-group-header,
 .ascii-word-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+.word-group-label,
 .ascii-word-title {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-primary, #e6edf3);
+  color: var(--text-primary, #F0EDF6);
 }
 
 .ascii-word-status {
   font-size: 11px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted, #7E7492);
 }
 
+.ascii-cards-track,
 .ascii-word-cards {
   display: flex;
   flex-wrap: wrap;
@@ -796,47 +966,71 @@
   transition: gap 220ms ease;
 }
 
-/* Gap closes to 2px on lock */
+.ascii-word-group.word-bar-locked .ascii-cards-track,
 .ascii-word-group.word-locked .ascii-word-cards {
   gap: 2px;
 }
 
-/* Physical Code Card */
+/* Split-flap Hardware Decoder Cards */
+.ascii-physical-card,
 .ascii-code-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 6px;
-  min-width: 42px;
-  background: var(--bg-input, #0d1117);
+  padding: 8px 6px;
+  min-width: 44px;
+  background: #140F23;
+  border: 1px solid #3D3063;
+  border-bottom: 3px solid #08060E;
+  border-radius: 6px;
+  transition: transform 90ms ease, border-color 90ms ease, background-color 90ms ease;
 }
 
+.ascii-physical-card:hover:not(.has-letter),
+.ascii-code-card:hover {
+  border-color: #FFC928;
+  background: #1B1430;
+}
+
+/* Digital Numeric Readout Badge */
+.card-mono-code,
 .ascii-code-badge {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  color: var(--text-muted, #8b949e);
+  color: #FFC928;
+  background: #0A0712;
+  border: 1px solid rgba(255, 201, 40, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
   margin-bottom: 2px;
+  font-family: var(--font-mono, monospace);
+  text-shadow: 0 0 6px rgba(255, 201, 40, 0.25);
 }
 
+.card-arrow,
 .ascii-card-arrow {
-  color: #30363d;
+  color: #5B488E;
   display: flex;
   margin: 1px 0;
+  font-size: 11px;
 }
 
-/* Flipping letter slot */
+/* Recessed Mechanical Keycap Well */
+.card-slot-wrap,
 .ascii-letter-slot {
   width: 32px;
   height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-surface, #161b22);
-  border: 1px solid var(--border-subtle, #30363d);
-  border-radius: 3px;
-  transition: transform 200ms ease;
+  background: #090610;
+  border: 1px solid #4A3B72;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+  transition: border-color 90ms ease, box-shadow 90ms ease;
 }
 
+.ascii-keycap-input,
 .ascii-input {
   width: 100%;
   height: 100%;
@@ -845,138 +1039,267 @@
   text-align: center;
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-primary, #e6edf3);
+  color: var(--text-primary, #F0EDF6);
   text-transform: uppercase;
+  font-family: var(--font-mono, monospace);
 }
 
+.ascii-keycap-input:focus,
 .ascii-input:focus {
   outline: none;
-  color: var(--accent, #388bfd);
+  color: #FFC928;
 }
 
+.card-slot-wrap:focus-within,
+.ascii-letter-slot:focus-within {
+  border-color: #FF9900;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7), 0 0 6px rgba(255, 153, 0, 0.3);
+}
+
+.ascii-keycap-input:disabled,
 .ascii-input:disabled {
-  color: #58a6ff;
+  color: #FFC928;
 }
 
+.ascii-keycap-input.input-wrong,
 .ascii-input.input-wrong {
-  color: #f85149 !important;
+  color: #F85149 !important;
 }
 
-/* T4 Rolling Counter Stepper */
+/* T4 Rolling Counter Stepper (Mechanical Odometer Drum) */
+.ascii-rolling-stepper,
 .ascii-stepper-panel {
   padding: 12px 14px;
-  background: var(--bg-surface, #161b22);
-}
-
-.stepper-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.stepper-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.stepper-body {
+  background: #140E24;
+  border: 1px solid #4A3A75;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
+.stepper-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary, #F0EDF6);
+}
+
+.rolling-stepper-box,
+.stepper-body {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rolling-window,
 .stepper-counter-window {
   width: 60px;
   height: 44px;
-  background: var(--bg-input, #0d1117);
+  background: #0A0712;
+  border: 1px solid #5B488E;
+  border-radius: 4px;
   overflow: hidden;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: inset 0 8px 8px -4px #000, inset 0 -8px 8px -4px #000;
 }
 
+.rolling-strip,
 .counter-wheel-track {
   display: flex;
   flex-direction: column;
   transition: transform 160ms cubic-bezier(0.2, 0, 0, 1);
 }
 
+.rolling-num,
 .wheel-digit {
-  height: 44px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
   font-weight: 700;
-  color: var(--accent, #388bfd);
+  color: #FFC928;
+  font-family: var(--font-mono, monospace);
 }
 
+.stepper-btn,
 .btn-stepper {
   width: 36px;
   height: 36px;
+  background: #1E1633;
+  border: 1px solid #5B488E;
+  border-bottom: 3px solid #090610;
+  color: #FFC928;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* T8 Rotational SVG Cipher Dial */
+.stepper-btn:active,
+.btn-stepper:active {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
+}
+
+.stepper-caption {
+  font-size: 11px;
+  color: var(--text-muted, #7E7492);
+}
+
+/* T8 Interactive Rotational SVG Cipher Dial (Brass & Dark Violet Rotor) */
+.caesar-dial-section,
+.caesar-dial-container,
 .cipher-dial-container {
-  padding: 14px;
-  background: var(--bg-surface, #161b22);
+  background: #140E24;
+  border: 1px solid #4A3A75;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 14px;
+}
+
+.caesar-section-header {
+  margin-bottom: 12px;
+}
+
+.caesar-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.caesar-step-badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: #0F0B1A;
+  background: #FFC928;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.caesar-status-badge {
+  font-size: 10px;
+  color: #A69CB8;
+}
+
+.caesar-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 4px 0;
+}
+
+.caesar-prompt {
+  font-size: 12px;
+  color: var(--text-secondary, #A69CB8);
+  margin: 0;
+}
+
+.caesar-dial-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
+@media (min-width: 640px) {
+  .caesar-dial-container {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+.caesar-dial-svg-wrap,
 .dial-svg-wrapper {
-  width: 220px;
-  height: 220px;
+  width: 240px;
+  height: 240px;
   cursor: grab;
   touch-action: none;
 }
 
+.caesar-dial-svg-wrap:active,
 .dial-svg-wrapper:active {
   cursor: grabbing;
 }
 
+.caesar-svg-dial,
 .cipher-dial-svg {
   width: 100%;
   height: 100%;
 }
 
-.dial-rotatable-inner {
-  transition: transform 90ms ease-out;
-  transform-origin: center;
+.caesar-readout-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 200px;
 }
 
+.caesar-shift-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shift-display-pill,
 .cipher-readout {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
+  background: #0A0712;
+  border: 1px solid #FFC928;
+  color: #FFC928;
+  border-radius: 4px;
+  padding: 6px 12px;
 }
 
-.readout-label {
-  font-size: 11px;
-  color: var(--text-muted, #8b949e);
+.shift-label {
+  font-size: 10px;
+  color: var(--text-muted, #7E7492);
 }
 
-.readout-val {
+.shift-deg {
   font-size: 15px;
   font-weight: 700;
-  color: var(--accent, #388bfd);
 }
 
-/* Desktop Sidebar / Mobile Bottom Sheet ASCII Table */
+.caesar-live-preview-box {
+  background: #0A0712;
+  border: 1px solid #4A3A75;
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+.preview-tag {
+  font-size: 10px;
+  color: var(--text-muted, #7E7492);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.preview-text {
+  font-size: 16px;
+  font-weight: 800;
+  color: #FFC928;
+  letter-spacing: 0.05em;
+}
+
+/* ASCII Reference Sidebar (Cryptographer's Lookup Ledger) */
 .ascii-chart-sidebar {
   width: 100%;
-  background: var(--bg-surface, #161b22);
-  border: 1px solid var(--border-subtle, #30363d);
+  background: #140E24;
+  border: 1px solid #4A3A75;
   border-radius: 6px;
-  padding: 10px;
+  padding: 12px;
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.45);
 }
 
 @media (min-width: 820px) {
@@ -994,15 +1317,26 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-subtle, #30363d);
+  border-bottom: 1px solid #3D3063;
   margin-bottom: 8px;
 }
 
 .chart-header-title {
   font-size: 11px;
   font-weight: 700;
-  color: var(--text-muted, #8b949e);
+  color: #FFC928;
   letter-spacing: 0.05em;
+  font-family: var(--font-mono, monospace);
+  text-transform: uppercase;
+}
+
+.chart-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #7E7492);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px;
 }
 
 .chart-sidebar-body {
@@ -1014,8 +1348,10 @@
 
 .chart-col-head {
   font-weight: 700;
-  color: var(--accent, #388bfd);
+  color: #FFC928;
   margin-bottom: 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
 }
 
 .chart-row {
@@ -1023,121 +1359,312 @@
   justify-content: space-between;
   padding: 2px 4px;
   border-radius: 2px;
+  background: #1B1430;
+  margin-bottom: 2px;
+  font-family: var(--font-mono, monospace);
+  transition: background-color 90ms ease, color 90ms ease;
 }
 
+.chart-row:nth-child(even) {
+  background: #161026;
+}
+
+/* Active Row Highlight: Bright Amber Pill */
 .chart-row.row-active {
-  background: var(--accent, #388bfd);
-  color: #ffffff !important;
+  background: #FF9900 !important;
+  color: #0F0B1A !important;
+  font-weight: 800;
+  box-shadow: 0 0 8px rgba(255, 153, 0, 0.4);
 }
 
-.chart-row.row-active span {
-  color: #ffffff !important;
+.chart-row.row-active span,
+.chart-row.row-active strong {
+  color: #0F0B1A !important;
 }
 
-/* --------------------------------------------------------------------------
-   8. BODMAS DECODER PUZZLE MODULE
-   -------------------------------------------------------------------------- */
-.puzzle-bodmas {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+
+/* ==========================================================================
+   9. BESPOKE THEME 2: BODMAS & ANAGRAM LOGIC LAB
+   "Tactile Engineering Calculator & Tile Workbench"
+   ========================================================================== */
+.theme-bodmas,
+.puzzle-bodmas,
+[data-puzzle-type="bodmas"],
+.puzzle-bodmas-wrap {
+  --module-accent: #FF8A00;
+  --module-accent-lavender: #A57EF0;
 }
 
-/* Horizontal 26-Key A-Z Strip */
-.bodmas-az-scale {
-  background: var(--bg-input, #0d1117);
-  border: 1px solid var(--border-subtle, #30363d);
+.puzzle-stage-surface.theme-bodmas,
+.theme-bodmas .puzzle-stage-surface {
+  background: #120D22;
+  background-image: 
+    radial-gradient(circle at 100% 0%, rgba(165, 126, 240, 0.06) 0%, transparent 60%),
+    radial-gradient(circle at 0% 100%, rgba(255, 138, 0, 0.05) 0%, transparent 60%);
+  border: 1px solid #4A3A75;
+  border-bottom: 3px solid #0A0614;
   border-radius: 6px;
-  padding: 8px 12px;
+  padding: 16px;
+  position: relative;
+  min-height: 340px;
+}
+
+/* Horizontal 26-Key A-Z Mechanical Strip */
+.az-scale-container,
+.bodmas-az-scale {
+  background: #0D0918;
+  border: 1px solid #3D3063;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
 .az-scale-label {
   font-size: 10px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted, #7E7492);
   letter-spacing: 0.05em;
   margin-bottom: 6px;
+  font-family: var(--font-mono, monospace);
+  text-transform: uppercase;
 }
 
+.az-scale-track,
 .az-keys-row {
   display: flex;
-  gap: 3px;
+  gap: 4px;
   overflow-x: auto;
   padding-bottom: 4px;
 }
 
+.az-scale-key,
 .az-key {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  padding: 3px 6px;
+  padding: 4px 6px;
   min-width: 28px;
   font-size: 11px;
+  background: #1E1633;
+  border: 1px solid #483873;
+  border-bottom: 3px solid #090610;
+  border-radius: 5px;
+  user-select: none;
+  transition: transform 90ms ease, background-color 90ms ease, border-color 90ms ease;
 }
 
+.az-key-letter {
+  font-weight: 700;
+  color: #FFFFFF;
+  font-family: var(--font-mono, monospace);
+}
+
+.az-key-num,
+.az-num {
+  font-size: 10px;
+  color: #A57EF0;
+  font-family: var(--font-mono, monospace);
+}
+
+/* Key Lifted state when matched */
+.az-scale-key.key-lifted,
 .az-key.key-lifted {
-  transform: translateY(-2px);
-  background: var(--accent, #388bfd);
-  color: #ffffff;
-  border-color: #60a5fa;
+  transform: translateY(-3px) !important;
+  background: #FF9900 !important;
+  color: #0F0B1A !important;
+  border-color: #FFC928 !important;
+  border-bottom: 4px solid #995C00 !important;
+  box-shadow: 0 4px 10px rgba(255, 153, 0, 0.35);
 }
 
+.az-scale-key.key-lifted .az-key-letter,
+.az-scale-key.key-lifted .az-key-num,
+.az-key.key-lifted .az-key-letter,
 .az-key.key-lifted .az-num {
-  color: #e6edf3;
+  color: #0F0B1A !important;
 }
 
-/* Calculator-style cards */
+/* Calculator Expression Rows (LCD Formula Channels) */
+.bodmas-stage-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bodmas-calc-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bodmas-group-panel,
 .bodmas-group-card {
   padding: 12px 14px;
-  background: var(--bg-surface, #161b22);
+  background: #161026;
+  border: 1px solid #3D3063;
+  border-radius: 6px;
+  margin-bottom: 10px;
 }
 
+.bodmas-group-panel.group-locked {
+  border-color: #3FB950;
+  background: rgba(63, 185, 80, 0.08);
+}
+
+.bodmas-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.bodmas-panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.bodmas-calc-card,
 .bodmas-calc-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 6px 0;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #120D20;
+  border: 1px solid #2D234A;
+  border-radius: 6px;
 }
 
 .calc-slot-badge {
   font-size: 11px;
   padding: 3px 6px;
-  background: var(--bg-input, #0d1117);
-  color: var(--accent, #388bfd);
+  background: #090610;
+  color: #FFC928;
+  border: 1px solid #3D3063;
+  border-radius: 3px;
 }
 
+.calc-expr-box,
 .bodmas-expr-display {
   font-size: 14px;
   font-weight: 600;
-  color: #ffffff;
-  min-width: 180px;
+  color: #F0EDF6;
+  font-family: var(--font-mono, monospace);
+  min-width: 170px;
+  background: #090610;
+  border: 1px solid #34265E;
+  padding: 6px 12px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.7);
 }
 
+.calc-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calc-equal {
+  color: #A57EF0;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.bodmas-keycap-input,
 .bodmas-input {
   width: 58px;
   height: 34px;
   text-align: center;
-  font-size: 14px;
-  background: var(--bg-input, #0d1117);
-  color: var(--text-primary, #e6edf3);
+  font-size: 15px;
+  font-weight: 700;
+  background: #18112C;
+  border: 1px solid #5B488E;
+  border-radius: 4px;
+  color: #FFC928;
+  font-family: var(--font-mono, monospace);
+  transition: border-color 90ms ease, background-color 90ms ease;
 }
 
+.bodmas-keycap-input:focus,
+.bodmas-input:focus {
+  border-color: #FF9900;
+  background: #20163A;
+  outline: none;
+  box-shadow: 0 0 6px rgba(255, 153, 0, 0.3);
+}
+
+/* LED 7-Segment Output Socket */
+.letter-bay,
 .bodmas-mapped-bay {
-  width: 34px;
+  width: 36px;
   height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
-  font-weight: 700;
-  color: #58a6ff;
-  background: var(--bg-input, #0d1117);
+  font-size: 16px;
+  font-weight: 800;
+  color: #FFC928;
+  background: rgba(165, 126, 240, 0.12);
+  border: 1px solid #A57EF0;
+  border-radius: 4px;
+  font-family: var(--font-mono, monospace);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-/* T5 Anagram Tray & Draggable Tiles */
+.letter-bay-flipper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* T5 Anagram Tray & Synth Tiles */
+.anagram-tray-panel,
 .anagram-tray-card {
   padding: 14px;
-  background: var(--bg-surface, #161b22);
+  background: #161026;
+  border: 1px solid #3D3063;
+  border-radius: 6px;
+  margin-top: 14px;
+}
+
+.anagram-panel-header {
+  margin-bottom: 12px;
+}
+
+.anagram-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.anagram-step-tag {
+  font-size: 10px;
+  font-weight: 800;
+  color: #0F0B1A;
+  background: #FF8A00;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.anagram-badge {
+  font-size: 10px;
+  color: #A69CB8;
+}
+
+.anagram-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 4px 0;
+}
+
+.anagram-prompt {
+  font-size: 12px;
+  color: var(--text-secondary, #A69CB8);
+  margin: 0;
 }
 
 .anagram-target-slots {
@@ -1146,50 +1673,170 @@
   margin-bottom: 12px;
 }
 
+.anagram-slot-box,
 .anagram-target-slot {
-  width: 44px;
-  height: 48px;
+  width: 46px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
   font-weight: 700;
-  background: var(--bg-input, #0d1117);
-  border: 2px dashed var(--border-subtle, #30363d);
-  border-radius: 4px;
-  color: #58a6ff;
+  background: #0B0814;
+  border: 2px dashed #50398A;
+  border-radius: 6px;
+  color: #FFC928;
+  position: relative;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7);
 }
 
+.slot-idx-hint {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-size: 9px;
+  color: var(--text-muted, #7E7492);
+}
+
+.anagram-tiles-tray,
 .anagram-available-tray {
   display: flex;
   gap: 8px;
+  margin-bottom: 12px;
 }
 
+/* Thick Scrabble Synth Tiles */
+.anagram-letter-tile,
 .anagram-tile {
-  width: 44px;
-  height: 48px;
+  width: 46px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   cursor: grab;
   touch-action: none;
+  background: #271D42;
+  border: 1px solid #7C5CC4;
+  border-bottom: 4px solid #110B21;
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-family: var(--font-mono, monospace);
+  user-select: none;
+  transition: transform 90ms ease, border-color 90ms ease;
 }
 
+.anagram-letter-tile:hover,
+.anagram-tile:hover {
+  border-color: #FF9900;
+  transform: translateY(-2px);
+}
+
+.anagram-letter-tile:active,
 .anagram-tile:active {
   cursor: grabbing;
 }
 
+.anagram-letter-tile.tile-disabled,
 .anagram-tile.tile-used {
   opacity: 0.25;
   cursor: not-allowed;
   pointer-events: none;
+  transform: none !important;
 }
 
-/* --------------------------------------------------------------------------
-   9. COORDINATES GRID PUZZLE MODULE
-   -------------------------------------------------------------------------- */
+.anagram-actions-row {
+  display: flex;
+  gap: 8px;
+}
+
+/* T9 Signal Vault Row */
+.signal-vault-row {
+  background: #0B0814;
+  border: 1px solid #3D3063;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vault-row-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #FFC928;
+}
+
+.vault-slots-container {
+  display: flex;
+  gap: 6px;
+}
+
+.vault-slot-cell {
+  width: 44px;
+  height: 44px;
+  background: #18112C;
+  border: 1px solid #5B488E;
+  border-bottom: 3px solid #090610;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.vault-slot-num {
+  font-size: 9px;
+  color: var(--text-muted, #7E7492);
+}
+
+.vault-slot-char {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary, #F0EDF6);
+}
+
+.vault-slot-cell.slot-filled {
+  border-color: #FFC928;
+  background: rgba(255, 201, 40, 0.14);
+}
+
+.vault-slot-cell.slot-filled .vault-slot-char {
+  color: #FFC928;
+}
+
+
+/* ==========================================================================
+   10. BESPOKE THEME 3: COORDINATES & ROUTE RADAR
+   "Tactical Radar & Naval Telemetry Grid"
+   ========================================================================== */
+.theme-coords,
+.puzzle-coords,
+[data-puzzle-type="coords"],
+.coords-layout {
+  --module-accent: #14B8A6;
+  --module-accent-gold: #FFC928;
+}
+
+.puzzle-stage-surface.theme-coords,
+.theme-coords .puzzle-stage-surface {
+  background: #0B131B;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(20, 184, 166, 0.08) 0%, transparent 70%),
+    linear-gradient(rgba(20, 184, 166, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 184, 166, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 20px 20px, 20px 20px;
+  border: 1px solid #1E3A4C;
+  border-bottom: 3px solid #070D12;
+  border-radius: 6px;
+  padding: 16px;
+  position: relative;
+  min-height: 340px;
+  box-shadow: inset 0 0 30px rgba(13, 148, 136, 0.1);
+}
+
 .coords-layout {
   display: flex;
   flex-direction: column;
@@ -1203,30 +1850,34 @@
   }
 }
 
+/* Tactical Radar Console Wrapper */
 .coords-grid-wrapper {
-  background: var(--bg-surface, #161b22);
-  border: 1px solid var(--border-subtle, #30363d);
+  background: #070E14;
+  border: 1px solid #134E4A;
   border-radius: 6px;
-  padding: 12px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-shadow: inset 0 0 24px rgba(13, 148, 136, 0.1);
 }
 
 .coord-axis-banner {
   font-size: 11px;
   font-family: var(--font-mono, monospace);
-  color: var(--text-muted, #8b949e);
+  color: #99F6E4;
   margin-bottom: 10px;
-  padding: 4px 8px;
-  background: var(--bg-input, #0d1117);
-  border: 1px solid var(--border-subtle, #30363d);
-  border-radius: 3px;
+  padding: 6px 12px;
+  background: #050B0F;
+  border: 1px solid #134E4A;
+  border-radius: 4px;
   text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .coord-axis-banner strong {
-  color: var(--accent, #388bfd);
+  color: #2DD4BF;
 }
 
 .coords-table-container {
@@ -1234,15 +1885,17 @@
   flex-direction: column;
 }
 
-/* Grid stage with sweeping crosshairs and route overlay */
 .coords-grid-stage {
   position: relative;
 }
 
-.coords-crosshair-h, .coords-crosshair-v {
+/* Radar Sweeping Crosshairs */
+.coords-crosshair-h, 
+.coords-crosshair-v {
   position: absolute;
   pointer-events: none;
-  background: rgba(56, 139, 253, 0.22);
+  background: rgba(20, 184, 166, 0.25);
+  box-shadow: 0 0 8px rgba(20, 184, 166, 0.4);
   z-index: 5;
   opacity: 0;
   transition: transform 120ms ease, opacity 120ms ease;
@@ -1270,7 +1923,7 @@
   z-index: 6;
 }
 
-/* Touch targets >= 40-44px responsive calculation */
+/* Column and Row Monospace Radar Indices */
 .coords-col-headers {
   display: grid;
   grid-template-columns: repeat(7, min(44px, calc((100vw - 56px) / 8)));
@@ -1286,7 +1939,8 @@
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-muted, #8b949e);
+  color: #5EEAD4;
+  font-family: var(--font-mono, monospace);
   transition: color 120ms ease, background-color 120ms ease;
 }
 
@@ -1308,14 +1962,17 @@
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-muted, #8b949e);
+  color: #5EEAD4;
+  font-family: var(--font-mono, monospace);
   transition: color 120ms ease, background-color 120ms ease;
 }
 
-.coord-header-col.header-active, .coord-header-row.header-active {
-  color: #ffffff;
-  background: var(--accent, #388bfd);
+.coord-header-col.header-active, 
+.coord-header-row.header-active {
+  color: #FFFFFF !important;
+  background: #0D9488 !important;
   border-radius: 2px;
+  text-shadow: 0 0 6px rgba(45, 212, 191, 0.6);
 }
 
 .coords-grid {
@@ -1325,6 +1982,7 @@
   gap: 3px;
 }
 
+/* Tactical Radar Sector Cells */
 .coord-cell {
   position: relative;
   display: flex;
@@ -1334,10 +1992,20 @@
   font-weight: 700;
   cursor: pointer;
   padding: 0;
+  background: #111C26;
+  border: 1px solid #1E3346;
+  border-bottom: 2px solid #070C10;
+  border-radius: 3px;
+  color: #E2E8F0;
+  font-family: var(--font-mono, monospace);
+  transition: transform 90ms ease, border-color 90ms ease, background-color 90ms ease;
 }
 
-.coord-cell:hover, .coord-cell.cell-targeted {
-  border-color: var(--accent, #388bfd);
+.coord-cell:hover, 
+.coord-cell.cell-targeted {
+  border-color: #2DD4BF;
+  background: #162B3A;
+  color: #FFFFFF;
 }
 
 .cell-reticle {
@@ -1349,10 +2017,11 @@
   pointer-events: none;
   opacity: 0;
   transition: opacity 120ms ease;
-  color: var(--accent, #388bfd);
+  color: #2DD4BF;
 }
 
-.coord-cell:hover .cell-reticle, .coord-cell:focus .cell-reticle {
+.coord-cell:hover .cell-reticle, 
+.coord-cell:focus .cell-reticle {
   opacity: 1;
 }
 
@@ -1362,16 +2031,18 @@
   align-items: center;
   justify-content: center;
   z-index: 10;
-  color: #eab308;
+  color: #FFC928;
 }
 
+/* Locked Radar Target Cell */
 .coord-cell.cell-path-hit {
-  background: #152238 !important;
-  border-color: var(--accent, #388bfd) !important;
-  color: #58a6ff !important;
+  background: rgba(13, 148, 136, 0.28) !important;
+  border-color: #2DD4BF !important;
+  color: #FFC928 !important;
+  text-shadow: 0 0 8px rgba(255, 201, 40, 0.6);
 }
 
-/* Controls Column & Chips */
+/* Controls Column & Target Lock Cartridges */
 .coords-controls-column {
   flex: 1;
   display: flex;
@@ -1381,13 +2052,14 @@
 
 .coord-word-group {
   padding: 10px 14px;
-  background: var(--bg-surface, #161b22);
-  border: 1px solid var(--border-subtle, #30363d);
+  background: #0E1822;
+  border: 1px solid #1E3A4C;
   border-radius: 6px;
 }
 
 .coord-word-group.group-solved {
   border-color: #238636;
+  background: rgba(35, 134, 54, 0.08);
 }
 
 .coord-group-header {
@@ -1400,12 +2072,12 @@
 .coord-group-name {
   font-size: 13px;
   font-weight: 600;
-  color: #ffffff;
+  color: #FFFFFF;
 }
 
 .coord-group-status {
   font-size: 11px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted, #7E7492);
 }
 
 .coord-chips-row {
@@ -1414,45 +2086,56 @@
   gap: 6px;
 }
 
+/* Target Lock Cartridges */
 .coord-chip-btn {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  padding: 4px 8px;
+  padding: 6px 10px;
   min-width: 52px;
   cursor: pointer;
+  background: #161F2C;
+  border: 1px solid #2B4257;
+  border-bottom: 3px solid #090E14;
+  border-radius: 6px;
+  transition: transform 90ms ease, border-color 90ms ease, background-color 90ms ease;
 }
 
-.coord-chip-btn .chip-coords, .coord-chip-btn .chip-math {
+.coord-chip-btn .chip-coords, 
+.coord-chip-btn .chip-math {
   font-size: 10px;
-  color: var(--text-muted, #8b949e);
+  color: #5EEAD4;
+  font-family: var(--font-mono, monospace);
 }
 
 .coord-chip-btn .chip-letter {
   font-size: 15px;
   font-weight: 700;
-  color: var(--text-primary, #e6edf3);
+  color: #FFFFFF;
+  font-family: var(--font-mono, monospace);
 }
 
 .coord-chip-btn.chip-active {
-  border-color: var(--accent, #388bfd);
-  background: #17263c;
+  border-color: #FFC928 !important;
+  background: #1E3042 !important;
+  box-shadow: 0 0 10px rgba(255, 201, 40, 0.35);
 }
 
 .coord-chip-btn.chip-filled .chip-letter {
-  color: #58a6ff;
+  color: #FFC928;
+  text-shadow: 0 0 6px rgba(255, 201, 40, 0.5);
 }
 
 .coord-chip-btn.chip-wrong {
-  border-color: #f85149 !important;
-  color: #f85149 !important;
+  border-color: #F85149 !important;
+  color: #F85149 !important;
 }
 
 /* Tile 10 Cartesian Live Selector */
 .coord-cartesian-helper {
   margin-top: 10px;
   padding-top: 8px;
-  border-top: 1px solid var(--border-subtle, #30363d);
+  border-top: 1px solid #1E3A4C;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -1460,7 +2143,7 @@
 
 .helper-label {
   font-size: 10px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted, #7E7492);
   letter-spacing: 0.05em;
 }
 
@@ -1475,22 +2158,26 @@
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted, #7E7492);
 }
 
 .helper-input {
   width: 44px;
   height: 28px;
   text-align: center;
-  background: var(--bg-input, #0d1117);
+  background: #090F14;
   font-size: 13px;
   font-weight: 700;
+  color: #99F6E4;
+  border: 1px solid #1E3A4C;
 }
 
-/* Route Tracer Panel */
+/* Route Tracer Waypoint Log Panel */
 .route-tracer-panel {
-  padding: 12px 14px;
-  background: var(--bg-surface, #161b22);
+  padding: 14px;
+  background: #09131C;
+  border: 1px solid #1E3A4C;
+  border-radius: 6px;
 }
 
 .route-panel-header {
@@ -1503,17 +2190,17 @@
 .route-panel-title {
   font-size: 14px;
   margin: 0;
-  color: #ffffff;
+  color: #FFFFFF;
 }
 
 .route-panel-badge {
   font-size: 11px;
-  color: var(--accent, #388bfd);
+  color: #14B8A6;
 }
 
 .route-hint-text {
   font-size: 12px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-secondary, #A69CB8);
   margin-bottom: 12px;
 }
 
@@ -1530,25 +2217,30 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
-  background: var(--bg-input, #0d1117);
-  border: 1px solid var(--border-subtle, #30363d);
+  padding: 8px 12px;
+  background: #0D1B26;
+  border: 1px solid #1E3A4C;
+  border-left: 3px solid #1E3A4C;
   border-radius: 4px;
   font-size: 12px;
 }
 
 .route-leg-item.leg-active {
-  border-color: var(--accent, #388bfd);
+  border-left: 3px solid #14B8A6;
+  border-color: #14B8A6;
+  background: #112533;
 }
 
 .route-leg-item.leg-done {
+  border-left: 3px solid #3FB950;
   border-color: #238636;
+  background: rgba(63, 185, 80, 0.08);
 }
 
 .leg-step-badge {
   font-size: 10px;
   font-weight: 700;
-  color: var(--accent, #388bfd);
+  color: #14B8A6;
 }
 
 .leg-desc-block {
@@ -1558,31 +2250,48 @@
 }
 
 .leg-desc {
-  color: var(--text-primary, #e6edf3);
+  color: var(--text-primary, #F0EDF6);
 }
 
 .leg-target-hint {
   font-size: 10px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted, #7E7492);
 }
 
 .leg-status {
   font-size: 10px;
   font-weight: 700;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted, #7E7492);
 }
 
 .route-leg-item.leg-done .leg-status {
-  color: #3fb950;
+  color: #3FB950;
 }
 
-/* --------------------------------------------------------------------------
-   10. WORD SEARCH PUZZLE MODULE
-   -------------------------------------------------------------------------- */
-.puzzle-wordsearch {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+
+/* ==========================================================================
+   11. BESPOKE THEME 4: WORD SEARCH & CLUE MATRIX
+   "Neural Pattern Scanner & 3D Dossier Deck"
+   ========================================================================== */
+.theme-wordsearch,
+.puzzle-wordsearch,
+[data-puzzle-type="wordsearch"] {
+  --module-accent: #EC4899;
+  --module-accent-signal: #FF9900;
+}
+
+.puzzle-stage-surface.theme-wordsearch,
+.theme-wordsearch .puzzle-stage-surface {
+  background: #100A1C;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(236, 72, 153, 0.06) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(255, 153, 0, 0.05) 0%, transparent 60%);
+  border: 1px solid #48297A;
+  border-bottom: 3px solid #08040F;
+  border-radius: 6px;
+  padding: 16px;
+  position: relative;
+  min-height: 340px;
 }
 
 .ws-layout {
@@ -1598,14 +2307,16 @@
   }
 }
 
+/* 15x15 Matrix Scanner Card */
 .ws-grid-card {
-  background: var(--bg-surface, #161b22);
-  border: 1px solid var(--border-subtle, #30363d);
-  border-radius: 6px;
-  padding: 10px;
+  background: #120C1F;
+  border: 1px solid #48297A;
+  border-radius: 8px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6);
 }
 
 .ws-matrix-container {
@@ -1637,50 +2348,63 @@
   justify-content: center;
   font-size: clamp(10px, 2.8vw, 14px);
   font-weight: 600;
-  background: var(--bg-input, #0d1117);
-  border: 1px solid #21262d;
-  color: var(--text-primary, #e6edf3);
+  font-family: var(--font-mono, monospace);
+  background: #1A122B;
+  border: 1px solid #2D2047;
+  color: #D8B4FE;
   padding: 0;
   cursor: pointer;
   touch-action: none;
   user-select: none;
+  border-radius: 3px;
+  transition: background-color 90ms ease, color 90ms ease, transform 90ms ease;
+}
+
+.ws-cell:hover {
+  background: #2A1D45;
+  color: #FFFFFF;
 }
 
 .ws-cell:focus {
-  outline: 1px solid var(--accent, #388bfd);
+  outline: 1px solid #FF9900;
   z-index: 2;
 }
 
-.ws-cell.cell-selecting, .ws-cell.cell-start {
-  background: #17263c !important;
-  color: #ffffff !important;
+/* Active Scan Beam */
+.ws-cell.cell-selecting, 
+.ws-cell.cell-start {
+  background: #FF9900 !important;
+  color: #0F0B1A !important;
+  border-color: #FFC928 !important;
+  font-weight: 800;
+  box-shadow: 0 0 8px rgba(255, 153, 0, 0.4);
 }
 
 .ws-cell.cell-word-found {
   font-weight: 700;
-  color: #ffffff;
+  color: #FFFFFF !important;
 }
 
 .ws-touch-tip {
   font-size: 11px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted, #7E7492);
   margin-top: 8px;
   text-align: center;
 }
 
-/* Wordsearch Sidebar & ScaleX Progress Bar */
+/* Wordsearch Scanner Sidebar & Progress Bar */
 .ws-sidebar {
   flex: 1;
-  background: var(--bg-surface, #161b22);
-  border: 1px solid var(--border-subtle, #30363d);
-  border-radius: 6px;
-  padding: 12px 14px;
+  background: #120C1F;
+  border: 1px solid #48297A;
+  border-radius: 8px;
+  padding: 14px 16px;
 }
 
 .ws-sidebar-header {
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-subtle, #30363d);
+  border-bottom: 1px solid #3D3063;
 }
 
 .ws-header-title-row {
@@ -1694,26 +2418,26 @@
   font-size: 13px;
   font-weight: 700;
   margin: 0;
-  color: #ffffff;
+  color: #FFFFFF;
 }
 
 .ws-progress-count {
   font-size: 12px;
   font-weight: 700;
-  color: var(--accent, #388bfd);
+  color: #FF9900;
 }
 
-/* ScaleX progress bar */
 .ws-progress-track {
-  height: 4px;
-  background: var(--bg-input, #0d1117);
-  border-radius: 2px;
+  height: 6px;
+  background: #090510;
+  border: 1px solid #2D2047;
+  border-radius: 3px;
   overflow: hidden;
 }
 
 .ws-progress-fill {
   height: 100%;
-  background: var(--accent, #388bfd);
+  background: linear-gradient(90deg, #EC4899, #FF9900);
   transform-origin: left center;
   transition: transform 220ms ease;
 }
@@ -1727,13 +2451,18 @@
   gap: 6px;
 }
 
+/* Decoded Signal Pills */
 .ws-list-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 8px;
+  padding: 7px 10px;
   font-size: 13px;
-  background: var(--bg-input, #0d1117);
+  background: #140E24;
+  border: 1px solid #2E214D;
+  border-radius: 5px;
+  color: #F0EDF6;
+  transition: opacity 160ms ease, border-color 160ms ease, background-color 160ms ease;
 }
 
 .ws-color-dot {
@@ -1745,11 +2474,13 @@
 
 .ws-word-text {
   flex: 1;
-  color: var(--text-primary, #e6edf3);
+  color: var(--text-primary, #F0EDF6);
 }
 
 .ws-list-item.item-found {
-  opacity: 0.7;
+  border-color: rgba(63, 185, 80, 0.4) !important;
+  background: rgba(63, 185, 80, 0.08) !important;
+  opacity: 0.85;
 }
 
 .ws-list-item.item-found .ws-word-text {
@@ -1759,11 +2490,11 @@
 
 .ws-check-box {
   font-size: 12px;
-  color: #3fb950;
+  color: #3FB950;
   font-weight: 700;
 }
 
-/* Tile 11: 3D Flip Clue Cards */
+/* Tile 11: 3D Flip Clue Cards (Classified Dossier Deck) */
 .ws-clue-cards-list {
   display: flex;
   flex-direction: column;
@@ -1772,7 +2503,7 @@
 
 .ws-clue-card {
   perspective: 700px;
-  height: 72px;
+  height: 74px;
 }
 
 .clue-card-flipper {
@@ -1787,7 +2518,8 @@
   transform: rotateY(180deg);
 }
 
-.clue-card-front, .clue-card-back {
+.clue-card-front, 
+.clue-card-back {
   position: absolute;
   top: 0;
   left: 0;
@@ -1802,8 +2534,13 @@
   justify-content: center;
 }
 
+/* Classified Dossier Card */
 .clue-card-front {
-  background: var(--bg-input, #0d1117);
+  background: #1B1330;
+  border: 1px solid #4A3578;
+  border-left: 4px solid #FF9900;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .clue-card-meta {
@@ -1816,7 +2553,8 @@
 .clue-num-badge {
   font-size: 10px;
   font-weight: 700;
-  color: var(--text-muted, #8b949e);
+  color: #FFC928;
+  font-family: var(--font-mono, monospace);
 }
 
 .clue-indicator-dot {
@@ -1827,43 +2565,53 @@
 
 .clue-card-text {
   font-size: 11px;
-  color: var(--text-primary, #e6edf3);
+  color: var(--text-primary, #F0EDF6);
   margin: 0;
   line-height: 1.3;
 }
 
+/* Unsealed Intelligence Card */
 .clue-card-back {
-  background: #152238;
+  background: #11261F;
+  border: 1px solid #10B981;
+  border-left: 4px solid #34D399;
+  border-radius: 6px;
   transform: rotateY(180deg);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .clue-solved-tag {
   font-size: 10px;
-  font-weight: 700;
-  color: #3fb950;
+  font-weight: 800;
+  color: #34D399;
+  font-family: var(--font-mono, monospace);
   margin-bottom: 2px;
 }
 
 .clue-revealed-word {
   font-size: 15px;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 0.05em;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono, monospace);
 }
 
-/* --------------------------------------------------------------------------
-   11. ACCESSIBILITY: REDUCED MOTION & LITE MODE
-   -------------------------------------------------------------------------- */
+
+/* ==========================================================================
+   12. ACCESSIBILITY: REDUCED MOTION & LITE MODE
+   ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .keycap:active {
+  .keycap:active,
+  .keycap-btn:active,
+  .action-check-btn:active {
     transform: none !important;
   }
   .ws-clue-card.card-flipped .clue-card-flipper {
@@ -1879,14 +2627,21 @@
     transform: none !important;
     position: relative;
   }
+  .puzzle-reward-popup {
+    transition: none !important;
+  }
 }
 
-body.lite-mode *, body.lite-mode *::before, body.lite-mode *::after {
+body.lite-mode *, 
+body.lite-mode *::before, 
+body.lite-mode *::after {
   animation: none !important;
   transition: none !important;
 }
 
-body.lite-mode .keycap:active {
+body.lite-mode .keycap:active,
+body.lite-mode .keycap-btn:active,
+body.lite-mode .action-check-btn:active {
   transform: none !important;
 }
 
@@ -1899,10 +2654,7 @@ body.lite-mode .ws-clue-card.card-flipped .clue-card-back {
   position: relative;
 }
 
-
-/* ==========================================================================
-   Tactile Physical Feedback Animations (Compositor: transform & opacity only)
-   ========================================================================== */
+/* Tactile Physical Feedback Animations (Compositor: transform & opacity only) */
 @keyframes letterFlipIn {
   0% {
     transform: perspective(300px) rotateX(60deg);

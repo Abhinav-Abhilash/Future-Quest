@@ -829,7 +829,7 @@ export const Screens = {
 
     // Render Streamlined Single-Stage Screen
     container.innerHTML = `
-      <section class="screen-container puzzle-screen ${expandClass}" aria-labelledby="puzzle-band-task-heading">
+      <section class="screen-container puzzle-screen theme-${puzzleType} ${expandClass}" data-puzzle-type="${puzzleType}" aria-labelledby="puzzle-band-task-heading">
         <!-- 1. Header Band with Flat #3A2166 Surface, matching Purple Tile -->
         <header class="puzzle-header-band" role="banner">
           <div class="puzzle-header-band-inner">
@@ -905,7 +905,7 @@ export const Screens = {
         </div>
 
         <!-- 3. Puzzle Stage: Flat full-width surface -->
-        <main id="puzzle-stage" class="puzzle-stage-surface">
+        <main id="puzzle-stage" class="puzzle-stage-surface theme-${puzzleType}" data-puzzle-type="${puzzleType}">
           <!-- Dynamic Interactive Module -->
           <div id="puzzle-interactive-container"></div>
         </main>
