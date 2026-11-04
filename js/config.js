@@ -141,15 +141,16 @@ export const CONFIG = {
     puzzle_11: "CAP"
   },
 
-  // DEV-ONLY: Realistic mock puzzle prompts, what-to-do instructions, and hints for STEM teams
+  // Interactive puzzle configurations with type, prompt, data, and technical clues
   PUZZLES: {
     puzzle_1: {
       id: "puzzle_1",
-      title: "Cryptography: Caesar Cipher",
+      type: "ascii",
+      title: "ASCII Quote Decoder",
       category: "Information Security",
-      whatToDo: "Analyze the encrypted transmission snippet below. Determine the Caesar cipher rotation offset and recover the original plaintext string.",
-      prompt: "A transmission intercepted from an edge node was encoded with a standard Caesar cipher shifted by +3 positions (A -> D): \"VHFUHW\". What is the original decrypted English word?",
-      hint: "Shift each character backward in the alphabet by 3 positions: V (-3) -> S, H (-3) -> E...",
+      whatToDo: "Convert the numerical ASCII codes into characters to decode the quote. Use the reference chart if needed.",
+      prompt: "Translate the 8-word quote encoded in standard ASCII numbers below.",
+      hint: "Look up the standard ASCII decimal value for each number: 84 is 'T', 111 is 'o', 109 is 'm'...",
       clueType: "spec",
       clue: {
         title: "Poster Typography Spec: Main Title",
@@ -162,29 +163,65 @@ export const CONFIG = {
           { label: "Color", value: "#0F172A (Slate 900)" },
           { label: "Position", value: "Top Left, Margin-Bottom: 24px" }
         ]
+      },
+      data: {
+        id: "puzzle_1",
+        groups: ["Tomorrow", "starts", "with", "the", "code", "you", "write", "today"],
+        groupSolutions: ["Tomorrow", "starts", "with", "the", "code", "you", "write", "today"],
+        words: [
+          { expectedText: "Tomorrow", codes: [84, 111, 109, 111, 114, 114, 111, 119], expectedChars: ['T','o','m','o','r','r','o','w'] },
+          { expectedText: "starts", codes: [115, 116, 97, 114, 116, 115], expectedChars: ['s','t','a','r','t','s'] },
+          { expectedText: "with", codes: [119, 105, 116, 104], expectedChars: ['w','i','t','h'] },
+          { expectedText: "the", codes: [116, 104, 101], expectedChars: ['t','h','e'] },
+          { expectedText: "code", codes: [99, 111, 100, 101], expectedChars: ['c','o','d','e'] },
+          { expectedText: "you", codes: [121, 111, 117], expectedChars: ['y','o','u'] },
+          { expectedText: "write", codes: [119, 114, 105, 116, 101], expectedChars: ['w','r','i','t','e'] },
+          { expectedText: "today", codes: [116, 111, 100, 97, 121], expectedChars: ['t','o','d','a','y'] }
+        ]
       }
     },
     puzzle_2: {
       id: "puzzle_2",
-      title: "Computer Logic: Binary to Decimal",
+      type: "coords",
+      title: "Coordinates Grid: Multi-Word Decoder",
       category: "Computer Science",
-      whatToDo: "Examine the 8-bit unsigned binary integer. Convert the active bit positions (powers of 2) into base-10 decimal format to determine the calibration value.",
-      prompt: "Convert the 8-bit unsigned binary integer 00101010 into its decimal integer equivalent.",
-      hint: "Sum the values of active powers of two: 2^5 (32) + 2^3 (8) + 2^1 (2).",
+      whatToDo: "Locate the given (Col, Row) coordinate pairs on the 7×7 grid. Extract the letters to discover 3 core engineering principles.",
+      prompt: "Read the cells at the designated coordinates to uncover the three mission keywords.",
+      hint: "In (Col, Row), the first number is the horizontal column (1-7), and the second is the vertical row (1-7 from top).",
       clueType: "text",
       clue: {
         title: "Headline Copy Specification",
         type: "text",
         content: "Future Quest 2026: Autonomous Edge Infrastructure & Resilient Systems"
+      },
+      data: {
+        id: "puzzle_2",
+        groups: ["Word 1", "Word 2", "Word 3"],
+        groupSolutions: ["LEARN", "BUILD", "LEAD"],
+        grid: [
+          ['Q', 'L', 'V', 'J', 'C', 'U', 'N'],
+          ['C', 'S', 'A', 'P', 'P', 'K', 'F'],
+          ['H', 'M', 'T', 'B', 'O', 'J', 'E'],
+          ['Q', 'N', 'X', 'B', 'Z', 'L', 'Z'],
+          ['R', 'H', 'D', 'X', 'M', 'K', 'I'],
+          ['M', 'L', 'F', 'O', 'O', 'A', 'Z'],
+          ['Z', 'S', 'N', 'E', 'R', 'X', 'D']
+        ],
+        groupedChips: [
+          { name: "LEARN", coords: [[2,1,'L'], [7,3,'E'], [3,2,'A'], [1,5,'R'], [2,4,'N']] },
+          { name: "BUILD", coords: [[4,3,'B'], [6,1,'U'], [7,5,'I'], [6,4,'L'], [3,5,'D']] },
+          { name: "LEAD", coords: [[2,6,'L'], [4,7,'E'], [6,6,'A'], [7,7,'D']] }
+        ]
       }
     },
     puzzle_3: {
       id: "puzzle_3",
-      title: "Networking: Secure Protocol Ports",
+      type: "bodmas",
+      title: "Code The Future: BODMAS Decoder",
       category: "Computer Networks",
-      whatToDo: "Consult standard IANA networking assignments. Identify the default TCP port number reserved for secure encrypted TLS/SSL HTTPS communications.",
-      prompt: "Identify the standard IANA destination port number used for secure HTTPS web traffic over TLS/SSL.",
-      hint: "Plaintext HTTP operates on port 80; the default secure equivalent is 443.",
+      whatToDo: "Evaluate each math expression using standard BODMAS/PEMDAS precedence. Map each number to its corresponding letter (1=A ... 26=Z).",
+      prompt: "Calculate the 13 mathematical expressions to reveal the 3-word slogan.",
+      hint: "Remember precedence: Brackets, Orders (powers), Division & Multiplication, Addition & Subtraction. 1=A, 2=B...",
       clueType: "image",
       clue: {
         title: "Official Event Seal Graphic",
@@ -202,15 +239,54 @@ export const CONFIG = {
   <text x="155" y="115" fill="#388bfd" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="600">FQ 2026 OFFICIAL SEAL</text>
   <path d="M155 125 L290 125" stroke="#30363d" stroke-width="1"/>
 </svg>`
+      },
+      data: {
+        id: "puzzle_3",
+        groups: ["Word 1", "Word 2", "Word 3"],
+        groupSolutions: ["CODE", "THE", "FUTURE"],
+        groupedEquations: [
+          {
+            name: "CODE",
+            solution: "CODE",
+            equations: [
+              { expr: "20 - 4 * 5 + 3", display: "20 - 4 * 5 + 3", expected: 3, letter: "C" },
+              { expr: "3^2 + 18 / 3", display: "3^2 + 18 / 3", expected: 15, letter: "O" },
+              { expr: "24 / (2 * 3)", display: "24 / (2 * 3)", expected: 4, letter: "D" },
+              { expr: "2 + 3 * (9 - 7) - 3", display: "2 + 3 * (9 - 7) - 3", expected: 5, letter: "E" }
+            ]
+          },
+          {
+            name: "THE",
+            solution: "THE",
+            equations: [
+              { expr: "4^2 + 12 / 3", display: "4^2 + 12 / 3", expected: 20, letter: "T" },
+              { expr: "2^3 + 6 - 3 * 2", display: "2^3 + 6 - 3 * 2", expected: 8, letter: "H" },
+              { expr: "(10 - 4) * 2 - 7", display: "(10 - 4) * 2 - 7", expected: 5, letter: "E" }
+            ]
+          },
+          {
+            name: "FUTURE",
+            solution: "FUTURE",
+            equations: [
+              { expr: "3 * (4 + 4) / 4", display: "3 * (4 + 4) / 4", expected: 6, letter: "F" },
+              { expr: "5^2 - 12 / 3", display: "5^2 - 12 / 3", expected: 21, letter: "U" },
+              { expr: "100 / (2 * 5) * 2", display: "100 / (2 * 5) * 2", expected: 20, letter: "T" },
+              { expr: "6 + 3 * 5", display: "6 + 3 * 5", expected: 21, letter: "U" },
+              { expr: "(12 - 3) * 4 / 2", display: "(12 - 3) * 4 / 2", expected: 18, letter: "R" },
+              { expr: "4^2 / 2 - 3", display: "4^2 / 2 - 3", expected: 5, letter: "E" }
+            ]
+          }
+        ]
       }
     },
     puzzle_4: {
       id: "puzzle_4",
-      title: "Color Science: Hexadecimal Channels",
-      category: "Digital Imaging",
-      whatToDo: "Inspect the 24-bit RGB hexadecimal color string (#RRGGBB). Identify which primary additive color component is saturated at value 255.",
-      prompt: "In standard 24-bit RGB hexadecimal color notation #00FF00, which primary color channel is at maximum saturation (value 255)?",
-      hint: "The 6 hexadecimal digits represent #RRGGBB. Look at the middle pair 'FF'.",
+      type: "ascii",
+      title: "Shifted ASCII Decoder",
+      category: "Operating Systems",
+      whatToDo: "These ASCII codes have been uniformly offset. Use the stepper [-] / [+] to shift the codes back to standard ASCII, then decode the 4-word phrase.",
+      prompt: "Adjust the uniform offset by -1 to bring the decimal codes into line with standard lowercase ASCII.",
+      hint: "Notice the first code 100. In lowercase ASCII, 99 is 'c', so all codes are offset by +1. Stepping by -1 normalizes them.",
       clueType: "spec",
       clue: {
         title: "Brand Color Palette Specification",
@@ -222,29 +298,56 @@ export const CONFIG = {
           { label: "Status Amber", value: "#F59E0B (Industrial Amber)" },
           { label: "Color Rule", value: "Use Primary Accent on max 15% of total surface area" }
         ]
+      },
+      data: {
+        id: "puzzle_4",
+        hasStepper: true,
+        groups: ["Word 1", "Word 2", "Word 3", "Word 4"],
+        groupSolutions: ["curiosity", "is", "the", "key"],
+        words: [
+          { expectedText: "curiosity", codes: [100, 118, 115, 106, 112, 116, 106, 117, 122], expectedChars: ['c','u','r','i','o','s','i','t','y'] },
+          { expectedText: "is", codes: [106, 116], expectedChars: ['i','s'] },
+          { expectedText: "the", codes: [117, 105, 102], expectedChars: ['t','h','e'] },
+          { expectedText: "key", codes: [108, 102, 122], expectedChars: ['k','e','y'] }
+        ]
       }
     },
     puzzle_5: {
       id: "puzzle_5",
-      title: "Databases: SQL Aggregation Filters",
+      type: "bodmas",
+      title: "BODMAS Anagram: QUEST",
       category: "Database Systems",
-      whatToDo: "Review the SQL aggregate query requirements. Determine the standard keyword used to filter aggregated result sets produced by a GROUP BY clause.",
-      prompt: "In standard ANSI SQL, which keyword clause is used to filter records after aggregation by GROUP BY (e.g., when evaluating COUNT(*) > 5)?",
-      hint: "The clause begins with 'H' and cannot be replaced by a WHERE clause for aggregated results.",
+      whatToDo: "Solve the 5 math equations to obtain numbers. Map them to letters (1=A ... 26=Z), then unscramble the letters in the tray to form a 5-letter word.",
+      prompt: "Calculate the numbers for the 5 equations, unlock the letter tiles, and assemble them into the correct word.",
+      hint: "The 5 numbers evaluate to 5 (E), 20 (T), 17 (Q), 19 (S), and 21 (U). Unscramble them to form the event's name.",
       clueType: "text",
       clue: {
         title: "Primary Mission Statement Copy",
         type: "text",
         content: "Hosted by Jain University - School of Future Technology. Student teams synthesize telemetry to design resilient edge monitoring interfaces."
+      },
+      data: {
+        id: "puzzle_5",
+        hasAnagramTray: true,
+        groups: ["Target Word"],
+        groupSolutions: ["QUEST"],
+        equations: [
+          { expr: "15 - 2 * 5", display: "15 - 2 * 5", expected: 5, letter: "E" },
+          { expr: "5 * (7 - 3)", display: "5 * (7 - 3)", expected: 20, letter: "T" },
+          { expr: "2 + 3 * 5", display: "2 + 3 * 5", expected: 17, letter: "Q" },
+          { expr: "4^2 + 9 / 3", display: "4^2 + 9 / 3", expected: 19, letter: "S" },
+          { expr: "(4 + 3) * 3", display: "(4 + 3) * 3", expected: 21, letter: "U" }
+        ]
       }
     },
     puzzle_6: {
       id: "puzzle_6",
-      title: "Algorithms: Quicksort Worst Case",
+      type: "coords",
+      title: "Route Tracer: BYTE",
       category: "Computer Science",
-      whatToDo: "Trace recursive partitioning in Quicksort under worst-case pivot selections. State the asymptotic worst-case time complexity in standard Big-O notation.",
-      prompt: "What is the worst-case asymptotic time complexity of standard Quicksort when the pivot is always the extreme element? (Format: O(n^2), O(n), or O(log n))",
-      hint: "When unbalanced partitioning occurs at every recursion level, complexity degrades to quadratic polynomial time.",
+      whatToDo: "Follow the step-by-step route directions across the 7×7 grid starting from (1, 7). Tap each destination point to spell out the keyword.",
+      prompt: "Trace the navigation legs starting at coordinate (1, 7) [B] through the grid.",
+      hint: "Start at (1, 7). Step 1 goes 6 steps East to (7, 7). Step 2 goes 2 North, 5 West to (2, 5). Step 3 goes 1 North, 4 East to (6, 4).",
       clueType: "image",
       clue: {
         title: "Edge Network Topology Diagram",
@@ -268,15 +371,36 @@ export const CONFIG = {
   <text x="233" y="134" fill="#388bfd" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="700">N4</text>
   <text x="160" y="95" text-anchor="middle" fill="#8b949e" font-family="'IBM Plex Mono', monospace" font-size="10">SYNCHRONIZED MESH</text>
 </svg>`
+      },
+      data: {
+        id: "puzzle_6",
+        isRouteTracer: true,
+        groups: ["Route Word"],
+        groupSolutions: ["BYTE"],
+        grid: [
+          ['S', 'K', 'A', 'T', 'E', 'R', 'X'],
+          ['M', 'N', 'O', 'P', 'Q', 'U', 'H'],
+          ['F', 'L', 'D', 'G', 'B', 'I', 'W'],
+          ['C', 'Y', 'Z', 'V', 'J', 'E', 'R'],
+          ['A', 'T', 'H', 'S', 'N', 'O', 'K'],
+          ['P', 'Q', 'U', 'D', 'M', 'L', 'F'],
+          ['B', 'G', 'X', 'I', 'Z', 'V', 'Y']
+        ],
+        legs: [
+          { desc: "From (1,7), travel 6 steps East (Right)", targetCol: 7, targetRow: 7, letter: "Y" },
+          { desc: "From (7,7), travel 2 steps North (Up) and 5 steps West (Left)", targetCol: 2, targetRow: 5, letter: "T" },
+          { desc: "From (2,5), travel 1 step North (Up) and 4 steps East (Right)", targetCol: 6, targetRow: 4, letter: "E" }
+        ]
       }
     },
     puzzle_7: {
       id: "puzzle_7",
-      title: "Cryptography: Digest Length",
+      type: "wordsearch",
+      title: "Treasure Hunt: 12 Tech Words",
       category: "Applied Cryptography",
-      whatToDo: "Calculate the output character length of a standard 256-bit SHA-256 cryptographic digest when encoded as a standard hexadecimal string.",
-      prompt: "A standard SHA-256 cryptographic hash outputs a 256-bit binary digest. How many characters long is this digest when expressed as a hexadecimal string?",
-      hint: "Each hexadecimal character represents 4 bits (nibble). Calculate 256 / 4.",
+      whatToDo: "Locate all 12 tech terms hidden in the 15×15 letter matrix. Drag or tap start and end letters in any of the 8 directions.",
+      prompt: "Find the 12 words listed in the sidebar (horizontal, vertical, or diagonal; forward or backward).",
+      hint: "Look for AROUND starting at [5,0] going up, ARTIFICIAL at [0,7] going down, FUTURE at [7,8] going down...",
       clueType: "spec",
       clue: {
         title: "Poster Layout Grid Architecture",
@@ -288,29 +412,69 @@ export const CONFIG = {
           { label: "Baseline Grid", value: "8px vertical rhythm" },
           { label: "Target Dimensions", value: "A3 Portrait (297mm x 420mm @ 300 DPI)" }
         ]
+      },
+      data: {
+        id: "puzzle_7",
+        grid: [
+          ['D','P','Y','M','A','F','A','A','R','S','P','V','O','M','J'],
+          ['N','X','G','E','N','S','L','R','E','U','M','E','F','I','L'],
+          ['U','K','O','D','E','N','K','T','S','S','A','K','Y','K','M'],
+          ['O','A','L','D','C','O','G','I','H','T','W','A','X','C','J'],
+          ['R','T','O','E','N','I','I','F','A','A','L','C','Y','E','M'],
+          ['A','A','N','G','E','T','M','I','P','I','S','R','T','N','C'],
+          ['L','D','H','D','I','A','N','C','E','N','G','O','I','T','Q'],
+          ['Y','I','C','E','C','V','B','I','F','A','N','B','L','E','U'],
+          ['I','D','E','B','S','O','V','A','U','B','I','O','A','R','A'],
+          ['J','U','T','E','H','N','I','L','T','L','T','T','E','E','N'],
+          ['D','I','P','A','R','N','N','Q','U','E','U','I','R','D','T'],
+          ['D','A','I','L','Y','I','K','G','R','Y','P','C','L','Z','U'],
+          ['V','I','R','T','U','A','L','N','E','A','M','S','Z','Y','M'],
+          ['U','I','N','T','E','G','R','A','T','I','O','N','M','R','R'],
+          ['G','X','C','B','X','N','O','T','Y','E','C','U','J','P','B']
+        ],
+        words: [
+          "AROUND", "ARTIFICIAL", "CENTERED", "COMPUTING", "DAILY",
+          "DATA", "EDGE", "FUTURE", "INNOVATIONS", "INTEGRATION",
+          "LIFE", "RESHAPE"
+        ]
       }
     },
     puzzle_8: {
       id: "puzzle_8",
-      title: "Pattern Matching: Regex Anchors",
+      type: "ascii",
+      title: "Caesar-ASCII Hybrid Decoder",
       category: "Compiler & Text Tools",
-      whatToDo: "Construct a regular expression pattern to target string boundaries. Identify the single token that anchors matches strictly to the start of a line.",
-      prompt: "In standard PCRE regular expressions, which single meta-character anchors a match strictly to the start of a line or string?",
-      hint: "It is the caret symbol, usually mapped to Shift+6 on standard keyboards.",
+      whatToDo: "Phase 1: Decode the ASCII numbers into ciphertext words. Phase 2: Use the Caesar cipher dial to shift the text into the final motto.",
+      prompt: "Decode the two ASCII words first, then shift the Caesar dial backward by 3 positions to reveal the slogan.",
+      hint: "Phase 1 codes decode to IXWXUH and UHDGB. Shifting by -3 (or +23 modulo 26) yields 'FUTURE READY'.",
       clueType: "text",
       clue: {
         title: "Technical Compliance Specification",
         type: "text",
         content: "Security Policy Requirement: All remote edge telemetry streams must be cryptographically hashed using SHA-256 before ingestion into cluster storage."
+      },
+      data: {
+        id: "puzzle_8",
+        isCaesarHybrid: true,
+        groups: ["Phase 1: Word 1", "Phase 1: Word 2", "Phase 2: Motto"],
+        groupSolutions: ["IXWXUH", "UHDGB", "FUTURE READY"],
+        cipherWords: ["IXWXUH", "UHDGB"],
+        finalText: "FUTURE READY",
+        targetShift: 23,
+        words: [
+          { expectedText: "IXWXUH", codes: [73, 88, 87, 88, 85, 72], expectedChars: ['I','X','W','X','U','H'] },
+          { expectedText: "UHDGB", codes: [85, 72, 68, 71, 66], expectedChars: ['U','H','D','G','B'] }
+        ]
       }
     },
     puzzle_9: {
       id: "puzzle_9",
-      title: "Digital Logic: Bitwise Operations",
+      type: "bodmas",
+      title: "Slotted BODMAS: SIGNAL",
       category: "Low-Level Computing",
-      whatToDo: "Evaluate the bitwise logic expression step-by-step using binary representations and standard operator precedence to find the decimal integer.",
-      prompt: "Evaluate the decimal result of the bitwise expression: (15 ^ 9) & 10. Enter the single integer result.",
-      hint: "15 in binary is 1111; 9 is 1001. First calculate 1111 XOR 1001 = 0110 (decimal 6). Then perform 6 (0110) AND 10 (1010).",
+      whatToDo: "Evaluate the 6 scrambled math equations using BODMAS. Map each answer to a letter (1=A ... 26=Z) and place it in its designated slot #1 to #6.",
+      prompt: "Solve each equation and observe its slot number to assemble the 6-letter keyword.",
+      hint: "Equation for Slot 1 evaluates to 19 (S), Slot 2 to 9 (I), Slot 3 to 7 (G), Slot 4 to 14 (N), Slot 5 to 1 (A), Slot 6 to 12 (L).",
       clueType: "image",
       clue: {
         title: "Institutional Sponsor & Accreditation Seal",
@@ -329,15 +493,30 @@ export const CONFIG = {
   <text x="160" y="112" text-anchor="middle" fill="#8b949e" font-family="'IBM Plex Sans', sans-serif" font-size="11">Engineering Excellence & Innovation</text>
   <text x="160" y="135" text-anchor="middle" fill="#238636" font-family="'IBM Plex Mono', monospace" font-size="10">AUTH CODE: JU-SFT-ACCR-2026</text>
 </svg>`
+      },
+      data: {
+        id: "puzzle_9",
+        groups: ["Keyword"],
+        groupSolutions: ["SIGNAL"],
+        finalWord: "SIGNAL",
+        equations: [
+          { slot: 3, expr: "2 * (3^2 - 2 * 3) + 1", display: "2 * (3^2 - 2 * 3) + 1", expected: 7, letter: "G" },
+          { slot: 6, expr: "3 * (2 + 2)^2 / 4", display: "3 * (2 + 2)^2 / 4", expected: 12, letter: "L" },
+          { slot: 1, expr: "(3 + 2)^2 - 12 / 2", display: "(3 + 2)^2 - 12 / 2", expected: 19, letter: "S" },
+          { slot: 5, expr: "5^2 - 4 * (3 + 3)", display: "5^2 - 4 * (3 + 3)", expected: 1, letter: "A" },
+          { slot: 2, expr: "100 / (2 * 5) - 2^3 + 7", display: "100 / (2 * 5) - 2^3 + 7", expected: 9, letter: "I" },
+          { slot: 4, expr: "(18 - 4) / 2 * 2", display: "(18 - 4) / 2 * 2", expected: 14, letter: "N" }
+        ]
       }
     },
     puzzle_10: {
       id: "puzzle_10",
-      title: "Discrete Math: Complete Graph Edges",
+      type: "coords",
+      title: "Cartesian Coordinates: CYBER",
       category: "Discrete Mathematics",
-      whatToDo: "Apply complete graph theory formulas for undirected simple graphs (K_6). Calculate the exact number of distinct pairwise edges.",
-      prompt: "In an undirected complete simple graph with 6 vertices (denoted K_6), what is the total number of distinct edges?",
-      hint: "Use the complete graph edge formula: E = n * (n - 1) / 2 for n = 6 vertices.",
+      whatToDo: "Attention: This 7×7 grid is Cartesian! Row 1 is at the bottom, Row 7 is at the top. Solve the math expressions for (Col, Row) and retrieve each letter.",
+      prompt: "Evaluate the coordinate formulas to find the grid coordinates (Col, Row), noting that Row 1 is at the bottom.",
+      hint: "Row 1 is at the very bottom. (10/2, 3^2-4) = (5, 5) -> C; (2^2, 12/3) = (4, 4) -> Y; (8-6, 9/3) = (2, 3) -> B...",
       clueType: "spec",
       clue: {
         title: "Footer & Legal Typography Specification",
@@ -350,20 +529,75 @@ export const CONFIG = {
           { label: "Color", value: "#64748B (Slate 500)" },
           { label: "Alignment", value: "Left Aligned, Bottom Anchor" }
         ]
+      },
+      data: {
+        id: "puzzle_10",
+        isBottomUp: true,
+        groups: ["Target Word"],
+        groupSolutions: ["CYBER"],
+        finalWord: "CYBER",
+        grid: [
+          ['M', 'Q', 'F', 'U', 'X', 'B', 'A'],
+          ['J', 'L', 'W', 'D', 'S', 'K', 'E'],
+          ['V', 'N', 'H', 'R', 'C', 'P', 'I'],
+          ['T', 'G', 'O', 'Y', 'Z', 'A', 'L'],
+          ['D', 'B', 'S', 'I', 'M', 'F', 'U'],
+          ['R', 'X', 'K', 'Q', 'E', 'W', 'N'],
+          ['Z', 'H', 'P', 'L', 'V', 'J', 'G']
+        ],
+        mathCoords: [
+          { expr: "(10 ÷ 2, 3² - 4)", col: 5, row: 5, letter: "C" },
+          { expr: "(2², 12 ÷ 3)", col: 4, row: 4, letter: "Y" },
+          { expr: "(8 - 6, 9 ÷ 3)", col: 2, row: 3, letter: "B" },
+          { expr: "(3 + 2, 6 ÷ 3)", col: 5, row: 2, letter: "E" },
+          { expr: "(2 × 2, 15 ÷ 3)", col: 4, row: 5, letter: "R" }
+        ]
       }
     },
     puzzle_11: {
       id: "puzzle_11",
-      title: "Distributed Systems: Fundamental Trade-off",
+      type: "wordsearch",
+      title: "Clue Word Search: 8 Tech Frontiers",
       category: "Systems Architecture",
-      whatToDo: "Recall fundamental distributed systems trade-offs. Name the three-letter acronym theorem governing Consistency, Availability, and Partition Tolerance.",
-      prompt: "What three-letter acronym identifies the theorem stating a distributed data store can simultaneously provide at most two out of Consistency, Availability, and Partition tolerance?",
-      hint: "Formulated by Eric Brewer and named after the initials of the three guarantees (C-A-P).",
+      whatToDo: "Solve each definition clue in the list, then search for and select its keyword in the 15×15 matrix.",
+      prompt: "Find the 8 frontier technology words matching the clues in the sidebar.",
+      hint: "Clues correspond to QUANTUM, ROBOTICS, VIRTUAL, SCIENCE, SUSTAINABLE, TECHNOLOGY, REALITY, RAPID.",
       clueType: "text",
       clue: {
         title: "Official Final Verification Token",
         type: "text",
         content: "VAULT_RELEASE_TOKEN: JU-SFT-2026-OMEGA-8821-VERIFIED"
+      },
+      data: {
+        id: "puzzle_11",
+        isClueMode: true,
+        grid: [
+          ['D','P','Y','M','A','F','A','A','R','S','P','V','O','M','J'],
+          ['N','X','G','E','N','S','L','R','E','U','M','E','F','I','L'],
+          ['U','K','O','D','E','N','K','T','S','S','A','K','Y','K','M'],
+          ['O','A','L','D','C','O','G','I','H','T','W','A','X','C','J'],
+          ['R','T','O','E','N','I','I','F','A','A','L','C','Y','E','M'],
+          ['A','A','N','G','E','T','M','I','P','I','S','R','T','N','C'],
+          ['L','D','H','D','I','A','N','C','E','N','G','O','I','T','Q'],
+          ['Y','I','C','E','C','V','B','I','F','A','N','B','L','E','U'],
+          ['I','D','E','B','S','O','V','A','U','B','I','O','A','R','A'],
+          ['J','U','T','E','H','N','I','L','T','L','T','T','E','E','N'],
+          ['D','I','P','A','R','N','N','Q','U','E','U','I','R','D','T'],
+          ['D','A','I','L','Y','I','K','G','R','Y','P','C','L','Z','U'],
+          ['V','I','R','T','U','A','L','N','E','A','M','S','Z','Y','M'],
+          ['U','I','N','T','E','G','R','A','T','I','O','N','M','R','R'],
+          ['G','X','C','B','X','N','O','T','Y','E','C','U','J','P','B']
+        ],
+        words: [
+          { word: "QUANTUM", clue: "Subatomic phenomena & computing beyond classical bits" },
+          { word: "ROBOTICS", clue: "Automated electromechanical machines & autonomous control" },
+          { word: "VIRTUAL", clue: "Simulated software environment or non-physical realm" },
+          { word: "SCIENCE", clue: "Systematic pursuit and structure of empirical knowledge" },
+          { word: "SUSTAINABLE", clue: "Enduring, renewable and low-carbon ecological systems" },
+          { word: "TECHNOLOGY", clue: "Practical application of engineering knowledge" },
+          { word: "REALITY", clue: "The physical state of things as they actually exist" },
+          { word: "RAPID", clue: "Characterized by high speed or accelerated velocity" }
+        ]
       }
     }
   }

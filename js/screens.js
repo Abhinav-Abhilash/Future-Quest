@@ -13,9 +13,27 @@ import { CONFIG, getTileLabel } from './config.js';
 import { GameState } from './state.js';
 import { ICONS } from './icons.js';
 import { Modal } from './modal.js';
+import { PUZZLE_REGISTRY } from './puzzles/index.js';
 
 export const Screens = {
   activePuzzleInterval: null,
+  activePuzzleModule: null,
+  activePuzzleId: null,
+
+  /**
+   * Safely unmount active interactive puzzle module.
+   */
+  unmountCurrentPuzzle() {
+    if (this.activePuzzleModule && typeof this.activePuzzleModule.unmount === 'function') {
+      try {
+        this.activePuzzleModule.unmount();
+      } catch (e) {
+        console.warn('Error unmounting puzzle module:', e);
+      }
+    }
+    this.activePuzzleModule = null;
+    this.activePuzzleId = null;
+  },
 
   /**
    * Display an in-page notice banner at the top of the app.
@@ -237,6 +255,7 @@ export const Screens = {
   // 1. REGISTRATION SCREEN (#/register)
   // =========================================================================
   renderRegister(container, router) {
+    this.unmountCurrentPuzzle();
     if (this.activePuzzleInterval) {
       clearInterval(this.activePuzzleInterval);
       this.activePuzzleInterval = null;
@@ -352,6 +371,7 @@ export const Screens = {
   // 2. GRID SCREEN (#/grid)
   // =========================================================================
   renderGrid(container, router) {
+    this.unmountCurrentPuzzle();
     if (this.activePuzzleInterval) {
       clearInterval(this.activePuzzleInterval);
       this.activePuzzleInterval = null;
@@ -516,6 +536,7 @@ export const Screens = {
   // 3. PUZZLE SCREEN (#/puzzle/:id)
   // =========================================================================
   renderPuzzle(container, router, puzzleId) {
+    this.unmountCurrentPuzzle();
     if (this.activePuzzleInterval) {
       clearInterval(this.activePuzzleInterval);
       this.activePuzzleInterval = null;
@@ -550,312 +571,337 @@ export const Screens = {
     const tileNumber = tileIndex !== -1 ? String(tileIndex + 1).padStart(2, '0') : '00';
     const tileLabel = getTileLabel(tileIndex);
 
-    const renderContent = () => {
-      const remainingSec = GameState.getPuzzleRemainingSeconds(puzzleId);
+    // Initial check for puzzle timer expiration
+    const initialRemainingSec = GameState.getPuzzleRemainingSeconds(puzzleId);
+    if (initialRemainingSec <= 0 && block.status === 'OPENED_IN_PROGRESS') {
+      GameState.failPuzzle(puzzleId, 'TIMEOUT');
+      this.showNotice(`Time expired for ${tileLabel}. The puzzle has failed.`, 'danger');
+      router.navigate('/grid');
+      return;
+    }
 
-      // Check for puzzle timer expiration
-      if (remainingSec <= 0 && block.status === 'OPENED_IN_PROGRESS') {
-        GameState.failPuzzle(puzzleId, 'TIMEOUT');
-        clearInterval(this.activePuzzleInterval);
-        this.activePuzzleInterval = null;
-        this.showNotice(`Time expired for ${tileLabel}. The puzzle has failed.`, 'danger');
-        router.navigate('/grid');
-        return;
-      }
+    const attemptsLeft = Math.max(0, CONFIG.MAX_ATTEMPTS - (block.attemptsUsed || 0));
 
-      const isSolved = block.status === 'SOLVED';
-      const isFailed = block.status === 'FAILED';
-      const isLocked = isSolved || isFailed;
-      const attemptsLeft = Math.max(0, CONFIG.MAX_ATTEMPTS - (block.attemptsUsed || 0));
+    // Render Shell HTML (once)
+    container.innerHTML = `
+      <section class="screen-container puzzle-screen" aria-labelledby="puzzle-title">
+        <!-- Puzzle Navigation Bar -->
+        <div class="puzzle-nav-row">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-back-grid">
+            ${ICONS.arrowLeft} <span>Back to Grid</span>
+          </button>
+          <div class="puzzle-timer-badge ${initialRemainingSec < 120 && block.status === 'OPENED_IN_PROGRESS' ? 'timer-low' : ''}">
+            <span class="timer-icon">${ICONS.clock}</span>
+            <span class="timer-label">Puzzle Timer:</span>
+            <span class="timer-value mono" id="puzzle-countdown">${this.formatTime(initialRemainingSec)}</span>
+          </div>
+        </div>
 
-      // Build clue preview if solved
-      let clueHtml = '';
-      if (isSolved && block.unlockedClue) {
-        const clue = block.unlockedClue;
-        if (clue.type === 'spec') {
-          const specRows = (clue.specs || []).map(s => `
-            <tr>
-              <th scope="row" class="spec-label">${s.label}</th>
-              <td class="spec-value"><code>${s.value}</code></td>
-            </tr>
-          `).join('');
-
-          clueHtml = `
-            <div class="clue-card clue-spec" aria-labelledby="clue-heading">
-              <div class="clue-header">
-                <span class="clue-tag">SPECIFICATION CLUE UNLOCKED</span>
-                <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
-              </div>
-              <div class="clue-body">
-                <table class="spec-table">
-                  <tbody>${specRows}</tbody>
-                </table>
-              </div>
-              <div class="clue-actions">
-                <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-specs">
-                  ${ICONS.copy} <span>Copy Specifications</span>
-                </button>
-              </div>
+        <!-- Puzzle Header Card -->
+        <div class="puzzle-header-card">
+          <div class="puzzle-meta-row">
+            <div class="puzzle-number-badge">TASK ${tileNumber}</div>
+            <div class="difficulty-badge difficulty-${difficulty}">
+              ${difficulty.toUpperCase()} (${Math.floor(CONFIG.DIFFICULTY_TIME[difficulty] / 60)} MIN)
             </div>
-          `;
-        } else if (clue.type === 'text') {
-          clueHtml = `
-            <div class="clue-card clue-text" aria-labelledby="clue-heading">
-              <div class="clue-header">
-                <span class="clue-tag">TEXT CONTENT CLUE UNLOCKED</span>
-                <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
-              </div>
-              <div class="clue-body">
-                <div class="clue-copy-box">
-                  <pre class="clue-pre"><code>${clue.content}</code></pre>
-                </div>
-              </div>
-              <div class="clue-actions">
-                <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-text">
-                  ${ICONS.copy} <span>Copy Text</span>
-                </button>
-              </div>
-            </div>
-          `;
-        } else if (clue.type === 'image') {
-          clueHtml = `
-            <div class="clue-card clue-image" aria-labelledby="clue-heading">
-              <div class="clue-header">
-                <span class="clue-tag">VECTOR ASSET CLUE UNLOCKED</span>
-                <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
-                <p class="clue-caption">${clue.caption}</p>
-              </div>
-              <div class="clue-body">
-                <div class="svg-preview-box">
-                  ${clue.svgContent}
-                </div>
-              </div>
-              <div class="clue-actions">
-                <button type="button" class="btn btn-secondary btn-sm" id="btn-download-svg">
-                  ${ICONS.download} <span>Download SVG Asset</span>
-                </button>
-              </div>
-            </div>
-          `;
-        }
-      }
+            <div class="category-badge">${puzzleConfig.category}</div>
+          </div>
+          <h1 id="puzzle-title" class="puzzle-title">${tileLabel}</h1>
+        </div>
 
-      container.innerHTML = `
-        <section class="screen-container puzzle-screen" aria-labelledby="puzzle-title">
-          <!-- Puzzle Navigation Bar -->
-          <div class="puzzle-nav-row">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-back-grid">
-              ${ICONS.arrowLeft} <span>Back to Grid</span>
-            </button>
-            <div class="puzzle-timer-badge ${remainingSec < 120 && !isLocked ? 'timer-low' : ''}">
-              <span class="timer-icon">${ICONS.clock}</span>
-              <span class="timer-label">Puzzle Timer:</span>
-              <span class="timer-value" id="puzzle-countdown">${this.formatTime(remainingSec)}</span>
-            </div>
+        <!-- Status Alert Container -->
+        <div id="puzzle-status-banner"></div>
+
+        <!-- Puzzle Body Card -->
+        <div class="puzzle-body-card">
+          <!-- What to do block -->
+          <div class="puzzle-what-to-do-block">
+            <h2 class="section-title">What to do</h2>
+            <p class="what-to-do-text">${puzzleConfig.whatToDo || 'Analyze the technical requirements and solve the challenge below.'}</p>
           </div>
 
-          <!-- Puzzle Header -->
-          <div class="puzzle-header-card">
-            <div class="puzzle-meta-row">
-              <div class="puzzle-number-badge">TASK ${tileNumber}</div>
-              <div class="difficulty-badge difficulty-${difficulty}">
-                ${difficulty.toUpperCase()} (${Math.floor(CONFIG.DIFFICULTY_TIME[difficulty] / 60)} MIN)
-              </div>
-              <div class="category-badge">${puzzleConfig.category}</div>
-            </div>
-            <h1 id="puzzle-title" class="puzzle-title">${tileLabel}</h1>
+          <!-- Problem Statement (Question) -->
+          <div class="puzzle-question">
+            <h2 class="section-title">Problem Statement</h2>
+            <p class="question-text">${puzzleConfig.prompt}</p>
           </div>
 
-          <!-- Status Banners -->
-          ${isSolved ? `
+          <!-- Hint Section -->
+          <div class="puzzle-hint-section" id="puzzle-hint-area">
+            ${block.hintUsed ? `
+              <div class="revealed-hint-box" role="region" aria-label="Revealed Hint">
+                <div class="hint-title-row">
+                  <span class="hint-icon">${ICONS.hint}</span>
+                  <strong>Puzzle Hint:</strong>
+                </div>
+                <p class="hint-text">${puzzleConfig.hint}</p>
+              </div>
+            ` : `
+              <div class="hint-action-row">
+                <button 
+                  type="button" 
+                  class="btn btn-secondary btn-sm" 
+                  id="btn-use-hint"
+                  ${state.hintsRemaining <= 0 || block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled aria-disabled="true"' : ''}
+                >
+                  ${ICONS.hint} <span>Use Hint (${state.hintsRemaining} left)</span>
+                </button>
+                <span class="hint-note">Using a hint permanently consumes 1 of your team's 3 total hints.</span>
+              </div>
+            `}
+          </div>
+
+          <!-- Attempts Remaining Indicator -->
+          <div class="attempts-indicator" id="puzzle-attempts-area" style="margin: 12px 0;">
+            Attempts remaining: <strong id="puzzle-attempts-count">${attemptsLeft} of ${CONFIG.MAX_ATTEMPTS}</strong>
+          </div>
+
+          <!-- Dynamic Interactive Puzzle Module Container -->
+          <div id="puzzle-interactive-container"></div>
+
+          <!-- Unlocked Clue Container -->
+          <div id="puzzle-clue-container"></div>
+        </div>
+
+        <!-- DEV-ONLY: DEV MODE TOOLS -->
+        ${CONFIG.DEV_MODE ? `
+          <div class="dev-toolbar dev-only" role="region" aria-label="Development Testing Tools">
+            <div class="dev-label">DEV_MODE Testing Tools:</div>
+            <div class="dev-buttons">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-dev-solve">Mark Solved (dev)</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-dev-fail">Mark Failed (dev)</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-dev-skip">Skip timer to 10s</button>
+            </div>
+          </div>
+        ` : ''}
+      </section>
+    `;
+
+    // Helper: Update status banner and unlocked clue view
+    const renderStatusAndClue = () => {
+      const currentBlock = GameState.state?.blocks[puzzleId] || block;
+      const statusBanner = container.querySelector('#puzzle-status-banner');
+      const clueContainer = container.querySelector('#puzzle-clue-container');
+      const attemptsCountEl = container.querySelector('#puzzle-attempts-count');
+
+      const remAttempts = Math.max(0, CONFIG.MAX_ATTEMPTS - (currentBlock.attemptsUsed || 0));
+      if (attemptsCountEl) {
+        attemptsCountEl.textContent = `${remAttempts} of ${CONFIG.MAX_ATTEMPTS}`;
+      }
+
+      // Status Banners
+      if (statusBanner) {
+        if (currentBlock.status === 'SOLVED') {
+          statusBanner.innerHTML = `
             <div class="alert alert-success" role="status">
               <span class="alert-icon">${ICONS.check}</span>
               <div class="alert-content">
                 <strong>Puzzle Solved:</strong> Correct answer confirmed. Technical clue unlocked below.
               </div>
             </div>
-          ` : ''}
-
-          ${isFailed ? `
+          `;
+        } else if (currentBlock.status === 'FAILED') {
+          statusBanner.innerHTML = `
             <div class="alert alert-danger" role="alert">
               <span class="alert-icon">${ICONS.cross}</span>
               <div class="alert-content">
                 <strong>Puzzle Failed:</strong> Maximum attempts exceeded or time expired. This tile is permanently locked.
               </div>
             </div>
-          ` : ''}
+          `;
+        } else {
+          statusBanner.innerHTML = '';
+        }
+      }
 
-          <!-- Puzzle Body -->
-          <div class="puzzle-body-card">
-            <!-- What to do block -->
-            <div class="puzzle-what-to-do-block">
-              <h2 class="section-title">What to do</h2>
-              <p class="what-to-do-text">${puzzleConfig.whatToDo || 'Analyze the technical requirements and solve the challenge below.'}</p>
-            </div>
+      // Clue Box
+      if (clueContainer) {
+        if (currentBlock.status === 'SOLVED' && currentBlock.unlockedClue) {
+          const clue = currentBlock.unlockedClue;
+          if (clue.type === 'spec') {
+            const specRows = (clue.specs || []).map(s => `
+              <tr>
+                <th scope="row" class="spec-label">${s.label}</th>
+                <td class="spec-value"><code>${s.value}</code></td>
+              </tr>
+            `).join('');
 
-            <!-- Problem Statement (Question) -->
-            <div class="puzzle-question">
-              <h2 class="section-title">Problem Statement</h2>
-              <p class="question-text">${puzzleConfig.prompt}</p>
-            </div>
-
-            <!-- Hint Section -->
-            <div class="puzzle-hint-section">
-              ${block.hintUsed ? `
-                <div class="revealed-hint-box" role="region" aria-label="Revealed Hint">
-                  <div class="hint-title-row">
-                    <span class="hint-icon">${ICONS.hint}</span>
-                    <strong>Puzzle Hint:</strong>
-                  </div>
-                  <p class="hint-text">${puzzleConfig.hint}</p>
+            clueContainer.innerHTML = `
+              <div class="clue-card clue-spec" aria-labelledby="clue-heading" style="margin-top: 20px;">
+                <div class="clue-header">
+                  <span class="clue-tag">SPECIFICATION CLUE UNLOCKED</span>
+                  <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
                 </div>
-              ` : `
-                <div class="hint-action-row">
-                  <button 
-                    type="button" 
-                    class="btn btn-secondary btn-sm" 
-                    id="btn-use-hint"
-                    ${state.hintsRemaining <= 0 || isLocked ? 'disabled aria-disabled="true"' : ''}
-                  >
-                    ${ICONS.hint} <span>Use Hint (${state.hintsRemaining} left)</span>
+                <div class="clue-body">
+                  <table class="spec-table">
+                    <tbody>${specRows}</tbody>
+                  </table>
+                </div>
+                <div class="clue-actions">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-specs">
+                    ${ICONS.copy} <span>Copy Specifications</span>
                   </button>
-                  <span class="hint-note">Using a hint permanently consumes 1 of your team's 3 total hints.</span>
                 </div>
-              `}
-            </div>
-
-            <!-- Answer Submission Section (Active only when in-progress) -->
-            ${!isLocked ? `
-              <div class="puzzle-submit-section">
-                <form id="puzzle-answer-form" class="answer-form">
-                  <div id="answer-feedback" class="feedback-banner" style="display: none;" role="status"></div>
-                  
-                  <div class="form-row">
-                    <div class="input-col">
-                      <label for="puzzle-answer-input" class="form-label">Your Solution</label>
-                      <input 
-                        type="text" 
-                        id="puzzle-answer-input" 
-                        class="form-input" 
-                        placeholder="Enter your answer..." 
-                        autocomplete="off" 
-                        spellcheck="false"
-                        required 
-                      />
-                    </div>
-                    <div class="btn-col">
-                      <button type="submit" class="btn btn-primary" id="btn-submit-answer">Submit Answer</button>
-                    </div>
-                  </div>
-
-                  <div class="attempts-indicator">
-                    Attempts remaining: <strong>${attemptsLeft} of ${CONFIG.MAX_ATTEMPTS}</strong>
-                  </div>
-                </form>
               </div>
-            ` : ''}
+            `;
 
-            <!-- Unlocked Clue Area -->
-            ${clueHtml}
-          </div>
-
-          <!-- DEV-ONLY: DEV MODE TOOLS -->
-          ${CONFIG.DEV_MODE ? `
-            <div class="dev-toolbar dev-only" role="region" aria-label="Development Testing Tools">
-              <div class="dev-label">DEV_MODE Testing Tools:</div>
-              <div class="dev-buttons">
-                <button type="button" class="btn btn-secondary btn-sm" id="btn-dev-solve">Mark Solved (dev)</button>
-                <button type="button" class="btn btn-secondary btn-sm" id="btn-dev-fail">Mark Failed (dev)</button>
-                <button type="button" class="btn btn-secondary btn-sm" id="btn-dev-skip">Skip timer to 10s</button>
+            const copySpecsBtn = clueContainer.querySelector('#btn-copy-specs');
+            if (copySpecsBtn) {
+              copySpecsBtn.addEventListener('click', () => {
+                const specText = (clue.specs || []).map(s => `${s.label}: ${s.value}`).join('\n');
+                this.copyToClipboard(specText, copySpecsBtn);
+              });
+            }
+          } else if (clue.type === 'text') {
+            clueContainer.innerHTML = `
+              <div class="clue-card clue-text" aria-labelledby="clue-heading" style="margin-top: 20px;">
+                <div class="clue-header">
+                  <span class="clue-tag">TEXT CONTENT CLUE UNLOCKED</span>
+                  <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
+                </div>
+                <div class="clue-body">
+                  <div class="clue-copy-box">
+                    <pre class="clue-pre"><code>${clue.content}</code></pre>
+                  </div>
+                </div>
+                <div class="clue-actions">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-text">
+                    ${ICONS.copy} <span>Copy Text</span>
+                  </button>
+                </div>
               </div>
-            </div>
-          ` : ''}
-        </section>
-      `;
+            `;
 
-      // Event Listeners
-      const backBtn = container.querySelector('#btn-back-grid');
-      if (backBtn) {
-        backBtn.addEventListener('click', () => {
-          GameState.leavePuzzle(puzzleId);
-          router.navigate('/grid');
-        });
-      }
+            const copyTextBtn = clueContainer.querySelector('#btn-copy-text');
+            if (copyTextBtn) {
+              copyTextBtn.addEventListener('click', () => {
+                this.copyToClipboard(clue.content || '', copyTextBtn);
+              });
+            }
+          } else if (clue.type === 'image') {
+            clueContainer.innerHTML = `
+              <div class="clue-card clue-image" aria-labelledby="clue-heading" style="margin-top: 20px;">
+                <div class="clue-header">
+                  <span class="clue-tag">VECTOR ASSET CLUE UNLOCKED</span>
+                  <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
+                  <p class="clue-caption">${clue.caption}</p>
+                </div>
+                <div class="clue-body">
+                  <div class="svg-preview-box">
+                    ${clue.svgContent}
+                  </div>
+                </div>
+                <div class="clue-actions">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-download-svg">
+                    ${ICONS.download} <span>Download SVG Asset</span>
+                  </button>
+                </div>
+              </div>
+            `;
 
-      const hintBtn = container.querySelector('#btn-use-hint');
-      if (hintBtn) {
-        hintBtn.addEventListener('click', () => {
-          Modal.showHintConfirmation(state.hintsRemaining, () => {
-            GameState.useHint(puzzleId);
-            renderContent();
-          });
-        });
-      }
-
-      const answerForm = container.querySelector('#puzzle-answer-form');
-      if (answerForm) {
-        answerForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          const input = container.querySelector('#puzzle-answer-input');
-          const feedback = container.querySelector('#answer-feedback');
-          const rawAnswer = input.value;
-
-          const result = GameState.submitAnswer(puzzleId, rawAnswer);
-
-          if (result.correct) {
-            renderContent();
-          } else if (result.failed) {
-            renderContent();
-          } else {
-            feedback.style.display = 'block';
-            feedback.className = 'feedback-banner feedback-warning';
-            feedback.textContent = `Incorrect. ${result.attemptsLeft} attempt${result.attemptsLeft === 1 ? '' : 's'} left.`;
-            input.value = '';
-            input.focus();
-            const attemptsEl = container.querySelector('.attempts-indicator strong');
-            if (attemptsEl) attemptsEl.textContent = `${result.attemptsLeft} of ${CONFIG.MAX_ATTEMPTS}`;
+            const downloadSvgBtn = clueContainer.querySelector('#btn-download-svg');
+            if (downloadSvgBtn) {
+              downloadSvgBtn.addEventListener('click', () => {
+                this.downloadSvg(clue.svgContent, clue.filename);
+              });
+            }
           }
-        });
-      }
-
-      // Clue copy and download buttons
-      const copySpecsBtn = container.querySelector('#btn-copy-specs');
-      if (copySpecsBtn && block.unlockedClue) {
-        copySpecsBtn.addEventListener('click', () => {
-          const specText = (block.unlockedClue.specs || []).map(s => `${s.label}: ${s.value}`).join('\n');
-          this.copyToClipboard(specText, copySpecsBtn);
-        });
-      }
-
-      const copyTextBtn = container.querySelector('#btn-copy-text');
-      if (copyTextBtn && block.unlockedClue) {
-        copyTextBtn.addEventListener('click', () => {
-          this.copyToClipboard(block.unlockedClue.content || '', copyTextBtn);
-        });
-      }
-
-      const downloadSvgBtn = container.querySelector('#btn-download-svg');
-      if (downloadSvgBtn && block.unlockedClue) {
-        downloadSvgBtn.addEventListener('click', () => {
-          this.downloadSvg(block.unlockedClue.svgContent, block.unlockedClue.filename);
-        });
-      }
-
-      // DEV-ONLY: Dev mode testing button handlers
-      if (CONFIG.DEV_MODE) {
-        const devSolve = container.querySelector('#btn-dev-solve');
-        const devFail = container.querySelector('#btn-dev-fail');
-        const devSkip = container.querySelector('#btn-dev-skip');
-
-        if (devSolve) devSolve.addEventListener('click', () => { GameState.devSolve(puzzleId); renderContent(); });
-        if (devFail) devFail.addEventListener('click', () => { GameState.devFail(puzzleId); renderContent(); });
-        if (devSkip) devSkip.addEventListener('click', () => { GameState.devSkipTimer(puzzleId); renderContent(); });
+        } else {
+          clueContainer.innerHTML = '';
+        }
       }
     };
 
-    renderContent();
+    renderStatusAndClue();
 
-    // Setup 1-second interval to update puzzle timer display smoothly
+    // Mount the Interactive Module Once
+    const puzzleType = puzzleConfig.type;
+    const puzzleModule = PUZZLE_REGISTRY[puzzleType];
+    const interactiveContainer = container.querySelector('#puzzle-interactive-container');
+
+    if (puzzleModule && interactiveContainer) {
+      const ctx = {
+        getProgress: () => {
+          const b = GameState.state?.blocks[puzzleId];
+          return b?.progress || {};
+        },
+        saveProgress: (progressObj) => {
+          GameState.saveProgress(puzzleId, progressObj);
+        },
+        isLocked: () => {
+          const b = GameState.state?.blocks[puzzleId];
+          return b?.status === 'SOLVED' || b?.status === 'FAILED' || GameState.isMasterExpired();
+        },
+        onSolved: () => {
+          GameState.markSolved(puzzleId);
+          renderStatusAndClue();
+        },
+        onWrongCheck: () => {
+          const res = GameState.recordWrong(puzzleId);
+          renderStatusAndClue();
+          if (res.failed) {
+            this.showNotice(`Maximum attempts reached for ${tileLabel}. The puzzle has failed.`, 'danger');
+          }
+        }
+      };
+
+      puzzleModule.mount(interactiveContainer, puzzleConfig.data, ctx);
+      this.activePuzzleModule = puzzleModule;
+      this.activePuzzleId = puzzleId;
+    }
+
+    // Event Listeners
+    const backBtn = container.querySelector('#btn-back-grid');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => {
+        this.unmountCurrentPuzzle();
+        GameState.leavePuzzle(puzzleId);
+        router.navigate('/grid');
+      });
+    }
+
+    const hintBtn = container.querySelector('#btn-use-hint');
+    if (hintBtn) {
+      hintBtn.addEventListener('click', () => {
+        Modal.showHintConfirmation(state.hintsRemaining, () => {
+          GameState.useHint(puzzleId);
+          const hintArea = container.querySelector('#puzzle-hint-area');
+          if (hintArea) {
+            hintArea.innerHTML = `
+              <div class="revealed-hint-box" role="region" aria-label="Revealed Hint">
+                <div class="hint-title-row">
+                  <span class="hint-icon">${ICONS.hint}</span>
+                  <strong>Puzzle Hint:</strong>
+                </div>
+                <p class="hint-text">${puzzleConfig.hint}</p>
+              </div>
+            `;
+          }
+        });
+      });
+    }
+
+    // DEV-ONLY: Testing buttons
+    if (CONFIG.DEV_MODE) {
+      const devSolve = container.querySelector('#btn-dev-solve');
+      const devFail = container.querySelector('#btn-dev-fail');
+      const devSkip = container.querySelector('#btn-dev-skip');
+
+      if (devSolve) devSolve.addEventListener('click', () => {
+        GameState.markSolved(puzzleId);
+        renderStatusAndClue();
+      });
+      if (devFail) devFail.addEventListener('click', () => {
+        GameState.failPuzzle(puzzleId, 'DEV');
+        renderStatusAndClue();
+      });
+      if (devSkip) devSkip.addEventListener('click', () => {
+        GameState.devSkipTimer(puzzleId);
+      });
+    }
+
+    // Setup 1-second interval to update puzzle countdown display smoothly
+    // DOES NOT rebuild or re-render the mounted interactive puzzle!
     this.activePuzzleInterval = setInterval(() => {
       const remainingSec = GameState.getPuzzleRemainingSeconds(puzzleId);
       const timerEl = document.getElementById('puzzle-countdown');
@@ -863,7 +909,8 @@ export const Screens = {
         timerEl.textContent = this.formatTime(remainingSec);
         const badge = timerEl.closest('.puzzle-timer-badge');
         if (badge) {
-          if (remainingSec < 120 && block.status === 'OPENED_IN_PROGRESS') {
+          const b = GameState.state?.blocks[puzzleId];
+          if (remainingSec < 120 && b && b.status === 'OPENED_IN_PROGRESS') {
             badge.classList.add('timer-low');
           } else {
             badge.classList.remove('timer-low');
@@ -872,8 +919,10 @@ export const Screens = {
       }
 
       // Handle expiration
-      if (remainingSec <= 0 && block.status === 'OPENED_IN_PROGRESS') {
+      const b = GameState.state?.blocks[puzzleId];
+      if (remainingSec <= 0 && b && b.status === 'OPENED_IN_PROGRESS') {
         GameState.failPuzzle(puzzleId, 'TIMEOUT');
+        this.unmountCurrentPuzzle();
         clearInterval(this.activePuzzleInterval);
         this.activePuzzleInterval = null;
         this.showNotice(`Time expired for ${tileLabel}. The puzzle has failed.`, 'danger');
@@ -886,6 +935,7 @@ export const Screens = {
   // 4. VAULT / SUBMISSION SCREEN (#/vault)
   // =========================================================================
   renderVault(container, router, wasTimeExpired = false) {
+    this.unmountCurrentPuzzle();
     if (this.activePuzzleInterval) {
       clearInterval(this.activePuzzleInterval);
       this.activePuzzleInterval = null;
@@ -1100,6 +1150,7 @@ export const Screens = {
   // 5. RULES SCREEN (#/rules)
   // =========================================================================
   renderRules(container, router) {
+    this.unmountCurrentPuzzle();
     if (this.activePuzzleInterval) {
       clearInterval(this.activePuzzleInterval);
       this.activePuzzleInterval = null;

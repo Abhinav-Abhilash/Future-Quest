@@ -51,6 +51,11 @@ class StateManager {
           // In style test mode, enforce fixed sequential order
           parsed.gridOrder = [...Object.keys(CONFIG.PUZZLES), 'vault_12'];
         }
+        if (parsed.blocks) {
+          for (const bid in parsed.blocks) {
+            parsed.blocks[bid].progress = parsed.blocks[bid].progress || {};
+          }
+        }
         return parsed;
       }
       return null;
@@ -122,7 +127,8 @@ class StateManager {
         hintUsed: false,
         timeSpentMs: 0,
         activeSince: null,
-        unlockedClue: null
+        unlockedClue: null,
+        progress: {}
       };
     }
 
@@ -337,6 +343,67 @@ class StateManager {
         };
       }
     }
+  }
+
+  /**
+   * Save partial puzzle progress object (player entries, selections, etc.)
+   * Does NOT store plaintext answers.
+   */
+  saveProgress(id, progressObj) {
+    if (!this.state || !this.state.blocks[id]) return;
+    this.state.blocks[id].progress = {
+      ...(this.state.blocks[id].progress || {}),
+      ...progressObj
+    };
+    this.saveState();
+  }
+
+  /**
+   * Marks a puzzle as solved via an interactive module.
+   * Freezes puzzle timer and unlocks the corresponding poster clue.
+   */
+  markSolved(id) {
+    if (!this.state || !this.state.blocks[id]) return;
+    const block = this.state.blocks[id];
+    if (block.status === 'SOLVED') return;
+
+    if (block.activeSince) {
+      const elapsed = Date.now() - block.activeSince;
+      block.timeSpentMs = (block.timeSpentMs || 0) + elapsed;
+      block.activeSince = null;
+    }
+
+    block.status = 'SOLVED';
+    block.activeSince = null;
+    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].clue) {
+      block.unlockedClue = CONFIG.PUZZLES[id].clue;
+    }
+    this.saveState();
+  }
+
+  /**
+   * Records a failed/incorrect answer check from an interactive puzzle.
+   * Increments attemptsUsed; locks puzzle as FAILED if max attempts reached.
+   */
+  recordWrong(id) {
+    if (!this.state || !this.state.blocks[id]) return { failed: false, attemptsLeft: 0 };
+    const block = this.state.blocks[id];
+    if (block.status === 'SOLVED' || block.status === 'FAILED') {
+      return { failed: block.status === 'FAILED', attemptsLeft: 0 };
+    }
+
+    block.attemptsUsed = (block.attemptsUsed || 0) + 1;
+    const attemptsLeft = Math.max(0, CONFIG.MAX_ATTEMPTS - block.attemptsUsed);
+
+    if (attemptsLeft <= 0) {
+      block.status = 'FAILED';
+      block.activeSince = null;
+      this.saveState();
+      return { failed: true, attemptsLeft: 0 };
+    }
+
+    this.saveState();
+    return { failed: false, attemptsLeft };
   }
 
   /**
