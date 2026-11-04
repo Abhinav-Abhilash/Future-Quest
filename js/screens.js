@@ -557,6 +557,10 @@ export const Screens = {
           statusHumanLabel = 'Failed';
         }
 
+        
+        const diff = CONFIG.TILE_DIFFICULTY[itemId] || 'easy';
+        const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1);
+
         tilesHtml += `
           <button 
             type="button" 
@@ -566,12 +570,18 @@ export const Screens = {
             data-tile-num="${tileNumber}"
             ${staggerDelay}
             ${!isClickable ? 'disabled aria-disabled="true"' : ''}
-            aria-label="Task ${tileNumber}, Status: ${statusHumanLabel}"
+            aria-label="Task ${tileNumber}, Difficulty: ${diffLabel}, Status: ${statusHumanLabel}"
           >
             <div class="tile-task-tag">Task ${tileNumber}</div>
             <div class="tile-gradient-number mono">${formattedNum}</div>
             ${elapsedIndicator}
             ${statusBadgeHtml}
+            <div class="tile-food-badge">
+              <span class="food-badge food-badge-${diff}" aria-label="Difficulty: ${diffLabel}">
+                <span class="food-badge-icon" aria-hidden="true"><span class="food-badge-dot"></span></span>
+                <span class="food-badge-label">${diff}</span>
+              </span>
+            </div>
           </button>
         `;
       }
@@ -584,7 +594,7 @@ export const Screens = {
           <div class="grid-header-main">
             <h1 id="grid-page-title" class="page-title">Puzzle Grid</h1>
             <p class="page-description">
-              Select any open tile to solve its puzzle. Solve puzzles to unlock clues and technical specifications for your final poster submission.
+              Select any open tile to solve its puzzle. Solve puzzles to unlock clues and technical specifications for your final submission.
             </p>
             <p class="grid-helper-line">Pick any tile. Your timer starts when you open it.</p>
           </div>
@@ -1516,7 +1526,7 @@ export const Screens = {
           <div class="brand-institution">${CONFIG.EVENT.fullName}</div>
           <h1 id="vault-page-title" class="page-title">Submission Vault</h1>
           <p class="page-description">
-            Your competition time has stopped. All puzzle locks are finalized. Review your unlocked clues, copy specifications, and submit your final poster design.
+            Your competition time has stopped. All puzzle locks are finalized. Review your unlocked clues, copy specifications, and submit your final entry.
           </p>
         </header>
 
@@ -1566,7 +1576,7 @@ export const Screens = {
           <div class="vault-step-header">
             <span class="vault-step-badge">STEP 2</span>
             <div class="vault-clues-header-actions">
-              <h2 class="vault-step-title">Unlocked Poster Assets & Specifications</h2>
+              <h2 class="vault-step-title">Unlocked Submission Assets & Specifications</h2>
               ${allClueTexts.length > 0 ? `
                 <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-all-clues">
                   ${ICONS.copy} <span>Copy All Clues</span>
@@ -1617,7 +1627,7 @@ export const Screens = {
           <div class="vault-checklist">
             <label class="ready-check-item">
               <input type="checkbox" id="chk-vault-specs" class="vault-pre-check" />
-              <span class="ready-check-text">We incorporated all unlocked specifications into our poster.</span>
+              <span class="ready-check-text">We incorporated all unlocked specifications into our final entry.</span>
             </label>
             <label class="ready-check-item">
               <input type="checkbox" id="chk-vault-hash" class="vault-pre-check" />
@@ -1625,7 +1635,7 @@ export const Screens = {
             </label>
             <label class="ready-check-item">
               <input type="checkbox" id="chk-vault-ready" class="vault-pre-check" />
-              <span class="ready-check-text">We are ready to submit our final poster entry.</span>
+              <span class="ready-check-text">We are ready to submit our final entry.</span>
             </label>
           </div>
 
@@ -1645,7 +1655,7 @@ export const Screens = {
                 id="btn-vault-final-submit"
                 style="pointer-events: none; opacity: 0.5;"
               >
-                Submit Your Poster &rarr;
+                Submit Your Final Entry &rarr;
               </a>
             </div>
             <p class="cta-note">Check all 3 items above to enable the submission button. The form opens in a secure new tab.</p>
@@ -1788,10 +1798,19 @@ export const Screens = {
               <p class="rule-text">
                 Each individual puzzle carries an independent countdown based on its assigned difficulty:
               </p>
-              <ul class="rule-list">
-                <li><strong>Easy:</strong> 10 minutes (600 seconds)</li>
-                <li><strong>Medium:</strong> 15 minutes (900 seconds)</li>
-                <li><strong>Hard:</strong> 20 minutes (1,200 seconds)</li>
+              <ul class="rule-list" style="list-style: none; padding-left: 0;">
+                <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                  <span class="food-badge food-badge-easy"><span class="food-badge-icon"><span class="food-badge-dot"></span></span><span class="food-badge-label">Easy</span></span>
+                  <span><strong>10 minutes</strong> (600 seconds)</span>
+                </li>
+                <li style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                  <span class="food-badge food-badge-medium"><span class="food-badge-icon"><span class="food-badge-dot"></span></span><span class="food-badge-label">Medium</span></span>
+                  <span><strong>15 minutes</strong> (900 seconds)</span>
+                </li>
+                <li style="display: flex; align-items: center; gap: 10px;">
+                  <span class="food-badge food-badge-hard"><span class="food-badge-icon"><span class="food-badge-dot"></span></span><span class="food-badge-label">Hard</span></span>
+                  <span><strong>20 minutes</strong> (1,200 seconds)</span>
+                </li>
               </ul>
               <p class="rule-text">
                 A puzzle's timer begins when you first enter its screen. A puzzle's timer keeps running if the tab is closed or reloaded, and pauses only when the team clicks "Back to grid". If a puzzle timer reaches zero, the puzzle is permanently marked as <strong>FAILED</strong> and locked.
@@ -1802,9 +1821,6 @@ export const Screens = {
               <summary>4. Puzzle Grid & Attempt Policy</summary>
               <p class="rule-text">
                 Tiles 1 through 11 are randomized in order at contest initialization. All 11 puzzle tiles are unlocked from the start and can be attempted in any order. Each puzzle permits a maximum of <strong>3 attempts</strong>. Entering 3 incorrect answers permanently marks the puzzle as <strong>FAILED</strong>.
-              </p>
-              <p class="rule-text">
-                Some puzzles involve reading code or using your browser's developer tools. Everything you need is on the page or in your browser.
               </p>
               <p class="rule-text">
                 Some puzzles involve reading code or using your browser's developer tools. Everything you need is on the page or in your browser.

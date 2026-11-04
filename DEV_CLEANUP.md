@@ -33,53 +33,53 @@ This document catalogs every developer, testing, and mock feature implemented ac
 
 ---
 
-## 3. Real Competition Puzzles & Poster Clue Specification Inventory (PDF-Sourced)
+## 3. Real Competition Puzzles & Clue Specification Inventory (PDF-Sourced)
 
-Four real puzzle challenges and their corresponding poster fragment clues have been sourced directly from official event PDFs and integrated into `CONFIG.PUZZLES`:
+Four real puzzle challenges and their corresponding submission fragment clues have been sourced directly from official event PDFs and integrated into `CONFIG.PUZZLES`. Each task is labeled with an Indian FSSAI-style food badge difficulty indicator (square outline with a centered circular dot: **Green = Easy**, **Yellow = Medium**, **Red = Hard**):
 
 ### Task 1 (`puzzle_1`) - ASCII Quote Decoder
 - **PDF Source:** `ASCII_Quote_Decoder.pdf`
-- **Type / Difficulty:** `ascii` / Easy (Mystery until opened)
+- **Type / Difficulty:** `ascii` / Easy 🟢 (Green Food Badge)
 - **Mechanic:** Decimal ASCII codes arranged horizontally by word with auto-advance, Backspace backward navigation, copy-paste word filling, live decode sentence banner, and slide-out ASCII reference chart.
 - **Answer:** `"Tomorrow starts with the code you write today"`
-- **Unlocked Reward:** **Poster Fragment 6**
-  - **Spec Card:** Text: `"Tomorrow starts with the code you write today"`, Font: `Arial`, Size: `14pt`, Style: `Italics`, Color: `Black (#000000)`, Position: `Center, below FUTURE`.
+- **Unlocked Reward:** **Clue Fragment 6 (Required Quote Sentence)**
+  - **Spec Card:** Quote to Add: `"Tomorrow starts with the code you write today"`, Font: `Arial`, Size: `14pt`, Style: `Italics`, Color: `Black (#000000)`, Position: `Center, below the title`.
   - Includes quick 1-click **Copy Specification** action in both puzzle completion popup and Vault Inventory.
 
 ### Task 2 (`puzzle_2`) - Coordinates Grid Decoder
 - **PDF Source:** `Coordinates_Grid_LEARN_BUILD_LEAD.pdf`
-- **Type / Difficulty:** `coords` / Easy (Mystery until opened)
+- **Type / Difficulty:** `coords` / Easy 🟢 (Green Food Badge)
 - **Mechanic:** 7x7 matrix with `(column, row)` ordered coordinate chips. Interactive radar sweeps and crosshairs highlight target cells.
 - **Words Spelled:**
   - Chip Group 1: `(2,1)(7,3)(3,2)(1,5)(2,4)` = `LEARN`
   - Chip Group 2: `(4,3)(6,1)(7,5)(6,4)(3,5)` = `BUILD`
   - Chip Group 3: `(2,6)(4,7)(6,6)(7,7)` = `LEAD`
 - **Answer:** `"LEARN BUILD LEAD"`
-- **Unlocked Reward:** **Poster Fragment 9**
-  - **Spec Card:** Text: `LEARN – BUILD – LEAD` (uppercase, separated by dashes). Colors: `LEARN: Green (#22C55E)`, `BUILD: Blue (#3B82F6)`, `LEAD: Red (#EF4444)`. Position: `Lower-center, directly below body paragraph`.
+- **Unlocked Reward:** **Clue Fragment 9 (Required Motto)**
+  - **Spec Card:** Motto to Add: `LEARN — BUILD — LEAD` (uppercase, separated by dashes). Colors: `LEARN: Green (#22C55E)`, `BUILD: Blue (#3B82F6)`, `LEAD: Red (#EF4444)`. Position: `Lower-center, directly below body paragraph`.
   - Includes quick 1-click **Copy Specification** action.
 
 ### Task 3 (`puzzle_3`) - Code The Future BODMAS
 - **PDF Source:** `Code_The_Future_BODMAS.pdf`
-- **Type / Difficulty:** `bodmas` / Medium (Mystery until opened)
+- **Type / Difficulty:** `bodmas` / Medium 🟡 (Yellow Food Badge)
 - **Mechanic:** 13 BODMAS math expressions with superscripts evaluated through operator precedence into letter numbers (1=A, 2=B, ..., 26=Z), organized into 3 target words. Interactive A-Z reference scale highlights computed letters.
   - Word 1 (CODE - 4 eq): `(8*3)/8`=3(C), `5*3-0`=15(O), `2^3/2`=4(D), `(10/2)-0`=5(E)
   - Word 2 (THE - 3 eq): `4*5`=20(T), `2^3`=8(H), `(25/5)`=5(E)
   - Word 3 (FUTURE - 6 eq): `12/2`=6(F), `3^2+18/3`=21(U), `4^2+12/3`=20(T), `3*7`=21(U), `2^3+6-3*2`=18(R), `(15/3)`=5(E)
 - **Answer:** `"CODE THE FUTURE"`
-- **Unlocked Reward:** **Poster Fragment 5**
-  - **Spec Card:** Text: `CODE THE` (line 1), `FUTURE` (line 2). Font: `Arial Black`, CODE THE size: `20pt`, FUTURE size: `24pt`, Weight: `Bold display`, Color: `Yellow (#FFC928)`. Position: `Upper-center, directly below FUTURE QUEST 2026`.
+- **Unlocked Reward:** **Clue Fragment 5 (Required Headline Title)**
+  - **Spec Card:** Title to Add: `CODE THE` (line 1), `FUTURE` (line 2). Font: `Arial Black`, CODE THE size: `20pt`, FUTURE size: `24pt`, Weight: `Bold display`, Color: `Yellow (#FFC928)`. Position: `Upper-center, directly below FUTURE QUEST 2026`.
   - Includes quick 1-click **Copy Specification** action.
 
 ### Task 7 (`puzzle_7`) - Treasure Hunt Word Search
 - **PDF Source:** `Treasure_Hunt_Word_Search.pdf`
-- **Type / Difficulty:** `wordsearch` / Hard (Mystery until opened)
+- **Type / Difficulty:** `wordsearch` / Hard 🔴 (Red Food Badge)
 - **Mechanic:** 15x15 letter matrix containing 20 hidden technology terms in horizontal, vertical, and diagonal directions. Interactive pointer dragging selects words; found words lock into colored highlight capsules and checklist strikes through.
 - **20 Words:** `AROUND`, `ARTIFICIAL`, `CENTERED`, `COMPUTING`, `DAILY`, `DATA`, `EDGE`, `FUTURE`, `INNOVATIONS`, `INTEGRATION`, `LIFE`, `QUANTUM`, `RAPID`, `REALITY`, `RESHAPE`, `ROBOTICS`, `SCIENCE`, `SUSTAINABLE`, `TECHNOLOGY`, `VIRTUAL`.
 - **Answer:** Comma-separated list or word search completion.
-- **Unlocked Reward:** **Poster Fragment 8**
-  - **Spec Card:** Text: List of the 20 found technology words. Typography: Font: `Calibri`, Size: `12pt`, Style: `Italics`, Color: `Black (#000000)`. Instruction: `"Write your own paragraph using these words."`. Position: `Lower-center, below centerpiece image`.
-  - Note: Does not disclose the paragraph text directly, requiring contestants to compose their own poster copy incorporating all 20 discovered keywords.
+- **Unlocked Reward:** **Clue Fragment 8 (Required Word Bank for Paragraph)**
+  - **Spec Card:** Word Bank: 20 discovered technology words. Typography: Font: `Calibri`, Size: `12pt`, Style: `Italics`, Color: `Black (#000000)`. Paragraph Rule: `"Write your submission paragraph using these 20 words."`. Position: `Lower-center, below centerpiece image`.
+  - Note: Does not disclose the paragraph text directly, requiring contestants to compose their own submission paragraph incorporating all 20 discovered keywords.
   - Includes quick 1-click **Copy Specification** action.
 
 ---

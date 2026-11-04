@@ -38,7 +38,7 @@ export const CONFIG = {
     fullName: "JAIN (Deemed-to-be University) Kochi, School of Future",
     poweredBy: "Powered by JAIN School of Future",
     title: "Future Quest '26",
-    paragraph: "A tech treasure hunt for Higher Secondary students. Solve puzzles, collect clues and rebuild the hidden poster.",
+    paragraph: "A tech treasure hunt for Higher Secondary students. Solve puzzles, collect clues and unlock secret submission specs.",
     tagline: "Curiosity, logic and a little code. Bring your whole team.",
     prizes: {
       winner: "₹50,000",
@@ -50,7 +50,7 @@ export const CONFIG = {
       {
         id: "online-treasure-hunt",
         title: "Online treasure hunt",
-        desc: "Solve tech puzzles, decode hidden clues, and assemble the secret poster."
+        desc: "Solve tech puzzles, decode hidden clues, and assemble the secret submission."
       },
       {
         id: "ai-bootcamp",
@@ -154,11 +154,11 @@ export const CONFIG = {
       hint: "Look up the standard ASCII decimal value for each number: 84 is 'T', 111 is 'o', 109 is 'm'...",
       clueType: "spec",
       clue: {
-        title: "Poster Fragment 6: Secret Quote",
+        title: "Clue Fragment 6: Required Quote",
         type: "spec",
         specs: [
           { label: "Fragment", value: "Fragment 6" },
-          { label: "Text", value: '"Tomorrow starts with the code you write today"' },
+          { label: "Quote to Add", value: '"Tomorrow starts with the code you write today"' },
           { label: "Font", value: "Arial" },
           { label: "Size", value: "14" },
           { label: "Style", value: "Italics" },
@@ -192,11 +192,11 @@ export const CONFIG = {
       hint: "In (Col, Row), the first number is the horizontal column (1-7), and the second is the vertical row (1-7 from top).",
       clueType: "spec",
       clue: {
-        title: "Poster Fragment 9: Core Principles",
+        title: "Clue Fragment 9: Required Motto (LEARN – BUILD – LEAD)",
         type: "spec",
         specs: [
           { label: "Fragment", value: "Fragment 9" },
-          { label: "Text", value: "LEARN – BUILD – LEAD (Uppercase with dashes)" },
+          { label: "Motto to Add", value: "LEARN — BUILD — LEAD (Uppercase with dashes)" },
           { label: "Color Rules", value: "LEARN: Green, BUILD: Blue, LEAD: Red" },
           { label: "Position", value: "Lower-center, directly below the body paragraph" }
         ]
@@ -231,11 +231,11 @@ export const CONFIG = {
       hint: "Remember precedence: Brackets, Orders (powers), Division & Multiplication, Addition & Subtraction. 1=A, 2=B...",
       clueType: "spec",
       clue: {
-        title: "Poster Fragment 5: Slogan Banner",
+        title: "Clue Fragment 5: Required Title (CODE THE FUTURE)",
         type: "spec",
         specs: [
           { label: "Fragment", value: "Fragment 5" },
-          { label: "Text", value: "CODE THE (line 1) / FUTURE (line 2)" },
+          { label: "Title to Add", value: "CODE THE (line 1) / FUTURE (line 2)" },
           { label: "Font", value: "Arial Black (Bold display)" },
           { label: "Size", value: "CODE THE: 20, FUTURE: 24" },
           { label: "Color", value: "Yellow" },
@@ -405,7 +405,7 @@ export const CONFIG = {
       hint: "Look for AROUND starting at [5,0] going up, ARTIFICIAL at [0,7] going down, FUTURE at [7,8] going down...",
       clueType: "spec",
       clue: {
-        title: "Poster Fragment 8: Word Bank & Paragraph Spec",
+        title: "Clue Fragment 8: Required Word Bank (Submission Paragraph)",
         type: "spec",
         specs: [
           { label: "Fragment", value: "Fragment 8" },
@@ -415,7 +415,7 @@ export const CONFIG = {
           { label: "Style", value: "Italics" },
           { label: "Color", value: "Black" },
           { label: "Position", value: "Lower-center, below the centerpiece image" },
-          { label: "Instruction", value: "Write your own paragraph using these words." }
+          { label: "Paragraph Rule", value: "Write your submission paragraph using these 20 words." }
         ]
       },
       data: {
