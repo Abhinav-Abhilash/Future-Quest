@@ -11,6 +11,7 @@ import { Router } from './router.js';
 import { Screens } from './screens.js';
 import { ICONS } from './icons.js';
 import { Modal } from './modal.js';
+import { Fx } from './fx.js';
 
 class App {
   constructor() {
@@ -24,6 +25,7 @@ class App {
     if (CONFIG.DEV_MODE) {
       window.GameState = GameState;
       window.CONFIG = CONFIG;
+      window.Fx = Fx;
     }
   }
 
@@ -32,6 +34,9 @@ class App {
     const navContainer = document.getElementById('app-navbar');
 
     document.body.classList.toggle('dev-mode', !!CONFIG.DEV_MODE);
+
+    // Initialize lite-mode & reduced motion sync
+    Fx.initLiteModeSync();
 
     this.router = new Router({}, (route, params) => {
       this.closeMobileMenu();
@@ -45,9 +50,13 @@ class App {
     // Initial router kick-off
     this.router.start();
 
-    // Subscribe to state updates for reactive nav updates (e.g. hints count)
+    // Subscribe to state updates for reactive nav & pouch updates
     GameState.subscribe(() => {
       this.updateNavbar(navContainer, this.router.currentRoute);
+      const pouchEl = document.getElementById('clue-pouch-strip');
+      if (pouchEl && GameState.hasSession()) {
+        Fx.updateCluePouch(pouchEl, GameState.state);
+      }
     });
 
     // DEV-ONLY: Initialize fixed dev reset bar at bottom-right
@@ -97,9 +106,15 @@ class App {
           localStorage.removeItem(key);
         }
       }
+      sessionStorage.removeItem('future_quest_secrets_found');
     } catch (e) {
       console.warn('Dev reset error clearing storage:', e);
     }
+
+    // Reset zero-flash session state & secret glyphs
+    document.documentElement.classList.remove('has-active-session');
+    Fx.secretsFound.clear();
+    Fx.updateSecretsCounter();
 
     // 2. Clear all running intervals
     if (this.masterInterval) {
@@ -144,9 +159,40 @@ class App {
   renderCurrentScreen(container, route, params) {
     window.scrollTo({ top: 0, behavior: 'instant' });
 
+    const staticLanding = document.getElementById('static-landing-view');
+    const pouchEl = document.getElementById('clue-pouch-strip');
+
+    if (route === 'landing' || (!GameState.hasSession() && (route === '' || route === 'home'))) {
+      if (staticLanding) {
+        staticLanding.style.display = '';
+        Fx.initLanternHero(document.getElementById('landing-hero'));
+        Fx.initPrizeCountUp(staticLanding);
+        Fx.initRoutePathDraw(staticLanding);
+        Fx.initGridPreviewFlip(staticLanding);
+      }
+      if (container) container.style.display = 'none';
+      if (pouchEl) pouchEl.style.display = 'none';
+      return;
+    }
+
+    // For all other routes: hide static landing, show container
+    if (staticLanding) {
+      staticLanding.style.display = 'none';
+    }
+    if (container) {
+      container.style.display = 'block';
+    }
+
+    if (pouchEl && GameState.hasSession()) {
+      Fx.updateCluePouch(pouchEl, GameState.state);
+    }
+
     switch (route) {
       case 'landing':
-        Screens.renderLanding(container, this.router);
+        // If hasSession, route guard redirects to /grid
+        if (GameState.hasSession()) {
+          this.router.navigate('/grid');
+        }
         break;
       case 'register':
         Screens.renderRegister(container, this.router);
@@ -278,7 +324,22 @@ class App {
           </div>
         </div>
       </header>
+
+      <!-- Master Timer Thin Progress Bar under Nav -->
+      <div class="master-timer-progress-wrap" id="master-timer-progress-wrap" aria-hidden="true">
+        <div class="master-timer-progress" id="master-timer-progress"></div>
+      </div>
+
+      <!-- Master Clue Pouch Strip -->
+      <div class="clue-pouch-strip" id="clue-pouch-strip"></div>
     `;
+
+    // Render initial clue pouch slots & progress bar
+    const pouchEl = navContainer.querySelector('#clue-pouch-strip');
+    if (pouchEl) {
+      Fx.updateCluePouch(pouchEl, state);
+    }
+    Fx.updateMasterProgressBar(remainingSec, 7200);
 
     // Bind mobile menu toggle
     const toggleBtn = navContainer.querySelector('#mobile-nav-toggle');
@@ -353,6 +414,9 @@ class App {
       if (clockEl) {
         clockEl.textContent = Screens.formatTime(remainingSec, true);
       }
+
+      // Update master progress bar
+      Fx.updateMasterProgressBar(remainingSec, 7200);
 
       if (badgeEl) {
         if (remainingSec <= 600 && !state.vaultEntered) {

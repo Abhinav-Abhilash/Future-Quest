@@ -31,6 +31,60 @@ export const CONFIG = {
   // DEV-ONLY: Submission Form URL placeholder
   POSTER_FORM_URL: "https://docs.google.com/forms/d/e/1FAIpQLSc_JU_SFT_FQ2026_SUBMISSION_PLACEHOLDER/viewform",
 
+  // Event branding and promotional content configuration
+  EVENT: {
+    institution: "JAIN (Deemed-to-be University) Kochi",
+    school: "School of Future",
+    poweredBy: "Powered by JAIN School of Future",
+    title: "Future Quest '26",
+    tagline: "No coding. Just curiosity, creativity & teamwork.",
+    prizes: {
+      winner: "₹50,000",
+      winnerAmount: 50000,
+      runnerUp: "₹25,000",
+      runnerUpAmount: 25000
+    },
+    perks: [
+      {
+        id: "online-treasure-hunt",
+        title: "Online treasure hunt",
+        desc: "Solve tech puzzles, decode hidden clues, and assemble the secret poster."
+      },
+      {
+        id: "ai-bootcamp",
+        title: "Free AI Bootcamp",
+        desc: "Hands-on masterclass in future technologies and artificial intelligence."
+      },
+      {
+        id: "campus-finale",
+        title: "Campus finale at JAIN Kochi",
+        desc: "Grand on-campus final round showcase with awards and direct mentoring."
+      }
+    ],
+    teamSize: "Teams of 3 to 5",
+    registrationFree: "Registration free",
+    eligibility: "Higher Secondary Students (Grades 11 & 12)",
+    duration: "2 hours",
+    format: "11 puzzles + submission",
+    website: "www.jainsoft.co.in",
+    websiteUrl: "https://www.jainsoft.co.in",
+    queriesPhone: "7034065252",
+    registrationUrl: "https://docs.google.com/forms/d/e/1FAIpQLSc_JU_SFT_FQ2026_REGISTRATION_PLACEHOLDER/viewform"
+  },
+
+  // Granular animation & interaction feature toggles
+  EFFECTS: {
+    lanternHero: true,      // Spotlight torch and secret glyphs discovery
+    prizeCountUp: true,     // Animated count-up for prize figures
+    routePathDraw: true,    // Self-drawing dotted progress route
+    gridPreviewFlip: true,  // 3D tilt and preview card flip
+    tileMotion: true,       // Game tile hover lift, press feedback, and shine sweep
+    cluePouch: true,        // Top clue pouch slot tracker strip
+    keyAttempts: true,      // Key break animations & lantern extinguish on attempts/hints
+    solveBurst: true,       // 16-piece CSS particle burst on puzzle solve
+    timerBars: true         // ScaleX timer progress bars for master & puzzle clocks
+  },
+
   /**
    * NOTE: In production, puzzle difficulty levels and time limits must come
    * from the server later (e.g. issued when a puzzle tile is opened), since

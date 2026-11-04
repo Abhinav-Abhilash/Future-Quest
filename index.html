@@ -4,29 +4,523 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Future Quest '26 | Online Tech Treasure Hunt | JAIN School of Future</title>
   <meta name="description"
-    content="Future Quest 2026 - Online Puzzle Competition hosted by Jain University, School of Future Technology for 11th and 12th grade school teams.">
-  <title>Future Quest 2026 | Jain University SFT</title>
+    content="Future Quest '26 is an online tech treasure hunt for 11th & 12th grade school teams hosted by JAIN (Deemed-to-be University) Kochi, School of Future. Win ₹50,000 in prizes. No coding required.">
+  <meta name="theme-color" content="#0F0B1A">
+  <link rel="canonical" href="https://futurequest.jainsoft.co.in/">
 
-  <!-- Google Fonts: IBM Plex Sans and IBM Plex Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
-    rel="stylesheet">
+  <!-- Open Graph & Social Metadata -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Future Quest '26 - JAIN School of Future">
+  <meta property="og:title" content="Future Quest '26 | Online Tech Treasure Hunt">
+  <meta property="og:description"
+    content="A tech treasure hunt exclusively for Higher Secondary students. Win ₹50,000 in prizes. No coding. Just curiosity, creativity & teamwork.">
+  <meta property="og:url" content="https://futurequest.jainsoft.co.in/">
+  <meta property="og:image" content="https://futurequest.jainsoft.co.in/assets/og-poster-1200x630.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Future Quest '26 Online Tech Treasure Hunt Flyer and Prize Callout">
+
+  <!-- Twitter Card Metadata -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Future Quest '26 | Online Tech Treasure Hunt">
+  <meta name="twitter:description"
+    content="Win ₹50,000. Free AI Bootcamp, campus finale at JAIN Kochi. For 11th & 12th grade school teams.">
+  <meta name="twitter:image" content="https://futurequest.jainsoft.co.in/assets/og-poster-1200x630.jpg">
+
+  <!-- Preload Heading Font (Self-Hosted WOFF2 Latin Subset Only) -->
+  <link rel="preload" href="fonts/poppins-700.woff2" as="font" type="font/woff2" crossorigin>
 
   <!-- Core Stylesheet -->
   <link rel="stylesheet" href="styles.css">
+
+  <!-- Zero-Flash Session Guard -->
+  <script>
+    (function () {
+      try {
+        var raw = localStorage.getItem('future_quest_2026_state');
+        if (raw) {
+          var state = JSON.parse(raw);
+          if (state && state.teamName && state.timerStartedAt) {
+            document.documentElement.classList.add('has-active-session');
+          }
+        }
+      } catch (e) { }
+    })();
+  </script>
+
+  <!-- Structured Data: Organization (Schema.org) -->
+  <!-- TODO: Add Event schema markup once competition schedule dates are finalized -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "JAIN (Deemed-to-be University) Kochi - School of Future",
+    "alternateName": "JAIN School of Future",
+    "url": "https://www.jainsoft.co.in",
+    "logo": "https://futurequest.jainsoft.co.in/assets/jain-logo.png",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+91-7034065252",
+      "contactType": "event queries",
+      "areaServed": "IN",
+      "availableLanguage": ["en", "ml"]
+    }
+  }
+  </script>
 </head>
 
 <body>
   <!-- Global Notification Banner Container -->
   <div id="notice-banner-root" class="notice-banner-root" aria-live="assertive"></div>
 
-  <!-- Sticky App Navigation Bar -->
+  <!-- Sticky App Navigation Bar & Master Clue HUD -->
   <div id="app-navbar" class="nav-container"></div>
 
-  <!-- Main SPA Viewport -->
+  <!-- =========================================================================
+       STATIC LANDING PAGE VIEW (Instant First Paint & Crawler Readable)
+       ========================================================================= -->
+  <div id="static-landing-view" class="landing-view-wrapper">
+    <header class="landing-hero" id="landing-hero">
+      <!-- Decorative Lantern Spotlight Layer -->
+      <div class="hero-lantern-layer" aria-hidden="true">
+        <!-- 3 Hidden Ancient Secret Glyphs for Spotlight Discovery -->
+        <span class="hero-secret-glyph glyph-1" data-glyph-id="1" title="Secret Key Glyph" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="7.5" cy="15.5" r="5.5"></circle>
+            <path d="m21 2-9.6 9.6"></path>
+            <path d="m15.5 7.5 3 3"></path>
+            <path d="m18.5 4.5 3 3"></path>
+          </svg>
+        </span>
+        <span class="hero-secret-glyph glyph-2" data-glyph-id="2" title="Secret Compass Glyph" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" fill-opacity="0.2"></polygon>
+          </svg>
+        </span>
+        <span class="hero-secret-glyph glyph-3" data-glyph-id="3" title="Secret Gem Glyph" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 3h12l4 6-10 12L2 9z"></path>
+            <path d="M2 9h20"></path>
+            <path d="M10 21l-3-12L12 3l5 6-3 12"></path>
+          </svg>
+        </span>
+      </div>
+
+      <div class="hero-inner screen-container">
+        <!-- OFFICIAL JAIN LOGO SLOT: Supply official logo vector assets here -->
+        <div class="jain-logo-slot" role="img" aria-label="JAIN (Deemed-to-be University) Kochi - School of Future">
+          <div class="jain-logo-placeholder">
+            <span class="jain-badge">JGI</span>
+            <span class="jain-name">JAIN</span>
+            <span class="jain-divider">|</span>
+            <span class="jain-sub">SCHOOL OF FUTURE</span>
+          </div>
+        </div>
+
+        <div class="brand-institution">JAIN (Deemed-to-be University) Kochi &bull; School of Future</div>
+
+        <h1 class="landing-title">future quest<span class="title-highlight">'26</span></h1>
+
+        <div class="powered-by-tag">Powered by JAIN School of Future</div>
+
+        <p class="landing-tagline">
+          A tech treasure hunt exclusively for Higher Secondary students.<br>
+          <strong>No coding. Just curiosity, creativity &amp; teamwork.</strong>
+        </p>
+
+        <div class="landing-actions">
+          <a href="#/register" class="btn btn-primary btn-lg" id="btn-hero-start">Start Event</a>
+          <a href="#/rules" class="btn btn-secondary btn-lg">Read the rules</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="landing-main-content screen-container">
+      <!-- Grand Prize Callout Banner -->
+      <section class="prizes-banner" aria-labelledby="prizes-heading">
+        <h2 id="prizes-heading" class="sr-only">Competition Prizes</h2>
+        <div class="prizes-grid">
+          <div class="prize-card winner-card">
+            <div class="prize-badge-row">
+              <span class="prize-badge winner-badge">WIN</span>
+            </div>
+            <div class="prize-amount-row">
+              <span class="prize-currency">₹</span>
+              <span class="prize-figure-val prize-counter mono" data-target="50000">₹ 50,000</span>
+            </div>
+            <div class="prize-desc">Grand Cash Prize + Championship Trophy</div>
+          </div>
+
+          <div class="prize-card runner-card">
+            <div class="prize-badge-row">
+              <span class="prize-badge runner-badge">Runner-up</span>
+            </div>
+            <div class="prize-amount-row">
+              <span class="prize-currency">₹</span>
+              <span class="prize-figure-val prize-counter mono" data-target="25000">₹ 25,000</span>
+            </div>
+            <div class="prize-desc">Runner-up Cash Award + Merit Citations</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Three Core Event Perks -->
+      <section class="perks-section" aria-labelledby="perks-heading">
+        <h2 id="perks-heading" class="landing-section-title">Event Highlights</h2>
+        <div class="perks-grid">
+          <div class="perk-card">
+            <div class="perk-icon-wrap">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="14" rx="2"></rect>
+                <path d="M2 11h20"></path>
+                <circle cx="12" cy="11" r="1.5" fill="currentColor"></circle>
+                <path d="M6 6v5"></path>
+                <path d="M18 6v5"></path>
+              </svg>
+            </div>
+            <h3 class="perk-title">Online Treasure Hunt</h3>
+            <p class="perk-desc">Decode mystery technical challenges, unlock secret clues, and reconstruct the missing poster specification.</p>
+          </div>
+
+          <div class="perk-card">
+            <div class="perk-icon-wrap">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+                <circle cx="12" cy="12" r="2" fill="currentColor"></circle>
+              </svg>
+            </div>
+            <h3 class="perk-title">Free AI Bootcamp</h3>
+            <p class="perk-desc">Hands-on masterclass in future technologies, artificial intelligence, and creative teamwork for all participants.</p>
+          </div>
+
+          <div class="perk-card">
+            <div class="perk-icon-wrap">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"></path>
+                <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"></path>
+                <path d="M4 3h16v7a8 8 0 0 1-16 0V3z"></path>
+                <path d="M12 18v3"></path>
+                <path d="M8 21h8"></path>
+              </svg>
+            </div>
+            <h3 class="perk-title">Campus Finale at JAIN Kochi</h3>
+            <p class="perk-desc">Top teams qualify for the grand on-campus final showcase, networking with faculty, and ceremonial awards.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Compact Contest Facts Row -->
+      <section class="facts-section" aria-labelledby="facts-heading">
+        <h2 id="facts-heading" class="sr-only">Key Contest Specifications</h2>
+        <div class="landing-facts-grid" role="region" aria-label="Key Facts">
+          <div class="fact-cell">
+            <span class="fact-label">Eligibility</span>
+            <span class="fact-val mono">Grades 11 and 12</span>
+          </div>
+          <div class="fact-cell">
+            <span class="fact-label">Team Size</span>
+            <span class="fact-val mono fact-highlight">Teams of 3 to 5</span>
+          </div>
+          <div class="fact-cell">
+            <span class="fact-label">Total Duration</span>
+            <span class="fact-val mono">2 hours</span>
+          </div>
+          <div class="fact-cell">
+            <span class="fact-label">Entry Fee</span>
+            <span class="fact-val mono fact-highlight">Registration free</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Registration Callout Link -->
+      <div class="registration-help-box">
+        <span class="help-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"></path>
+          </svg>
+        </span>
+        <span class="help-text">
+          Not registered yet? Register through your school coordinator or the <a href="https://docs.google.com/forms/d/e/1FAIpQLSc_JU_SFT_FQ2026_REGISTRATION_PLACEHOLDER/viewform" target="_blank" rel="noopener noreferrer" class="text-link">online registration form</a>.
+        </span>
+      </div>
+
+      <!-- How it Works & Before You Start -->
+      <div class="landing-details-grid">
+        <section class="landing-card" aria-labelledby="how-it-works-heading">
+          <h2 id="how-it-works-heading" class="landing-section-title">How it works</h2>
+          <div class="landing-steps-route">
+            <ol class="landing-steps-list">
+              <li class="landing-step-item">
+                <span class="step-badge mono">1</span>
+                <span class="step-text">Check in your team with your team name and school.</span>
+              </li>
+              <li class="landing-step-item">
+                <span class="step-badge mono">2</span>
+                <span class="step-text">Open any task in any order and solve it before its timer runs out.</span>
+              </li>
+              <li class="landing-step-item">
+                <span class="step-badge mono">3</span>
+                <span class="step-text">Every solved task unlocks a clue for the poster.</span>
+              </li>
+              <li class="landing-step-item">
+                <span class="step-badge mono">4</span>
+                <span class="step-text">Open Submit when you are done and send your poster.</span>
+              </li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="landing-card" aria-labelledby="before-you-start-heading">
+          <h2 id="before-you-start-heading" class="landing-section-title">Before you start</h2>
+          <ul class="landing-checklist">
+            <li class="landing-check-item">
+              <span class="check-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+              <span class="check-text">Whole team present (3 to 5 members)</span>
+            </li>
+            <li class="landing-check-item">
+              <span class="check-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+              <span class="check-text">One shared device for the competition</span>
+            </li>
+            <li class="landing-check-item">
+              <span class="check-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+              <span class="check-text">Stable internet connection</span>
+            </li>
+            <li class="landing-check-item">
+              <span class="check-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+              <span class="check-text">The timer cannot be paused once it starts</span>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- Static Grid Preview -->
+      <section class="landing-preview-card" aria-labelledby="preview-heading">
+        <div class="landing-preview-header">
+          <h2 id="preview-heading" class="landing-section-title" style="border:none; padding:0; margin:0;">Grid preview</h2>
+          <span class="preview-note text-muted mono">12 Slots &bull; Tap tile to inspect</span>
+        </div>
+        <div class="landing-preview-grid" role="region" aria-label="12 Preview Tiles">
+          <!-- 11 Purple Gradient Tiles with 3D Flip capability -->
+          <div class="preview-tile-card" tabindex="0" role="button" aria-label="Task 1 preview, tap to flip">
+            <div class="preview-tile-inner">
+              <div class="preview-tile-front preview-tile-gradient">
+                <span class="preview-tile-tag">Task 1</span>
+                <span class="preview-tile-num mono">01</span>
+              </div>
+              <div class="preview-tile-back">
+                <span class="preview-back-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </span>
+                <span class="preview-back-text">Sealed until you start</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-tile-card" tabindex="0" role="button" aria-label="Task 2 preview, tap to flip">
+            <div class="preview-tile-inner">
+              <div class="preview-tile-front preview-tile-gradient">
+                <span class="preview-tile-tag">Task 2</span>
+                <span class="preview-tile-num mono">02</span>
+              </div>
+              <div class="preview-tile-back">
+                <span class="preview-back-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <span class="preview-back-text">Sealed until you start</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-tile-card" tabindex="0" role="button" aria-label="Task 3 preview, tap to flip">
+            <div class="preview-tile-inner">
+              <div class="preview-tile-front preview-tile-gradient">
+                <span class="preview-tile-tag">Task 3</span>
+                <span class="preview-tile-num mono">03</span>
+              </div>
+              <div class="preview-tile-back">
+                <span class="preview-back-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <span class="preview-back-text">Sealed until you start</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-tile-card" tabindex="0" role="button" aria-label="Task 4 preview, tap to flip">
+            <div class="preview-tile-inner">
+              <div class="preview-tile-front preview-tile-gradient">
+                <span class="preview-tile-tag">Task 4</span>
+                <span class="preview-tile-num mono">04</span>
+              </div>
+              <div class="preview-tile-back">
+                <span class="preview-back-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <span class="preview-back-text">Sealed until you start</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-tile-card" tabindex="0" role="button" aria-label="Task 5 preview, tap to flip">
+            <div class="preview-tile-inner">
+              <div class="preview-tile-front preview-tile-gradient">
+                <span class="preview-tile-tag">Task 5</span>
+                <span class="preview-tile-num mono">05</span>
+              </div>
+              <div class="preview-tile-back">
+                <span class="preview-back-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <span class="preview-back-text">Sealed until you start</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-tile-card" tabindex="0" role="button" aria-label="Task 6 preview, tap to flip">
+            <div class="preview-tile-inner">
+              <div class="preview-tile-front preview-tile-gradient">
+                <span class="preview-tile-tag">Task 6</span>
+                <span class="preview-tile-num mono">06</span>
+              </div>
+              <div class="preview-tile-back">
+                <span class="preview-back-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <span class="preview-back-text">Sealed until you start</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-tile-card" tabindex="0" role="button" aria-label="Task 7 preview, tap to flip">
+            <div class="preview-tile-inner">
+              <div class="preview-tile-front preview-tile-gradient">
+                <span class="preview-tile-tag">Task 7</span>
+                <span class="preview-tile-num mono">07</span>
+              </div>
+              <div class="preview-tile-back">
+                <span class="preview-back-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <span class="preview-back-text">Sealed until you start</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-tile-card" tabindex="0" role="button" aria-label="Task 8 preview, tap to flip">
+            <div class="preview-tile-inner">
+              <div class="preview-tile-front preview-tile-gradient">
+                <span class="preview-tile-tag">Task 8</span>
+                <span class="preview-tile-num mono">08</span>
+              </div>
+              <div class="preview-tile-back">
+                <span class="preview-back-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <span class="preview-back-text">Sealed until you start</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-tile-card" tabindex="0" role="button" aria-label="Task 9 preview, tap to flip">
+            <div class="preview-tile-inner">
+              <div class="preview-tile-front preview-tile-gradient">
+                <span class="preview-tile-tag">Task 9</span>
+                <span class="preview-tile-num mono">09</span>
+              </div>
+              <div class="preview-tile-back">
+                <span class="preview-back-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <span class="preview-back-text">Sealed until you start</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-tile-card" tabindex="0" role="button" aria-label="Task 10 preview, tap to flip">
+            <div class="preview-tile-inner">
+              <div class="preview-tile-front preview-tile-gradient">
+                <span class="preview-tile-tag">Task 10</span>
+                <span class="preview-tile-num mono">10</span>
+              </div>
+              <div class="preview-tile-back">
+                <span class="preview-back-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <span class="preview-back-text">Sealed until you start</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-tile-card" tabindex="0" role="button" aria-label="Task 11 preview, tap to flip">
+            <div class="preview-tile-inner">
+              <div class="preview-tile-front preview-tile-gradient">
+                <span class="preview-tile-tag">Task 11</span>
+                <span class="preview-tile-num mono">11</span>
+              </div>
+              <div class="preview-tile-back">
+                <span class="preview-back-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <span class="preview-back-text">Sealed until you start</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tile 12: Flat Red Submit Tile -->
+          <div class="preview-tile-card preview-tile-submit-card" tabindex="0" role="button" aria-label="Tile 12: Submit Button preview">
+            <div class="preview-tile-inner">
+              <div class="preview-tile-front preview-tile-submit">
+                <span class="preview-submit-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </span>
+                <span class="preview-submit-label">Submit</span>
+              </div>
+              <div class="preview-tile-back">
+                <span class="preview-back-text">Vault Lock</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Static Landing Footer -->
+    <footer class="landing-footer screen-container">
+      <div class="footer-inner">
+        <div class="footer-left">
+          <div class="footer-brand">Future Quest '26</div>
+          <div class="footer-sub">Powered by JAIN School of Future &bull; Kochi Campus</div>
+          <div class="footer-links">
+            <a href="https://www.jainsoft.co.in" target="_blank" rel="noopener noreferrer" class="footer-link">www.jainsoft.co.in</a>
+            <span class="footer-sep">&bull;</span>
+            <span class="footer-phone">For queries, call: <strong>7034065252</strong></span>
+          </div>
+        </div>
+
+        <div class="footer-right">
+          <!-- Secret Glyphs Counter from Lantern Hero -->
+          <div class="footer-secrets-tracker" title="Secret ancient glyphs discovered in lantern hero">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" fill-opacity="0.2"></polygon>
+            </svg>
+            <span class="tracker-text">Secrets found: <strong id="secrets-counter-val" class="mono">0/3</strong></span>
+          </div>
+
+          <!-- Reduce Effects Toggle -->
+          <button type="button" class="btn btn-secondary btn-sm btn-reduce-effects" aria-pressed="false">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="10 8 16 12 10 16 10 8"></polygon>
+            </svg>
+            <span class="reduce-effects-text">Effects: Standard</span>
+          </button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Main SPA Viewport (for #/register, #/grid, #/puzzle, #/vault, #/rules) -->
   <main id="app-main" class="app-main" role="main" tabindex="-1">
     <div class="loading-state">Initializing Future Quest contest terminal...</div>
   </main>

@@ -13,6 +13,7 @@ import { CONFIG, getTileLabel } from './config.js';
 import { GameState } from './state.js';
 import { ICONS } from './icons.js';
 import { Modal } from './modal.js';
+import { Fx } from './fx.js';
 
 export const Screens = {
   activePuzzleInterval: null,
@@ -510,6 +511,9 @@ export const Screens = {
         }
       });
     }
+
+    // Initialize tile hover tilt & ready pulse
+    Fx.initTileMotion(container, state);
   },
 
   // =========================================================================
@@ -656,6 +660,9 @@ export const Screens = {
 
           <!-- Puzzle Header -->
           <div class="puzzle-header-card">
+            <div class="puzzle-timer-progress-wrap" aria-hidden="true">
+              <div class="puzzle-timer-progress" id="puzzle-timer-progress"></div>
+            </div>
             <div class="puzzle-meta-row">
               <div class="puzzle-number-badge">TASK ${tileNumber}</div>
               <div class="difficulty-badge difficulty-${difficulty}">
@@ -706,6 +713,7 @@ export const Screens = {
                   <div class="hint-title-row">
                     <span class="hint-icon">${ICONS.hint}</span>
                     <strong>Puzzle Hint:</strong>
+                    ${Fx.renderHintsLanterns(state.hintsRemaining, 3)}
                   </div>
                   <p class="hint-text">${puzzleConfig.hint}</p>
                 </div>
@@ -719,6 +727,7 @@ export const Screens = {
                   >
                     ${ICONS.hint} <span>Use Hint (${state.hintsRemaining} left)</span>
                   </button>
+                  ${Fx.renderHintsLanterns(state.hintsRemaining, 3)}
                   <span class="hint-note">Using a hint permanently consumes 1 of your team's 3 total hints.</span>
                 </div>
               `}
@@ -749,7 +758,7 @@ export const Screens = {
                   </div>
 
                   <div class="attempts-indicator">
-                    Attempts remaining: <strong>${attemptsLeft} of ${CONFIG.MAX_ATTEMPTS}</strong>
+                    ${Fx.renderAttemptsKeys(block.attemptsUsed, CONFIG.MAX_ATTEMPTS)}
                   </div>
                 </form>
               </div>
@@ -804,16 +813,23 @@ export const Screens = {
 
           if (result.correct) {
             renderContent();
+            const anchor = container.querySelector('.clue-card') || container.querySelector('.puzzle-header-card');
+            Fx.triggerSolveBurst(anchor);
+            Fx.showToast('Puzzle solved! New clue added to pouch.');
           } else if (result.failed) {
             renderContent();
+            Fx.showToast('Attempts exhausted. Tile locked permanently.');
           } else {
             feedback.style.display = 'block';
             feedback.className = 'feedback-banner feedback-warning';
             feedback.textContent = `Incorrect. ${result.attemptsLeft} attempt${result.attemptsLeft === 1 ? '' : 's'} left.`;
             input.value = '';
+            Fx.triggerInputShake(input);
             input.focus();
-            const attemptsEl = container.querySelector('.attempts-indicator strong');
-            if (attemptsEl) attemptsEl.textContent = `${result.attemptsLeft} of ${CONFIG.MAX_ATTEMPTS}`;
+            const attemptsEl = container.querySelector('.attempts-indicator');
+            if (attemptsEl) {
+              attemptsEl.innerHTML = Fx.renderAttemptsKeys(block.attemptsUsed, CONFIG.MAX_ATTEMPTS);
+            }
           }
         });
       }
@@ -851,6 +867,10 @@ export const Screens = {
         if (devFail) devFail.addEventListener('click', () => { GameState.devFail(puzzleId); renderContent(); });
         if (devSkip) devSkip.addEventListener('click', () => { GameState.devSkipTimer(puzzleId); renderContent(); });
       }
+
+      // Initial puzzle timer progress update
+      const totalPuzzleSec = CONFIG.DIFFICULTY_TIME[difficulty] || 1200;
+      Fx.updatePuzzleProgressBar(remainingSec, totalPuzzleSec);
     };
 
     renderContent();
@@ -870,6 +890,10 @@ export const Screens = {
           }
         }
       }
+
+      // Update puzzle progress bar
+      const totalPuzzleSec = CONFIG.DIFFICULTY_TIME[difficulty] || 1200;
+      Fx.updatePuzzleProgressBar(remainingSec, totalPuzzleSec);
 
       // Handle expiration
       if (remainingSec <= 0 && block.status === 'OPENED_IN_PROGRESS') {
