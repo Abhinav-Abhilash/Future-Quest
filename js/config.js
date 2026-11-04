@@ -39,7 +39,7 @@ export const CONFIG = {
     poweredBy: "Powered by JAIN School of Future",
     title: "Future Quest '26",
     paragraph: "A tech treasure hunt for Higher Secondary students. Solve puzzles, collect clues and rebuild the hidden poster.",
-    tagline: "No coding. Just curiosity, creativity & teamwork.",
+    tagline: "Curiosity, logic and a little code. Bring your whole team.",
     prizes: {
       winner: "₹50,000",
       winnerAmount: 50000,
@@ -120,22 +120,22 @@ export const CONFIG = {
     puzzle_4: "medium",
     puzzle_5: "medium",
     puzzle_6: "medium",
-    puzzle_7: "medium",
+    puzzle_7: "hard",
     puzzle_8: "hard",
     puzzle_9: "hard",
     puzzle_10: "hard",
-    puzzle_11: "hard"
+    puzzle_11: "medium"
   },
 
   // Mock answers (validated case-insensitively with whitespace trimmed)
   MOCK_ANSWERS: {
-    puzzle_1: "SECRET",
-    puzzle_2: "42",
-    puzzle_3: "443",
+    puzzle_1: "Tomorrow starts with the code you write today",
+    puzzle_2: "LEARN BUILD LEAD",
+    puzzle_3: "CODE THE FUTURE",
     puzzle_4: "GREEN",
     puzzle_5: "HAVING",
     puzzle_6: "O(N^2)",
-    puzzle_7: "64",
+    puzzle_7: "AROUND",
     puzzle_8: "^",
     puzzle_9: "2",
     puzzle_10: "15",
@@ -144,7 +144,7 @@ export const CONFIG = {
 
   // Interactive puzzle configurations with type, prompt, data, and technical clues
   PUZZLES: {
-    puzzle_1: {
+        puzzle_1: {
       id: "puzzle_1",
       type: "ascii",
       title: "ASCII Quote Decoder",
@@ -154,20 +154,21 @@ export const CONFIG = {
       hint: "Look up the standard ASCII decimal value for each number: 84 is 'T', 111 is 'o', 109 is 'm'...",
       clueType: "spec",
       clue: {
-        title: "Poster Typography Spec: Main Title",
+        title: "Poster Fragment 6: Secret Quote",
         type: "spec",
         specs: [
-          { label: "Component", value: "Poster Main Header" },
-          { label: "Font Family", value: "IBM Plex Sans, sans-serif" },
-          { label: "Font Weight", value: "700 (Bold)" },
-          { label: "Font Size", value: "48px / Line Height: 56px" },
-          { label: "Color", value: "#0F172A (Slate 900)" },
-          { label: "Position", value: "Top Left, Margin-Bottom: 24px" }
+          { label: "Fragment", value: "Fragment 6" },
+          { label: "Text", value: '"Tomorrow starts with the code you write today"' },
+          { label: "Font", value: "Arial" },
+          { label: "Size", value: "14" },
+          { label: "Style", value: "Italics" },
+          { label: "Color", value: "Black" },
+          { label: "Position", value: "Center, below FUTURE" }
         ]
       },
       data: {
         id: "puzzle_1",
-        groups: ["Tomorrow", "starts", "with", "the", "code", "you", "write", "today"],
+        groups: ["Word 1", "Word 2", "Word 3", "Word 4", "Word 5", "Word 6", "Word 7", "Word 8"],
         groupSolutions: ["Tomorrow", "starts", "with", "the", "code", "you", "write", "today"],
         words: [
           { expectedText: "Tomorrow", codes: [84, 111, 109, 111, 114, 114, 111, 119], expectedChars: ['T','o','m','o','r','r','o','w'] },
@@ -181,7 +182,7 @@ export const CONFIG = {
         ]
       }
     },
-    puzzle_2: {
+        puzzle_2: {
       id: "puzzle_2",
       type: "coords",
       title: "Coordinates Grid: Multi-Word Decoder",
@@ -189,11 +190,16 @@ export const CONFIG = {
       whatToDo: "Locate the given (Col, Row) coordinate pairs on the 7×7 grid. Extract the letters to discover 3 core engineering principles.",
       prompt: "Read the cells at the designated coordinates to uncover the three mission keywords.",
       hint: "In (Col, Row), the first number is the horizontal column (1-7), and the second is the vertical row (1-7 from top).",
-      clueType: "text",
+      clueType: "spec",
       clue: {
-        title: "Headline Copy Specification",
-        type: "text",
-        content: "Future Quest 2026: Autonomous Edge Infrastructure & Resilient Systems"
+        title: "Poster Fragment 9: Core Principles",
+        type: "spec",
+        specs: [
+          { label: "Fragment", value: "Fragment 9" },
+          { label: "Text", value: "LEARN – BUILD – LEAD (Uppercase with dashes)" },
+          { label: "Color Rules", value: "LEARN: Green, BUILD: Blue, LEAD: Red" },
+          { label: "Position", value: "Lower-center, directly below the body paragraph" }
+        ]
       },
       data: {
         id: "puzzle_2",
@@ -215,7 +221,7 @@ export const CONFIG = {
         ]
       }
     },
-    puzzle_3: {
+        puzzle_3: {
       id: "puzzle_3",
       type: "bodmas",
       title: "Code The Future: BODMAS Decoder",
@@ -223,23 +229,18 @@ export const CONFIG = {
       whatToDo: "Evaluate each math expression using standard BODMAS/PEMDAS precedence. Map each number to its corresponding letter (1=A ... 26=Z).",
       prompt: "Calculate the 13 mathematical expressions to reveal the 3-word slogan.",
       hint: "Remember precedence: Brackets, Orders (powers), Division & Multiplication, Addition & Subtraction. 1=A, 2=B...",
-      clueType: "image",
+      clueType: "spec",
       clue: {
-        title: "Official Event Seal Graphic",
-        type: "image",
-        filename: "future-quest-seal.svg",
-        caption: "Official JAIN (Deemed-to-be University) Kochi, School of Future Competition Emblem",
-        svgContent: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="160" style="background:#090d16; border-radius:4px;">
-  <rect width="320" height="180" fill="#0d1117"/>
-  <rect x="10" y="10" width="300" height="160" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 3"/>
-  <circle cx="90" cy="90" r="45" fill="none" stroke="#388bfd" stroke-width="3"/>
-  <polygon points="90,55 120,110 60,110" fill="none" stroke="#60a5fa" stroke-width="2"/>
-  <circle cx="90" cy="90" r="10" fill="#388bfd"/>
-  <text x="155" y="75" fill="#f0f6fc" font-family="'IBM Plex Sans', sans-serif" font-size="15" font-weight="700">JAIN UNIVERSITY KOCHI</text>
-  <text x="155" y="95" fill="#8b949e" font-family="'IBM Plex Sans', sans-serif" font-size="11">School of Future</text>
-  <text x="155" y="115" fill="#388bfd" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="600">FQ 2026 OFFICIAL SEAL</text>
-  <path d="M155 125 L290 125" stroke="#30363d" stroke-width="1"/>
-</svg>`
+        title: "Poster Fragment 5: Slogan Banner",
+        type: "spec",
+        specs: [
+          { label: "Fragment", value: "Fragment 5" },
+          { label: "Text", value: "CODE THE (line 1) / FUTURE (line 2)" },
+          { label: "Font", value: "Arial Black (Bold display)" },
+          { label: "Size", value: "CODE THE: 20, FUTURE: 24" },
+          { label: "Color", value: "Yellow" },
+          { label: "Position", value: "Upper-center, below FUTURE QUEST 2026" }
+        ]
       },
       data: {
         id: "puzzle_3",
@@ -394,24 +395,27 @@ export const CONFIG = {
         ]
       }
     },
-    puzzle_7: {
+        puzzle_7: {
       id: "puzzle_7",
       type: "wordsearch",
-      title: "Treasure Hunt: 12 Tech Words",
+      title: "Treasure Hunt Word Search",
       category: "Applied Cryptography",
-      whatToDo: "Locate all 12 tech terms hidden in the 15×15 letter matrix. Drag or tap start and end letters in any of the 8 directions.",
-      prompt: "Find the 12 words listed in the sidebar (horizontal, vertical, or diagonal; forward or backward).",
+      whatToDo: "Locate all 20 tech terms from the word list in the 15×15 matrix. Words can go in any of 8 directions (horizontal, vertical, diagonal, forward, or backward).",
+      prompt: "Find the 20 technology words listed in the checklist below.",
       hint: "Look for AROUND starting at [5,0] going up, ARTIFICIAL at [0,7] going down, FUTURE at [7,8] going down...",
       clueType: "spec",
       clue: {
-        title: "Poster Layout Grid Architecture",
+        title: "Poster Fragment 8: Word Bank & Paragraph Spec",
         type: "spec",
         specs: [
-          { label: "Layout Grid", value: "12-Column Modular Grid System" },
-          { label: "Gutter Width", value: "24px" },
-          { label: "Outer Margins", value: "36px (Left, Right, Top, Bottom)" },
-          { label: "Baseline Grid", value: "8px vertical rhythm" },
-          { label: "Target Dimensions", value: "A3 Portrait (297mm x 420mm @ 300 DPI)" }
+          { label: "Fragment", value: "Fragment 8" },
+          { label: "Found Words", value: "AROUND, ARTIFICIAL, CENTERED, COMPUTING, DAILY, DATA, EDGE, FUTURE, INNOVATIONS, INTEGRATION, LIFE, QUANTUM, RAPID, REALITY, RESHAPE, ROBOTICS, SCIENCE, SUSTAINABLE, TECHNOLOGY, VIRTUAL" },
+          { label: "Font", value: "Calibri" },
+          { label: "Size", value: "12" },
+          { label: "Style", value: "Italics" },
+          { label: "Color", value: "Black" },
+          { label: "Position", value: "Lower-center, below the centerpiece image" },
+          { label: "Instruction", value: "Write your own paragraph using these words." }
         ]
       },
       data: {
@@ -436,7 +440,8 @@ export const CONFIG = {
         words: [
           "AROUND", "ARTIFICIAL", "CENTERED", "COMPUTING", "DAILY",
           "DATA", "EDGE", "FUTURE", "INNOVATIONS", "INTEGRATION",
-          "LIFE", "RESHAPE"
+          "LIFE", "QUANTUM", "RAPID", "REALITY", "RESHAPE",
+          "ROBOTICS", "SCIENCE", "SUSTAINABLE", "TECHNOLOGY", "VIRTUAL"
         ]
       }
     },

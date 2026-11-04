@@ -2,12 +2,13 @@
  * Future Quest 2026 - ASCII Decoder Puzzle Module
  * 
  * Upgraded UX:
- * - Physical code cards with mono code, arrow, and flipping letter slots.
- * - Locked words slide together into solid bars (gap closes to 2px).
- * - Desktop side panel / Mobile bottom sheet ASCII reference chart with active row auto-scroll.
- * - T4: Smooth vertical rolling counter for code stepper.
- * - T8: Interactive SVG Cipher Dial with pointer angle drag and arrow key rotation.
- * - Group lock FLIP animation and per-group Clear buttons.
+ * - Each word is a group; code cards sit in a wrapping horizontal row.
+ * - Each card: code on top, small arrow, single-character letter slot (~40x44px, dark, mono, uppercase, maxlength 1).
+ * - Auto-advance on typing, Backspace navigates back, pasting a word fills subsequent slots.
+ * - Live decode strip showing the sentence being built in real time.
+ * - Slide-out ASCII chart that highlights the exact row of the hovered code card.
+ * - A correct word locks immediately with a short stamp effect.
+ * - No horizontal scroll on 360px and 1280px, 44px touch targets. Animate only transform and opacity.
  */
 
 import { PUZZLE_ART } from './art.js';
@@ -80,16 +81,16 @@ export function mount(root, data, ctx) {
   const asciiChartHtml = `
     <aside class="ascii-chart-sidebar" id="ascii-chart-sidebar" role="region" aria-label="ASCII Decimal Table">
       <div class="chart-sidebar-header">
-        <span class="chart-header-title">ASCII Table</span>
+        <span class="chart-header-title">ASCII Reference Table</span>
         <button type="button" class="chart-close-btn" id="btn-chart-close" aria-label="Close table">✕</button>
       </div>
       <div class="chart-sidebar-body">
         <div class="chart-col">
-          <div class="chart-col-head">A-Z (65-90)</div>
+          <div class="chart-col-head">A–Z (65–90)</div>
           ${chartRowsA}
         </div>
         <div class="chart-col">
-          <div class="chart-col-head">a-z (97-122)</div>
+          <div class="chart-col-head">a–z (97–122)</div>
           ${chartRowsB}
         </div>
         <div class="chart-col">
@@ -109,7 +110,7 @@ export function mount(root, data, ctx) {
       const val = entries[key] || '';
       const displayCode = code + (data.hasStepper ? stepperOffset : 0);
       return `
-        <div class="ascii-physical-card ${val ? 'has-letter' : ''}" data-key="${key}">
+        <div class="ascii-physical-card ${val ? 'has-letter' : ''}" data-key="${key}" data-code="${displayCode}" id="card-${key}">
           <div class="card-mono-code mono" data-base-code="${code}">${displayCode}</div>
           <div class="card-arrow" aria-hidden="true">${PUZZLE_ART.arrowDown}</div>
           <div class="card-slot-wrap">
@@ -139,6 +140,7 @@ export function mount(root, data, ctx) {
       <div class="ascii-word-group ${isGrpSolved ? 'word-bar-locked' : ''}" id="ascii-word-${wIdx}">
         <div class="word-group-header">
           <span class="word-group-label mono">Word ${wIdx + 1} (${wordObj.codes.length} chars)</span>
+          ${isGrpSolved ? `<span class="word-stamp-badge mono">STAMPED: LOCKED</span>` : ''}
           ${!isGrpSolved && !isLocked ? `
             <button type="button" class="btn-group-clear keycap-btn" data-word="${wIdx}" title="Clear this word's letters">Clear</button>
           ` : ''}
@@ -183,10 +185,8 @@ export function mount(root, data, ctx) {
         <!-- SVG Interactive Dial -->
         <div class="caesar-dial-svg-wrap">
           <svg class="caesar-svg-dial" id="caesar-svg-dial" viewBox="0 0 260 260" width="240" height="240">
-            <!-- Outer Fixed Ring (A-Z) - Brass & Dark Violet Enigma Rotor -->
             <circle cx="130" cy="130" r="120" fill="#140E24" stroke="#4A3A75" stroke-width="2"/>
             <circle cx="130" cy="130" r="92" fill="#0A0712" stroke="#3D3063" stroke-width="1.5"/>
-            <!-- Outer Letters -->
             <g class="outer-ring-letters mono" fill="#A69CB8" font-size="11" font-weight="600" text-anchor="middle" dominant-baseline="central">
               ${Array.from({ length: 26 }, (_, i) => {
                 const angle = (i * (360 / 26) - 90) * (Math.PI / 180);
@@ -196,7 +196,6 @@ export function mount(root, data, ctx) {
               }).join('')}
             </g>
 
-            <!-- Inner Rotating Ring -->
             <g id="dial-rotatable-inner" style="transform-origin: 130px 130px; transform: rotate(${caesarShift * (360 / 26)}deg); transition: transform ${isReducedMotion() ? '0ms' : '120ms ease-out'};">
               <circle cx="130" cy="130" r="90" fill="#271D42" stroke="#FFC928" stroke-width="2"/>
               <circle cx="130" cy="130" r="54" fill="#0F0B1A" stroke="#4A3A75" stroke-width="1.5"/>
@@ -208,12 +207,10 @@ export function mount(root, data, ctx) {
                   return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}">${String.fromCharCode(65 + i)}</text>`;
                 }).join('')}
               </g>
-              <!-- Center Hub -->
               <circle cx="130" cy="130" r="22" fill="#171226" stroke="#FF9900" stroke-width="2"/>
               <text x="130" y="131" fill="#FFC928" font-size="9" font-family="'IBM Plex Mono', monospace" font-weight="800" text-anchor="middle" dominant-baseline="central">ROTOR</text>
             </g>
 
-            <!-- Alignment Pointer Arrow -->
             <polygon points="130,3 124,14 136,14" fill="#FF9900"/>
           </svg>
         </div>
@@ -250,22 +247,33 @@ export function mount(root, data, ctx) {
         <div class="poster-strip-slots">${posterSlotsHtml}</div>
       </div>
 
-      <!-- Action Bar Row for ASCII Chart Drawer Toggle -->
-      <div class="ascii-toolbar-row">
-        ${stepperHtml}
-        <button type="button" class="btn btn-secondary btn-sm keycap-btn btn-chart-toggle" id="btn-chart-toggle">
-          <span>Table (ASCII)</span>
-        </button>
+      <!-- Live Sentence Decode Strip -->
+      <div class="ascii-live-strip-container" role="region" aria-label="Live Quote Decode Strip">
+        <div class="ascii-live-strip-label mono">LIVE DECODE STRIP:</div>
+        <div class="ascii-live-strip-display mono" id="ascii-live-sentence"></div>
       </div>
 
-      <!-- Stage Physical Cards -->
-      <div class="ascii-words-stage" role="region" aria-label="ASCII Input Cards">
-        ${wordsHtml}
+      <!-- Main Layout: Content Column + Slide-out ASCII Chart Sidebar -->
+      <div class="ascii-main-layout">
+        <div class="ascii-content-column">
+          <!-- Action Bar Row for ASCII Chart Drawer Toggle -->
+          <div class="ascii-toolbar-row">
+            ${stepperHtml}
+            <button type="button" class="btn btn-secondary btn-sm keycap-btn btn-chart-toggle" id="btn-chart-toggle">
+              <span>Table (ASCII)</span>
+            </button>
+          </div>
+
+          <!-- Stage Physical Cards -->
+          <div class="ascii-words-stage" role="region" aria-label="ASCII Input Cards">
+            ${wordsHtml}
+          </div>
+
+          ${caesarHtml}
+        </div>
+
+        ${asciiChartHtml}
       </div>
-
-      ${caesarHtml}
-
-      ${asciiChartHtml}
     </div>
   `;
 
@@ -280,6 +288,40 @@ export function mount(root, data, ctx) {
       stepperOffset,
       caesarShift,
       phase2Unlocked
+    });
+  };
+
+  // Update Live Sentence Strip
+  const updateLiveSentence = () => {
+    const liveEl = wrap.querySelector('#ascii-live-sentence');
+    if (!liveEl) return;
+    const parts = words.map((wObj, wIdx) => {
+      const isWordSolved = solvedGroups.has(wIdx);
+      const chars = wObj.codes.map((_, cIdx) => {
+        const char = entries[`w${wIdx}_c${cIdx}`];
+        if (isWordSolved) {
+          return `<span class="decode-char char-entered" style="color: #4ADE80;">${char || wObj.expectedChars[cIdx]}</span>`;
+        }
+        return char 
+          ? `<span class="decode-char char-entered">${char}</span>` 
+          : `<span class="decode-char char-empty">&middot;</span>`;
+      }).join('');
+      return `<span class="decode-word ${isWordSolved ? 'decode-word-solved' : ''}">${chars}</span>`;
+    });
+    liveEl.innerHTML = parts.join('<span class="decode-space"> </span>');
+  };
+
+  // Update Poster Strip
+  const updatePosterStrip = () => {
+    posterGroups.forEach((grpName, idx) => {
+      const slot = wrap.querySelector(`#poster-slot-${idx}`);
+      if (slot && solvedGroups.has(idx)) {
+        slot.classList.add('slot-filled', 'slot-stamped');
+        const content = slot.querySelector('.slot-content');
+        if (content) {
+          content.textContent = data.groupSolutions ? data.groupSolutions[idx] : grpName;
+        }
+      }
     });
   };
 
@@ -298,17 +340,81 @@ export function mount(root, data, ctx) {
     });
   }
 
-  // Highlight ASCII table row on input focus
+  // Highlight ASCII table row on hover or focus
   const highlightChartCode = (code) => {
-    wrap.querySelectorAll('.chart-row').forEach(r => r.classList.remove('chart-row-active'));
+    wrap.querySelectorAll('.chart-row').forEach(r => {
+      r.classList.remove('row-active', 'chart-row-active');
+    });
     const row = wrap.querySelector(`#chart-row-${code}`);
     if (row) {
-      row.classList.add('chart-row-active');
+      row.classList.add('row-active', 'chart-row-active');
       row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
   };
 
-  // Input events: Auto-advance, backspace navigation, card flipping, mobile scroll
+  // Card hover listener to highlight ASCII chart
+  wrap.querySelectorAll('.ascii-physical-card').forEach(card => {
+    card.addEventListener('pointerenter', () => {
+      const codeEl = card.querySelector('.card-mono-code');
+      if (codeEl) {
+        highlightChartCode(codeEl.textContent.trim());
+      }
+    });
+  });
+
+  // Check and lock a single word if all letters match
+  const checkWordLock = (wIdx) => {
+    const wordObj = words[wIdx];
+    if (!wordObj || solvedGroups.has(wIdx)) return;
+
+    let full = true;
+    let match = true;
+    wordObj.codes.forEach((_, cIdx) => {
+      const key = `w${wIdx}_c${cIdx}`;
+      const entered = entries[key] || '';
+      const expected = wordObj.expectedChars[cIdx];
+      if (!entered) full = false;
+      else if (entered.toLowerCase() !== expected.toLowerCase()) match = false;
+    });
+
+    if (full && match) {
+      solvedGroups.add(wIdx);
+      const wordGroupEl = wrap.querySelector(`#ascii-word-${wIdx}`);
+      if (wordGroupEl) {
+        wordGroupEl.classList.add('word-bar-locked');
+        wordGroupEl.querySelectorAll('.ascii-keycap-input').forEach(i => i.disabled = true);
+        const clearBtn = wordGroupEl.querySelector('.btn-group-clear');
+        if (clearBtn) clearBtn.remove();
+
+        const header = wordGroupEl.querySelector('.word-group-header');
+        if (header && !header.querySelector('.word-stamp-badge')) {
+          const badge = document.createElement('span');
+          badge.className = 'word-stamp-badge mono';
+          badge.textContent = 'STAMPED: LOCKED';
+          badge.style.color = '#4ADE80';
+          badge.style.fontSize = '10px';
+          badge.style.fontWeight = '700';
+          badge.style.padding = '2px 6px';
+          badge.style.background = 'rgba(74, 222, 128, 0.15)';
+          badge.style.border = '1px solid rgba(74, 222, 128, 0.4)';
+          badge.style.borderRadius = '3px';
+          header.appendChild(badge);
+        }
+      }
+      updatePosterStrip();
+      updateLiveSentence();
+      persist();
+
+      if (!data.isCaesarHybrid && solvedGroups.size === words.length) {
+        ctx.onSolved();
+      }
+    }
+  };
+
+  // Initial live sentence render
+  updateLiveSentence();
+
+  // Input events: Auto-advance, backspace navigation, card flipping, paste
   allInputs.forEach((inp, idx) => {
     inp.addEventListener('focus', () => {
       const code = inp.dataset.code;
@@ -317,17 +423,20 @@ export function mount(root, data, ctx) {
     });
 
     inp.addEventListener('input', (e) => {
-      const char = e.target.value.trim().toUpperCase();
+      const val = e.target.value;
+      const char = val ? val[val.length - 1] : '';
+      inp.value = char;
       const key = inp.dataset.key;
       const flipper = inp.closest('.card-slot-flipper');
 
       if (char) {
         entries[key] = char;
-        inp.value = char;
         if (flipper) flipper.classList.add('flipped');
         persist();
+        updateLiveSentence();
+        checkWordLock(parseInt(inp.dataset.word, 10));
 
-        // Advance to next available input
+        // Auto-advance to next available input
         for (let i = idx + 1; i < allInputs.length; i++) {
           if (!allInputs[i].disabled) {
             allInputs[i].focus();
@@ -339,15 +448,18 @@ export function mount(root, data, ctx) {
         delete entries[key];
         if (flipper) flipper.classList.remove('flipped');
         persist();
+        updateLiveSentence();
       }
     });
 
     inp.addEventListener('keydown', (e) => {
-      if (e.key === 'Backspace' && !inp.value) {
-        for (let i = idx - 1; i >= 0; i--) {
-          if (!allInputs[i].disabled) {
-            allInputs[i].focus();
-            break;
+      if (e.key === 'Backspace') {
+        if (!inp.value) {
+          for (let i = idx - 1; i >= 0; i--) {
+            if (!allInputs[i].disabled) {
+              allInputs[i].focus();
+              break;
+            }
           }
         }
       } else if (e.key === 'ArrowLeft') {
@@ -369,6 +481,41 @@ export function mount(root, data, ctx) {
         checkAll();
       }
     });
+
+    // Pasting a word fills slots
+    inp.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const pasted = (e.clipboardData || window.clipboardData)
+        ?.getData('text')
+        ?.trim()
+        ?.replace(/[^a-zA-Z]/g, '') || '';
+      if (!pasted) return;
+
+      const wIdx = parseInt(inp.dataset.word, 10);
+      const startChar = parseInt(inp.dataset.char, 10);
+      const wordObj = words[wIdx];
+      if (!wordObj) return;
+
+      for (let i = 0; i < pasted.length && (startChar + i) < wordObj.codes.length; i++) {
+        const cIdx = startChar + i;
+        const key = `w${wIdx}_c${cIdx}`;
+        const char = pasted[i];
+        entries[key] = char;
+        const targetInp = wrap.querySelector(`.ascii-keycap-input[data-key="${key}"]`);
+        if (targetInp) {
+          targetInp.value = char;
+          const flipper = targetInp.closest('.card-slot-flipper');
+          if (flipper) flipper.classList.add('flipped');
+        }
+      }
+      persist();
+      updateLiveSentence();
+      checkWordLock(wIdx);
+
+      const nextChar = Math.min(startChar + pasted.length, wordObj.codes.length - 1);
+      const nextInp = wrap.querySelector(`.ascii-keycap-input[data-word="${wIdx}"][data-char="${nextChar}"]`);
+      if (nextInp && !nextInp.disabled) nextInp.focus();
+    });
   });
 
   // Per-group Clear button
@@ -385,6 +532,7 @@ export function mount(root, data, ctx) {
         if (flipper) flipper.classList.remove('flipped');
       });
       persist();
+      updateLiveSentence();
       if (groupInputs[0]) groupInputs[0].focus();
     });
   });
@@ -456,7 +604,6 @@ export function mount(root, data, ctx) {
     const dialPlus = wrap.querySelector('#btn-dial-plus');
     const confirmBtn = wrap.querySelector('#btn-caesar-confirm');
 
-    // Pointer Drag Rotation
     let isDraggingDial = false;
     let startPointerAngle = 0;
     let startShift = 0;
@@ -465,8 +612,8 @@ export function mount(root, data, ctx) {
       const rect = svgDial.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
-      const angleRad = Math.atan2(e.clientY - cy, e.clientX - cx);
-      let deg = angleRad * (180 / Math.PI);
+      const rad = Math.atan2(e.clientY - cy, e.clientX - cx);
+      let deg = rad * (180 / Math.PI) + 90;
       if (deg < 0) deg += 360;
       return deg;
     };
@@ -556,15 +703,7 @@ export function mount(root, data, ctx) {
       });
 
       if (wordFilled && wordMatches) {
-        solvedGroups.add(wIdx);
-        groupInputs.forEach(inp => { if (inp) inp.disabled = true; });
-
-        const wordGroupEl = wrap.querySelector(`#ascii-word-${wIdx}`);
-        if (wordGroupEl) wordGroupEl.classList.add('word-bar-locked');
-
-        const slotEl = wrap.querySelector(`#poster-slot-${wIdx}`);
-        const solvedText = wordObj.expectedText || wordObj.expectedChars.join('');
-        animateGroupLock(groupInputs, slotEl, solvedText, root);
+        checkWordLock(wIdx);
       } else if (wordFilled && !wordMatches) {
         anyWrong = true;
         groupInputs.forEach(inp => {
@@ -604,13 +743,13 @@ export function mount(root, data, ctx) {
           if (flipper) flipper.classList.remove('flipped');
         });
         if (wrongCards[0]) wrongCards[0].focus();
+        updateLiveSentence();
         persist();
       }, 450);
 
       ctx.onWrongCheck();
     }
 
-    // Solve overall if non-hybrid
     if (!data.isCaesarHybrid && solvedGroups.size === words.length) {
       ctx.onSolved();
     }

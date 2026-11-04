@@ -789,6 +789,14 @@ pre,
   color: var(--status-failed);
 }
 
+/* Base form controls: prevent white browser defaults */
+input, select, textarea {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  font-family: inherit;
+}
+
 .form-input {
   width: 100%;
   padding: 8px 12px;

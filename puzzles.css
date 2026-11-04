@@ -866,7 +866,17 @@
 
 /* CRT scanline / terminal grid stage */
 .puzzle-stage-surface.theme-ascii,
-.theme-ascii .puzzle-stage-surface {
+.theme-ascii /* Puzzle workstation global input reset: strictly dark */
+#puzzle-stage input,
+.puzzle-stage-surface input,
+.puzzle-interactive-module input {
+  background-color: #100C1C !important;
+  color: #FFC928 !important;
+  border-color: #3D3063;
+  caret-color: #FF9900;
+}
+
+.puzzle-stage-surface {
   background: #120D22;
   background-image: 
     repeating-linear-gradient(0deg, rgba(255, 201, 40, 0.02) 0px, rgba(255, 201, 40, 0.02) 1px, transparent 1px, transparent 4px),
@@ -877,6 +887,54 @@
   padding: 16px;
   position: relative;
   min-height: 340px;
+}
+
+
+/* Live Quote Decode Strip */
+.ascii-live-strip-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #140E24;
+  border: 1px solid #3D3063;
+  border-left: 3px solid #FFC928;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+
+.ascii-live-strip-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #FFC928;
+  letter-spacing: 0.05em;
+}
+
+.ascii-live-strip-display {
+  font-size: clamp(14px, 2.5vw, 18px);
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  word-break: break-word;
+}
+
+.ascii-live-strip-display .decode-char {
+  display: inline-block;
+  transition: color 120ms ease;
+}
+
+.ascii-live-strip-display .decode-char.char-entered {
+  color: #FFC928;
+}
+
+.ascii-live-strip-display .decode-char.char-empty {
+  color: #5B488E;
+}
+
+.ascii-live-strip-display .decode-space {
+  display: inline-block;
+  width: 12px;
 }
 
 .ascii-main-layout {
@@ -977,8 +1035,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px 6px;
-  min-width: 44px;
+  padding: 6px 4px;
+  min-width: 46px;
   background: #140F23;
   border: 1px solid #3D3063;
   border-bottom: 3px solid #08060E;
@@ -1016,10 +1074,21 @@
 }
 
 /* Recessed Mechanical Keycap Well */
+
+.card-slot-flipper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .card-slot-wrap,
 .ascii-letter-slot {
-  width: 32px;
-  height: 34px;
+  width: 40px;
+  height: 44px;
+  min-width: 40px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1034,14 +1103,15 @@
 .ascii-input {
   width: 100%;
   height: 100%;
-  background: transparent;
+  background: #090610 !important;
   border: none;
   text-align: center;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary, #F0EDF6);
+  color: #FFC928 !important;
   text-transform: uppercase;
   font-family: var(--font-mono, monospace);
+  caret-color: #FF9900;
 }
 
 .ascii-keycap-input:focus,
@@ -1370,7 +1440,7 @@
 }
 
 /* Active Row Highlight: Bright Amber Pill */
-.chart-row.row-active {
+.chart-row.row-active, .chart-row.chart-row-active {
   background: #FF9900 !important;
   color: #0F0B1A !important;
   font-weight: 800;

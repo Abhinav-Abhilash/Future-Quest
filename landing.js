@@ -1,3 +1,4 @@
+import { CONFIG } from './js/config.js';
 /**
  * Future Quest 2026 - Landing Page Interactivity Engine
  * 
@@ -41,6 +42,10 @@ export function initLanding() {
 
   // 1. Lite mode sync & auto-detect
   initLiteMode();
+  const taglineEl = document.getElementById('hero-tagline');
+  if (taglineEl && CONFIG?.EVENT?.tagline) {
+    taglineEl.textContent = CONFIG.EVENT.tagline;
+  }
 
   // 2. Restore secret glints from sessionStorage
   try {

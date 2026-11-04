@@ -136,7 +136,7 @@ const t6_spelled = ['B', ...t6.legs.map(leg => {
 report('T6 Route Tracer Dynamic Check (BYTE)', t6_ok && t6_spelled === 'BYTE', t6_spelled);
 
 // -------------------------------------------------------------
-// T7: Word Search (12 Words)
+// T7: Word Search (20 Words)
 // -------------------------------------------------------------
 const t7 = CONFIG.PUZZLES.puzzle_7.data;
 let t7_ok = true;
@@ -147,7 +147,7 @@ t7.words.forEach(word => {
     console.error(`  [NOT FOUND] T7 word in grid: ${word}`);
   }
 });
-report('T7 Word Search Dynamic Check (12 words in grid)', t7_ok);
+report('T7 Word Search Dynamic Check (20 words in grid)', t7_ok);
 
 // -------------------------------------------------------------
 // T8: Caesar-ASCII Hybrid (FUTURE READY)

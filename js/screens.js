@@ -235,6 +235,24 @@ export const Screens = {
                 </span>
                 <span class="ready-check-text">We have read and agree to the competition rules.</span>
               </label>
+              <label class="ready-check-item">
+                <input type="checkbox" id="chk-skills-ready" class="ready-checkbox sr-only" />
+                <span class="custom-checkbox" aria-hidden="true">
+                  <svg class="check-svg" viewBox="0 0 16 16">
+                    <polyline points="3 8 6.5 12 13 4"></polyline>
+                  </svg>
+                </span>
+                <span class="ready-check-text">Basic web skills help: some puzzles use a browser's developer tools.</span>
+              </label>
+              <label class="ready-check-item">
+                <input type="checkbox" id="chk-skills-ready" class="ready-checkbox sr-only" />
+                <span class="custom-checkbox" aria-hidden="true">
+                  <svg class="check-svg" viewBox="0 0 16 16">
+                    <polyline points="3 8 6.5 12 13 4"></polyline>
+                  </svg>
+                </span>
+                <span class="ready-check-text">Basic web skills help: some puzzles use a browser's developer tools.</span>
+              </label>
             </div>
 
             <div class="entry-notice">
@@ -1784,6 +1802,12 @@ export const Screens = {
               <summary>4. Puzzle Grid & Attempt Policy</summary>
               <p class="rule-text">
                 Tiles 1 through 11 are randomized in order at contest initialization. All 11 puzzle tiles are unlocked from the start and can be attempted in any order. Each puzzle permits a maximum of <strong>3 attempts</strong>. Entering 3 incorrect answers permanently marks the puzzle as <strong>FAILED</strong>.
+              </p>
+              <p class="rule-text">
+                Some puzzles involve reading code or using your browser's developer tools. Everything you need is on the page or in your browser.
+              </p>
+              <p class="rule-text">
+                Some puzzles involve reading code or using your browser's developer tools. Everything you need is on the page or in your browser.
               </p>
             </details>
 
