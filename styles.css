@@ -1,0 +1,1767 @@
+/**
+ * Future Quest 2026 - Stylesheet
+ * 
+ * Aesthetic: Dense, functional contest interface (CTFd / LeetCode contest feel).
+ * Base: Dark graphite neutral (#0d1117) with thin 1px borders (#30363d).
+ * Accent: Engineer blue (#388bfd).
+ * Status colors: green (solved), red (failed), amber (in progress/low time).
+ * No gradients, no glassmorphism, no neon glow, no blobs, no decorative animations.
+ */
+
+/* ==========================================================================
+   1. CSS Reset & Design Tokens
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Neutrals: Dark Graphite Scale */
+  --bg-page: #0d1117;
+  --bg-surface: #161b22;
+  --bg-card: #1c2128;
+  --bg-card-hover: #22272e;
+  --bg-card-active: #2d333b;
+  --bg-input: #0d1117;
+
+  /* Borders: Thin 1px */
+  --border-subtle: #21262d;
+  --border-default: #30363d;
+  --border-emphasis: #484f58;
+
+  /* Typography Colors */
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+  --text-inverse: #0d1117;
+
+  /* Single Primary Accent */
+  --accent: #388bfd;
+  --accent-hover: #1f6feb;
+  --accent-active: #0c2d6b;
+  --accent-bg: #0c2d6b;
+
+  /* Status Colors (strictly for tile/timer states) */
+  --status-solved: #3fb950;
+  --status-solved-border: #238636;
+  --status-solved-bg: rgba(46, 160, 67, 0.12);
+
+  --status-failed: #f85149;
+  --status-failed-border: #da3633;
+  --status-failed-bg: rgba(248, 81, 73, 0.12);
+
+  --status-amber: #d29922;
+  --status-amber-border: #9e6a03;
+  --status-amber-bg: rgba(210, 153, 34, 0.12);
+
+  /* Fonts */
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Spacing Scale (4/8px multiples) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+
+  /* Transitions: 150ms-200ms functional state transitions only */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   2. Typography & Base Elements
+   ========================================================================== */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: left;
+}
+
+p {
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code, pre, .mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Accessibility Focus States */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   3. Sticky Navigation Bar
+   ========================================================================== */
+.nav-container {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.app-nav {
+  width: 100%;
+}
+
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.2px;
+}
+
+.nav-brand:hover {
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.brand-badge {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.nav-link {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  text-decoration: none;
+}
+
+.nav-link.active {
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  font-weight: 600;
+  border: 1px solid var(--border-default);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Nav Status Badges (Always visible) */
+.nav-stat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-default);
+  font-size: 13px;
+  color: var(--text-primary);
+  user-select: none;
+}
+
+.nav-timer-badge {
+  border-color: var(--border-emphasis);
+}
+
+.nav-timer-badge .badge-icon {
+  display: flex;
+  color: var(--text-secondary);
+}
+
+.nav-timer-badge.timer-amber {
+  background-color: var(--status-amber-bg);
+  border-color: var(--status-amber-border);
+  color: var(--status-amber);
+}
+
+.nav-timer-badge.timer-amber .badge-icon {
+  color: var(--status-amber);
+}
+
+.timer-digits {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.nav-hints-badge .badge-icon {
+  display: flex;
+  color: var(--accent);
+}
+
+.hints-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.hints-text strong {
+  color: var(--text-primary);
+}
+
+.nav-team-badge {
+  max-width: 140px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-left: 1px solid var(--border-default);
+  padding-left: var(--space-3);
+  margin-left: var(--space-1);
+}
+
+/* Mobile Nav Drawer */
+.mobile-only {
+  display: none;
+}
+
+.desktop-only {
+  display: flex;
+}
+
+.mobile-drawer {
+  display: none;
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-default);
+  padding: var(--space-3) var(--space-4);
+}
+
+.mobile-drawer.is-open {
+  display: block;
+}
+
+.mobile-team-info {
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.mobile-team-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.mobile-school-name {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.mobile-drawer-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.mobile-drawer-link {
+  display: block;
+  padding: var(--space-2) var(--space-2);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.mobile-drawer-link:hover, .mobile-drawer-link.active {
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  text-decoration: none;
+}
+
+/* ==========================================================================
+   4. Notification Banners
+   ========================================================================== */
+.notice-banner-root {
+  width: 100%;
+}
+
+.notice-banner {
+  width: 100%;
+  border-bottom: 1px solid;
+  padding: var(--space-2) var(--space-4);
+  font-size: 13px;
+}
+
+.notice-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.banner-amber {
+  background-color: var(--status-amber-bg);
+  border-color: var(--status-amber-border);
+  color: var(--status-amber);
+}
+
+.banner-amber .notice-icon {
+  display: flex;
+  color: var(--status-amber);
+}
+
+.notice-msg {
+  flex: 1;
+  font-weight: 500;
+}
+
+.notice-dismiss {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.notice-dismiss:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ==========================================================================
+   5. Main Viewport & Layout
+   ========================================================================== */
+.app-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+}
+
+.screen-container {
+  width: 100%;
+}
+
+.loading-state {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: var(--space-8) 0;
+}
+
+/* Header standard styles */
+.brand-institution {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  margin-bottom: var(--space-1);
+}
+
+.page-title {
+  font-size: 22px;
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.page-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 680px;
+}
+
+/* ==========================================================================
+   6. Buttons & Inputs
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn:disabled, .btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent-hover);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+  text-decoration: none;
+}
+
+.btn-primary:active:not(:disabled) {
+  background-color: var(--accent-active);
+}
+
+.btn-secondary {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-emphasis);
+  text-decoration: none;
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.btn-lg {
+  padding: 10px 22px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-icon {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-card-hover);
+}
+
+/* Form inputs */
+.form-group {
+  margin-bottom: var(--space-4);
+  text-align: left;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.required-star {
+  color: var(--status-failed);
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-fast);
+}
+
+.form-input:focus {
+  border-color: var(--accent);
+}
+
+.form-input.input-invalid {
+  border-color: var(--status-failed);
+}
+
+.field-error {
+  display: block;
+  font-size: 12px;
+  color: var(--status-failed);
+  margin-top: var(--space-1);
+}
+
+/* Alerts */
+.alert {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  margin-bottom: var(--space-4);
+  font-size: 13px;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.alert-danger {
+  background-color: var(--status-failed-bg);
+  border-color: var(--status-failed-border);
+  color: var(--status-failed);
+}
+
+.alert-success {
+  background-color: var(--status-solved-bg);
+  border-color: var(--status-solved-border);
+  color: var(--status-solved);
+}
+
+.alert-info {
+  background-color: var(--bg-card);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+.alert-neutral {
+  background-color: var(--bg-surface);
+  border-color: var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.alert-icon {
+  display: flex;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ==========================================================================
+   7. Screen 1: Entry Screen (#/home)
+   ========================================================================== */
+.entry-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-8) 0;
+}
+
+.entry-card {
+  width: 100%;
+  max-width: 480px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+}
+
+.entry-header {
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-4);
+}
+
+.entry-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: var(--space-1);
+}
+
+.entry-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: var(--space-1);
+}
+
+.entry-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.entry-notice .notice-icon {
+  display: flex;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.entry-notice .notice-text {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.entry-notice .notice-text strong {
+  color: var(--text-primary);
+}
+
+.entry-footer {
+  margin-top: var(--space-6);
+  text-align: center;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-4);
+  font-size: 13px;
+}
+
+/* ==========================================================================
+   8. Screen 2: Puzzle Grid (#/grid) - 4 Distinct Tile Styles (Style Test)
+   ========================================================================== */
+.grid-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.grid-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-4);
+}
+
+/* 4 columns desktop, 3 columns mobile */
+.puzzle-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+/* Base Tile Card */
+.tile-card {
+  position: relative;
+  border-radius: var(--radius-md);
+  min-height: 124px;
+  padding: var(--space-4);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), opacity var(--transition-fast);
+  width: 100%;
+  display: flex;
+}
+
+/* --------------------------------------------------------------------------
+   STYLE 1: Tiles 1 to 4 (Plain task tiles)
+   Flat neutral tile with 1px border, labelled "Task N" (small label + larger monospace number)
+   -------------------------------------------------------------------------- */
+.tile-style-task {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.tile-style-task:hover:not(:disabled):not(.tile-disabled) {
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-emphasis);
+}
+
+.tile-task-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.2px;
+}
+
+.tile-task-number {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-top: auto;
+}
+
+/* --------------------------------------------------------------------------
+   STYLE 2: Tiles 5 to 8 (Named puzzle tiles)
+   Same flat style, shows puzzle NAME instead of "Task N", small number in corner
+   -------------------------------------------------------------------------- */
+.tile-style-named {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.tile-style-named:hover:not(:disabled):not(.tile-disabled) {
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-emphasis);
+}
+
+.tile-corner-num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.tile-named-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+  margin-top: auto;
+}
+
+/* --------------------------------------------------------------------------
+   STYLE 3: Tiles 9 to 11 (Purple gradient tiles)
+   Diagonal gradient: lavender at top-left to deep violet to dark purple at bottom-right.
+   Shows only tile number in white monospace at bottom-left. No glow, no shadow blur.
+   -------------------------------------------------------------------------- */
+.tile-style-gradient {
+  background: linear-gradient(135deg, #A57EF0 0%, #5A3792 40%, #3A2166 70%, #24133F 100%);
+  border: 1px solid rgba(165, 126, 240, 0.4);
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  box-shadow: none !important;
+}
+
+.tile-style-gradient:hover:not(:disabled):not(.tile-disabled) {
+  border-color: #A57EF0;
+  /* Strictly no glow, no shadow blur */
+}
+
+.tile-gradient-number {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1;
+}
+
+/* --------------------------------------------------------------------------
+   STYLE 4: Tile 12 (Red Submit button)
+   Solid flat red button, full tile size, with label "Submit" and small lock icon.
+   Always in last slot. No gradient, no glow.
+   -------------------------------------------------------------------------- */
+.tile-style-submit {
+  background-color: #dc2626;
+  border: 1px solid #b91c1c;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #ffffff;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.tile-style-submit:hover {
+  background-color: #b91c1c;
+  border-color: #991b1b;
+}
+
+.tile-style-submit:active {
+  background-color: #991b1b;
+}
+
+.tile-submit-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.submit-icon {
+  display: flex;
+  color: #ffffff;
+}
+
+.submit-label {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   Corner Badges for Tiles 1 to 11 (All 4 styles supported)
+   UNOPENED: default look
+   OPENED_IN_PROGRESS: amber corner badge with clock icon + "In progress"
+   SOLVED: green corner badge with check icon + "Solved", tile locked
+   FAILED: red corner badge with cross icon + "Failed", tile dimmed & locked
+   -------------------------------------------------------------------------- */
+.tile-corner-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.tile-corner-badge .badge-icon {
+  display: flex;
+}
+
+/* In Progress: Amber Badge */
+.badge-in-progress {
+  background-color: #1a1205;
+  border-color: #d97706;
+  color: #fbbf24;
+}
+
+/* Solved: Green Badge */
+.badge-solved {
+  background-color: #061c0e;
+  border-color: #16a34a;
+  color: #4ade80;
+}
+
+/* Failed: Red Badge */
+.badge-failed {
+  background-color: #24070a;
+  border-color: #dc2626;
+  color: #f87171;
+}
+
+/* Tile state modifiers */
+.tile-card.status-in-progress {
+  border-color: var(--status-amber-border);
+}
+
+.tile-card.status-solved {
+  border-color: var(--status-solved-border);
+}
+
+.tile-card.status-failed {
+  opacity: 0.45;
+  filter: grayscale(40%);
+  cursor: not-allowed;
+  border-color: var(--status-failed-border);
+}
+
+.tile-disabled {
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   Puzzle Screen "What to do" block
+   -------------------------------------------------------------------------- */
+.puzzle-what-to-do-block {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.what-to-do-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   9. Screen 3: Puzzle View (#/puzzle/:id)
+   ========================================================================== */
+.puzzle-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.puzzle-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+}
+
+.puzzle-timer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+}
+
+.puzzle-timer-badge .timer-icon {
+  display: flex;
+  color: var(--text-secondary);
+}
+
+.puzzle-timer-badge .timer-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.puzzle-timer-badge .timer-value {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.puzzle-timer-badge.timer-low {
+  background-color: var(--status-amber-bg);
+  border-color: var(--status-amber-border);
+}
+
+.puzzle-timer-badge.timer-low .timer-value,
+.puzzle-timer-badge.timer-low .timer-icon {
+  color: var(--status-amber);
+}
+
+.puzzle-header-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.puzzle-meta-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.puzzle-number-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: var(--bg-card);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.difficulty-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+}
+
+.difficulty-easy {
+  color: #388bfd;
+  background-color: rgba(56, 139, 253, 0.12);
+  border-color: rgba(56, 139, 253, 0.4);
+}
+
+.difficulty-medium {
+  color: #d29922;
+  background-color: rgba(210, 153, 34, 0.12);
+  border-color: rgba(210, 153, 34, 0.4);
+}
+
+.difficulty-hard {
+  color: #f85149;
+  background-color: rgba(248, 81, 73, 0.12);
+  border-color: rgba(248, 81, 73, 0.4);
+}
+
+.category-badge {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.puzzle-title {
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.puzzle-body-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.question-text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+/* Hint Section */
+.puzzle-hint-section {
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: var(--space-4) 0;
+}
+
+.hint-action-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.hint-note {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.revealed-hint-box {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+}
+
+.hint-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.hint-icon {
+  display: flex;
+  color: var(--accent);
+}
+
+.hint-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Answer Submission Section */
+.puzzle-submit-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.form-row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-end;
+}
+
+.input-col {
+  flex: 1;
+}
+
+.btn-col {
+  flex-shrink: 0;
+}
+
+.feedback-banner {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin-bottom: var(--space-3);
+  border: 1px solid;
+}
+
+.feedback-warning {
+  background-color: var(--status-failed-bg);
+  border-color: var(--status-failed-border);
+  color: var(--status-failed);
+}
+
+.attempts-indicator {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: var(--space-2);
+}
+
+/* Unlocked Clue Cards */
+.clue-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-emphasis);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.clue-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--status-solved);
+  letter-spacing: 0.5px;
+}
+
+.clue-title {
+  font-size: 15px;
+  color: var(--text-primary);
+  margin-top: var(--space-1);
+}
+
+.clue-caption {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.clue-copy-box {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+}
+
+.clue-pre {
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.spec-table th, .spec-table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+}
+
+.spec-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+  width: 35%;
+}
+
+.spec-value code {
+  color: var(--accent);
+}
+
+.svg-preview-box {
+  background-color: #090d16;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  display: flex;
+  justify-content: center;
+}
+
+/* Dev Toolbar */
+.dev-toolbar {
+  background-color: var(--bg-surface);
+  border: 1px dashed var(--border-emphasis);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.dev-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.dev-buttons {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   10. Screen 4 & 5: Vault (#/vault)
+   ========================================================================== */
+.vault-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.vault-header {
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-4);
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.metric-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+}
+
+.metric-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.metric-value {
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.metric-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.vault-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.vault-section-header {
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-2);
+}
+
+.section-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Inventory Grid */
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+
+.inventory-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inventory-slot-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.inventory-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+}
+
+.inventory-status-badge.status-solved {
+  background-color: var(--status-solved-bg);
+  border-color: var(--status-solved-border);
+  color: var(--status-solved);
+}
+
+.inventory-status-badge.status-locked {
+  background-color: var(--bg-card);
+  border-color: var(--border-subtle);
+  color: var(--text-muted);
+}
+
+.inventory-title {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.inventory-content {
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.inventory-locked-msg {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.inventory-actions {
+  margin-top: var(--space-2);
+  display: flex;
+  justify-content: flex-start;
+}
+
+.vault-clue-spec-snippet code {
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.vault-clue-text-snippet {
+  background-color: var(--bg-input);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.vault-clue-image-snippet svg {
+  max-height: 80px;
+}
+
+/* Verification Hash Box */
+.hash-box-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.hash-display {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.hash-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.hash-code {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+/* Submission CTA Card */
+.cta-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.cta-reminder {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.cta-reminder .reminder-icon {
+  display: flex;
+  color: var(--status-solved);
+  margin-top: 2px;
+}
+
+.cta-reminder .reminder-text {
+  font-size: 15px;
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.cta-note {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   11. Screen 6: Rules Screen (#/rules)
+   ========================================================================== */
+.rules-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.rules-header {
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-4);
+}
+
+.rules-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.rule-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rule-heading {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.rule-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.rule-list {
+  list-style: square inside;
+  color: var(--text-secondary);
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-left: var(--space-2);
+}
+
+.rules-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* ==========================================================================
+   12. Modal Dialogs (Accessible, Focus Trapped)
+   ========================================================================== */
+.modal-root {
+  display: none;
+}
+
+.modal-root.is-active {
+  display: block;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(13, 17, 23, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 480px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-emphasis);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: var(--space-6) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.modal-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.modal-hint-note {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.modal-checkbox-row {
+  margin-top: var(--space-2);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.modal-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.modal-actions {
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-card);
+  border-top: 1px solid var(--border-default);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* ==========================================================================
+   13. Responsive Media Queries (Mobile-First)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .puzzle-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-2);
+  }
+
+  .tile-card {
+    min-height: 104px;
+    padding: var(--space-2);
+  }
+
+  .tile-task-number,
+  .tile-gradient-number {
+    font-size: 22px;
+  }
+
+  .tile-named-title {
+    font-size: 13px;
+  }
+
+  .tile-corner-badge {
+    top: 6px;
+    right: 6px;
+    font-size: 10px;
+    padding: 2px 5px;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .inventory-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: inline-flex;
+  }
+
+  .form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-col {
+    width: 100%;
+  }
+
+  .btn-col .btn {
+    width: 100%;
+  }
+
+  .nav-inner {
+    padding: 0 var(--space-2);
+  }
+
+  .nav-stat-badge {
+    padding: 3px 6px;
+    font-size: 12px;
+  }
+
+  .timer-digits {
+    font-size: 12px;
+  }
+
+  .hints-text {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .puzzle-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .tile-card {
+    min-height: 92px;
+    padding: 6px;
+  }
+
+  .tile-task-number,
+  .tile-gradient-number {
+    font-size: 18px;
+  }
+
+  .tile-task-label {
+    font-size: 11px;
+  }
+
+  .tile-named-title {
+    font-size: 12px;
+  }
+
+  .tile-corner-badge {
+    top: 4px;
+    right: 4px;
+    padding: 2px 4px;
+  }
+
+  .tile-corner-badge .badge-text {
+    display: none; /* Icon-only on narrow mobile screens to avoid overlap */
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
