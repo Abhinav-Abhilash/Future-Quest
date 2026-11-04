@@ -19,9 +19,11 @@ class App {
     this.notified5Min = false;
     this.mobileMenuOpen = false;
 
-    // Expose for inspection and dev console debugging
-    window.GameState = GameState;
-    window.CONFIG = CONFIG;
+    // Expose only when CONFIG.DEV_MODE is true for testing/inspection
+    if (CONFIG.DEV_MODE) {
+      window.GameState = GameState;
+      window.CONFIG = CONFIG;
+    }
   }
 
   init() {

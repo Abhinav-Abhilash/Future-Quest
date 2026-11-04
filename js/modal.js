@@ -24,6 +24,13 @@ class ModalManager {
         document.body.appendChild(root);
       }
       this.modalRoot = root;
+
+      // Bind backdrop and close button listener ONCE on root
+      this.modalRoot.addEventListener('click', (e) => {
+        if (e.target.dataset.action === 'backdrop' || e.target.closest('[data-action="close"]')) {
+          this.close();
+        }
+      });
     }
   }
 
@@ -137,12 +144,6 @@ class ModalManager {
       onConfirm();
     });
 
-    this.modalRoot.addEventListener('click', (e) => {
-      if (e.target.dataset.action === 'backdrop' || e.target.closest('[data-action="close"]')) {
-        this.close();
-      }
-    });
-
     this.trapFocus(card);
   }
 
@@ -185,12 +186,6 @@ class ModalManager {
     confirmBtn.addEventListener('click', () => {
       this.close();
       onConfirm();
-    });
-
-    this.modalRoot.addEventListener('click', (e) => {
-      if (e.target.dataset.action === 'backdrop' || e.target.closest('[data-action="close"]')) {
-        this.close();
-      }
     });
 
     this.trapFocus(card);

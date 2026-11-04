@@ -16,6 +16,7 @@ class StateManager {
     this.state = this.loadState();
     // Cache listeners for reactive UI updates
     this.listeners = new Set();
+    this.checkExpiredPuzzles();
   }
 
   /**
@@ -181,9 +182,33 @@ class StateManager {
   }
 
   /**
+   * Check all OPENED_IN_PROGRESS puzzles. Any with 0 seconds remaining
+   * becomes FAILED immediately, so the grid never shows an expired puzzle as "In progress".
+   */
+  checkExpiredPuzzles() {
+    if (!this.state || !this.state.blocks) return;
+    let changed = false;
+    for (const id in this.state.blocks) {
+      const block = this.state.blocks[id];
+      if (block.status === 'OPENED_IN_PROGRESS') {
+        const remaining = this.getPuzzleRemainingSeconds(id);
+        if (remaining <= 0) {
+          this.failPuzzle(id, 'TIMEOUT');
+          changed = true;
+        }
+      }
+    }
+    if (changed) {
+      this.saveState();
+    }
+  }
+
+  /**
    * Called when opening a puzzle screen.
    * If UNOPENED, transitions to OPENED_IN_PROGRESS.
-   * Starts or resumes activeSince countdown.
+   * Never overwrites an existing activeSince: only sets activeSince = Date.now()
+   * when it is null, so reloading or reopening a puzzle never discards elapsed time.
+   * Guarantees only one puzzle may have activeSince set at a time.
    */
   openPuzzle(id) {
     if (!this.state || !this.state.blocks[id]) return null;
@@ -194,6 +219,16 @@ class StateManager {
       return block;
     }
 
+    // Ensure only one puzzle may have activeSince set at a time
+    if (this.state.activeBlock && this.state.activeBlock !== id) {
+      this.leavePuzzle(this.state.activeBlock);
+    }
+    for (const otherId in this.state.blocks) {
+      if (otherId !== id && this.state.blocks[otherId].activeSince != null) {
+        this.leavePuzzle(otherId);
+      }
+    }
+
     // Set active block
     this.state.activeBlock = id;
 
@@ -202,9 +237,13 @@ class StateManager {
       block.status = 'OPENED_IN_PROGRESS';
     }
 
-    // If still in progress and not locked, start tracking active time
+    // If still in progress and not locked, start tracking active time.
+    // Never overwrite an existing activeSince (only set when null)
+    // so reloading or reopening a puzzle never discards elapsed time.
     if (block.status === 'OPENED_IN_PROGRESS') {
-      block.activeSince = Date.now();
+      if (block.activeSince == null) {
+        block.activeSince = Date.now();
+      }
     }
 
     this.saveState();

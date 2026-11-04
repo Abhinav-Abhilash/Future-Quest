@@ -18,6 +18,35 @@ export const Screens = {
   activePuzzleInterval: null,
 
   /**
+   * Display an in-page notice banner at the top of the app.
+   */
+  showNotice(message, type = 'amber') {
+    const noticeContainer = document.getElementById('notice-banner-root');
+    if (!noticeContainer) return;
+
+    const noticeEl = document.createElement('div');
+    noticeEl.className = `notice-banner banner-${type}`;
+    noticeEl.setAttribute('role', 'alert');
+    noticeEl.innerHTML = `
+      <div class="notice-inner">
+        <span class="notice-icon">${type === 'danger' ? ICONS.cross : ICONS.clock}</span>
+        <span class="notice-msg">${message}</span>
+        <button type="button" class="notice-dismiss" aria-label="Dismiss notice">${ICONS.close}</button>
+      </div>
+    `;
+
+    noticeContainer.appendChild(noticeEl);
+
+    noticeEl.querySelector('.notice-dismiss').addEventListener('click', () => {
+      noticeEl.remove();
+    });
+
+    setTimeout(() => {
+      if (noticeEl.parentNode) noticeEl.remove();
+    }, 10000);
+  },
+
+  /**
    * Helper to format seconds as MM:SS or HH:MM:SS.
    */
   formatTime(seconds, includeHours = false) {
@@ -206,6 +235,9 @@ export const Screens = {
       router.navigate('/home');
       return;
     }
+
+    // Check all OPENED_IN_PROGRESS puzzles so any expired puzzle becomes FAILED immediately
+    GameState.checkExpiredPuzzles();
 
     const isVaultEntered = state.vaultEntered;
 
@@ -424,7 +456,7 @@ export const Screens = {
         GameState.failPuzzle(puzzleId, 'TIMEOUT');
         clearInterval(this.activePuzzleInterval);
         this.activePuzzleInterval = null;
-        alert(`Time expired for Tile ${tileNumber}. The puzzle has failed.`);
+        this.showNotice(`Time expired for ${tileLabel}. The puzzle has failed.`, 'danger');
         router.navigate('/grid');
         return;
       }
@@ -742,7 +774,7 @@ export const Screens = {
         GameState.failPuzzle(puzzleId, 'TIMEOUT');
         clearInterval(this.activePuzzleInterval);
         this.activePuzzleInterval = null;
-        alert(`Time expired for Tile ${tileNumber}. The puzzle has failed.`);
+        this.showNotice(`Time expired for ${tileLabel}. The puzzle has failed.`, 'danger');
         router.navigate('/grid');
       }
     }, 1000);
@@ -1007,7 +1039,7 @@ export const Screens = {
               <li><strong>Hard:</strong> 20 minutes (1,200 seconds)</li>
             </ul>
             <p class="rule-text">
-              A puzzle's timer begins when you first enter its screen and counts down only while viewing that puzzle. Clicking <em>Back to Grid</em> pauses its timer. If a puzzle timer reaches zero, the puzzle is permanently marked as <strong>FAILED</strong> and locked.
+              A puzzle's timer begins when you first enter its screen. A puzzle's timer keeps running if the tab is closed or reloaded, and pauses only when the team clicks "Back to grid". If a puzzle timer reaches zero, the puzzle is permanently marked as <strong>FAILED</strong> and locked.
             </p>
           </article>
 

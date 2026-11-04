@@ -58,9 +58,12 @@ export class Router {
     const hasSession = GameState.hasSession();
     const state = GameState.state;
 
-    // Leaving previous puzzle route: ensure elapsed puzzle timer is paused
-    if (this.currentRoute === 'puzzle' && parsed.route !== 'puzzle') {
-      GameState.leavePuzzle(this.currentParams.id);
+    // Leaving previous puzzle or switching to a different puzzle id (e.g. by editing hash):
+    // pause the previous puzzle timer so only one puzzle may have activeSince set at a time
+    if (this.currentRoute === 'puzzle') {
+      if (parsed.route !== 'puzzle' || parsed.params.id !== this.currentParams.id) {
+        GameState.leavePuzzle(this.currentParams.id);
+      }
     }
 
     let targetRoute = parsed.route;
