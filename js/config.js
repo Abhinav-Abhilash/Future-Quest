@@ -31,14 +31,6 @@ export const CONFIG = {
   // Submission Form URL (Placeholder)
   POSTER_FORM_URL: "https://docs.google.com/forms/d/e/1FAIpQLSc_JU_SFT_FQ2026_SUBMISSION_PLACEHOLDER/viewform",
 
-  // Names for Named Puzzle Tiles (Tiles 5 to 8)
-  NAMED_PUZZLE_TILES: [
-    "Cipher Desk",
-    "Pointer Trace",
-    "Logic Gates",
-    "Footer Query"
-  ],
-
   /**
    * NOTE: In production, puzzle difficulty levels and time limits must come
    * from the server later (e.g. issued when a puzzle tile is opened), since
@@ -308,18 +300,8 @@ export const CONFIG = {
 
 /**
  * Returns the human-readable tile label for a given grid index (0 to 10).
- * - Tiles 1 to 4: "Task 1", "Task 2", "Task 3", "Task 4"
- * - Tiles 5 to 8: "Cipher Desk", "Pointer Trace", "Logic Gates", "Footer Query"
- * - Tiles 9 to 11: "Tile 09", "Tile 10", "Tile 11"
+ * All 11 puzzle tiles use "Task N" (where N is 1 to 11).
  */
 export function getTileLabel(tileIndex) {
-  if (tileIndex >= 0 && tileIndex < 4) {
-    return `Task ${tileIndex + 1}`;
-  } else if (tileIndex >= 4 && tileIndex < 8) {
-    const namedIndex = tileIndex - 4;
-    return CONFIG.NAMED_PUZZLE_TILES[namedIndex] || `Puzzle ${tileIndex + 1}`;
-  } else if (tileIndex >= 8 && tileIndex < 11) {
-    return `Tile ${String(tileIndex + 1).padStart(2, '0')}`;
-  }
-  return `Tile ${tileIndex + 1}`;
+  return `Task ${tileIndex + 1}`;
 }

@@ -738,99 +738,51 @@ code, pre, .mono {
 }
 
 /* --------------------------------------------------------------------------
-   STYLE 1: Tiles 1 to 4 (Plain task tiles)
-   Flat neutral tile with 1px border, labelled "Task N" (small label + larger monospace number)
-   -------------------------------------------------------------------------- */
-.tile-style-task {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.tile-style-task:hover:not(:disabled):not(.tile-disabled) {
-  background-color: var(--bg-card-hover);
-  border-color: var(--border-emphasis);
-}
-
-.tile-task-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  letter-spacing: 0.2px;
-}
-
-.tile-task-number {
-  font-family: var(--font-mono);
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1;
-  margin-top: auto;
-}
-
-/* --------------------------------------------------------------------------
-   STYLE 2: Tiles 5 to 8 (Named puzzle tiles)
-   Same flat style, shows puzzle NAME instead of "Task N", small number in corner
-   -------------------------------------------------------------------------- */
-.tile-style-named {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.tile-style-named:hover:not(:disabled):not(.tile-disabled) {
-  background-color: var(--bg-card-hover);
-  border-color: var(--border-emphasis);
-}
-
-.tile-corner-num {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.tile-named-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.3;
-  margin-top: auto;
-}
-
-/* --------------------------------------------------------------------------
-   STYLE 3: Tiles 9 to 11 (Purple gradient tiles)
-   Diagonal gradient: lavender at top-left to deep violet to dark purple at bottom-right.
-   Shows only tile number in white monospace at bottom-left. No glow, no shadow blur.
+   PUZZLE TILES: Tiles 1 to 11 (Unified Purple Gradient Tile)
+   Diagonal gradient: linear-gradient(135deg, #A57EF0 0%, #5A3792 40%, #3A2166 70%, #24133F 100%)
+   Top-left: Small white label "Task N" (12px, font-weight 600)
+   Bottom-left: Large white monospace number (01 to 11)
+   Top-right: Status corner badge
+   No glow, no shadow blur, no text gradient.
    -------------------------------------------------------------------------- */
 .tile-style-gradient {
   background: linear-gradient(135deg, #A57EF0 0%, #5A3792 40%, #3A2166 70%, #24133F 100%);
   border: 1px solid rgba(165, 126, 240, 0.4);
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: flex-start;
   box-shadow: none !important;
 }
 
 .tile-style-gradient:hover:not(:disabled):not(.tile-disabled) {
   border-color: #A57EF0;
-  /* Strictly no glow, no shadow blur */
 }
 
+/* Top-left small label: "Task N" */
+.tile-task-tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 95px); /* Never overlaps the top-right status badge */
+}
+
+/* Bottom-left large white monospace number */
 .tile-gradient-number {
   font-family: var(--font-mono);
   font-size: 28px;
   font-weight: 600;
   color: #ffffff;
   line-height: 1;
+  margin-top: auto;
 }
 
 /* --------------------------------------------------------------------------
-   STYLE 4: Tile 12 (Red Submit button)
+   SUBMIT BUTTON: Tile 12 (Red Submit button)
    Solid flat red button, full tile size, with label "Submit" and small lock icon.
    Always in last slot. No gradient, no glow.
    -------------------------------------------------------------------------- */
@@ -1669,13 +1621,13 @@ code, pre, .mono {
     padding: var(--space-2);
   }
 
-  .tile-task-number,
-  .tile-gradient-number {
-    font-size: 22px;
+  .tile-task-tag {
+    font-size: 11px;
+    max-width: calc(100% - 75px);
   }
 
-  .tile-named-title {
-    font-size: 13px;
+  .tile-gradient-number {
+    font-size: 22px;
   }
 
   .tile-corner-badge {
@@ -1743,17 +1695,13 @@ code, pre, .mono {
     padding: 6px;
   }
 
-  .tile-task-number,
+  .tile-task-tag {
+    font-size: 11px;
+    max-width: calc(100% - 32px);
+  }
+
   .tile-gradient-number {
     font-size: 18px;
-  }
-
-  .tile-task-label {
-    font-size: 11px;
-  }
-
-  .tile-named-title {
-    font-size: 12px;
   }
 
   .tile-corner-badge {

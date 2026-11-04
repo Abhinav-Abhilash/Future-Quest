@@ -310,53 +310,28 @@ export const Screens = {
           isClickable = false; // All tiles read-only once vault entered
         }
 
-        let innerContentHtml = '';
-        let styleClass = '';
-
-        if (index < 4) {
-          // Tiles 1 to 4: Plain task tiles
-          // Flat neutral tile with 1px border, labelled "Task 1", "Task 2", "Task 3", "Task 4"
-          // (small label plus a larger monospace number)
-          styleClass = 'tile-style-task';
-          innerContentHtml = `
-            <div class="tile-task-label">Task ${tileNumber}</div>
-            <div class="tile-task-number mono">${formattedNum}</div>
-            ${statusBadgeHtml}
-          `;
-        } else if (index < 8) {
-          // Tiles 5 to 8: Named puzzle tiles
-          // Same flat style, but each tile shows a puzzle NAME instead of "Task N",
-          // with tile number small in a corner. Mock names from CONFIG.NAMED_PUZZLE_TILES.
-          // Tile shows only the name and small corner number.
-          styleClass = 'tile-style-named';
-          const puzzleName = CONFIG.NAMED_PUZZLE_TILES[index - 4] || `Puzzle ${tileNumber}`;
-          innerContentHtml = `
-            <div class="tile-corner-num mono">${formattedNum}</div>
-            <div class="tile-named-title">${puzzleName}</div>
-            ${statusBadgeHtml}
-          `;
-        } else {
-          // Tiles 9 to 11: Purple gradient tiles
-          // Diagonal gradient: lavender top-left to deep violet to dark purple bottom-right.
-          // Show only tile number, in white monospace, bottom-left. No glow, no shadow blur.
-          styleClass = 'tile-style-gradient';
-          innerContentHtml = `
-            <div class="tile-gradient-number mono">${formattedNum}</div>
-            ${statusBadgeHtml}
-          `;
+        let statusHumanLabel = 'Unopened';
+        if (status === 'OPENED_IN_PROGRESS') {
+          statusHumanLabel = 'In progress';
+        } else if (status === 'SOLVED') {
+          statusHumanLabel = 'Solved';
+        } else if (status === 'FAILED') {
+          statusHumanLabel = 'Failed';
         }
 
         tilesHtml += `
           <button 
             type="button" 
-            class="tile-card tile-puzzle ${styleClass} ${statusClass} ${!isClickable ? 'tile-disabled' : ''}" 
+            class="tile-card tile-puzzle tile-style-gradient ${statusClass} ${!isClickable ? 'tile-disabled' : ''}" 
             data-puzzle-id="${itemId}"
             data-tile-index="${index}"
             data-tile-num="${tileNumber}"
             ${!isClickable ? 'disabled aria-disabled="true"' : ''}
-            aria-label="Tile ${tileNumber}, Status: ${status}"
+            aria-label="Task ${tileNumber}, Status: ${statusHumanLabel}"
           >
-            ${innerContentHtml}
+            <div class="tile-task-tag">Task ${tileNumber}</div>
+            <div class="tile-gradient-number mono">${formattedNum}</div>
+            ${statusBadgeHtml}
           </button>
         `;
       }
@@ -555,7 +530,7 @@ export const Screens = {
           <!-- Puzzle Header -->
           <div class="puzzle-header-card">
             <div class="puzzle-meta-row">
-              <div class="puzzle-number-badge">TILE ${tileNumber}</div>
+              <div class="puzzle-number-badge">TASK ${tileNumber}</div>
               <div class="difficulty-badge difficulty-${difficulty}">
                 ${difficulty.toUpperCase()} (${Math.floor(CONFIG.DIFFICULTY_TIME[difficulty] / 60)} MIN)
               </div>
@@ -860,9 +835,9 @@ export const Screens = {
               <span class="inventory-slot-badge">${slotLabel} (${formattedNum})</span>
               <span class="inventory-status-badge status-locked">${ICONS.lock} ${statusLabel}</span>
             </div>
-            <h4 class="inventory-title">Locked Content Slot</h4>
+            <h4 class="inventory-title">${slotLabel}: Locked Slot</h4>
             <div class="inventory-content">
-              <p class="inventory-locked-msg">This puzzle was not completed. Associated poster specifications remain locked.</p>
+              <p class="inventory-locked-msg">This task was not completed. Associated poster specifications remain locked.</p>
             </div>
           </div>
         `;

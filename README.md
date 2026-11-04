@@ -81,22 +81,25 @@ All timing constants reside in the `CONFIG` object:
 - Persisted to `localStorage` under `future_quest_2026_state`.
 - **Backend Migration Note:** `localStorage` acts as a client-side cache for this prototype. All state operations are encapsulated inside `GameState` in `js/state.js`, allowing a future REST/WebSocket backend to replace `localStorage` without altering any screen presentation logic.
 
-### 3. Grid & Puzzle Phase (Style Test Mode)
+### 3. Grid & Puzzle Phase
 - **12 Tiles (3 columns mobile, 4 columns desktop):**
-  - **Tiles in Fixed Order (`CONFIG.SHUFFLE_TILES = false`):** Enables side-by-side visual comparison of the four distinct tile styles.
-  - **Tile Styles (Visual only — zero difficulty hints):**
-    1. *Tiles 1 to 4 (Plain task tiles):* Flat neutral card with 1px border, small label `"Task 1"` .. `"Task 4"` and large monospace number.
-    2. *Tiles 5 to 8 (Named puzzle tiles):* Flat neutral card displaying a puzzle NAME (`"Cipher Desk"`, `"Pointer Trace"`, `"Logic Gates"`, `"Footer Query"`) with small tile number in corner.
-    3. *Tiles 9 to 11 (Purple gradient tiles):* Diagonal gradient (`linear-gradient(135deg, #A57EF0 0%, #5A3792 40%, #3A2166 70%, #24133F 100%)`) from lavender to deep violet to dark purple. Displays only the tile number in white monospace at the bottom-left. No glow, no shadow blur.
-    4. *Tile 12 (Red Submit button):* Flat solid red tile with lock icon + `"Submit"`. Clicking opens the Vault Confirmation modal.
-  - **Tile States (Supported across all styles):**
-    - `UNOPENED`: Default clean look.
+  - **Tiles 1 to 11 (Unified Purple Gradient Tiles):**
+    - High-contrast diagonal gradient (`linear-gradient(135deg, #A57EF0 0%, #5A3792 40%, #3A2166 70%, #24133F 100%)`) with a thin lavender border. Strictly no glow and no shadow blur.
+    - Top-left: Small white label `"Task N"` (12px, font-weight 600).
+    - Bottom-left: Large white monospace number (`01` through `11`).
+    - Top-right: Status corner badge (`In progress` / `Solved` / `Failed`).
+    - Fully responsive: Label is kept on one line and truncates cleanly on narrow viewports without overlapping the badge.
+  - **Tile 12 (Red Submit Button):** Flat solid red tile with lock icon + `"Submit"`. Clicking opens the Vault Confirmation modal.
+  - **Tile States (Supported across all tiles):**
+    - `UNOPENED`: Default look without badges.
     - `OPENED_IN_PROGRESS`: Opaque amber corner badge with clock icon + `"In progress"`.
     - `SOLVED`: Opaque green corner badge with check icon + `"Solved"`. Tile is locked.
     - `FAILED`: Opaque red corner badge with cross icon + `"Failed"`. Tile is dimmed and locked for good.
-    - Corner badges are solid opaque and engineered for crisp readability on both dark neutral and purple gradient backgrounds.
+- **Task-Based Labeling Everywhere:**
+  - `getTileLabel()` consistently returns `"Task N"` for every puzzle tile (1 to 11).
+  - Puzzle screen heading, Back to grid context, and vault clue inventory slot labels all use `"Task N"`.
 - **Puzzle Screen Layout:**
-  - **Heading:** Tile's specific label (`"Task 1"`, or puzzle name like `"Cipher Desk"`, or `"Tile 09"`).
+  - **Heading:** `"Task N"`
   - **"What to do" Block:** Contextual instruction card explaining the objective for that puzzle.
   - **Problem Statement & Input:** Mock technical question with input and `"Submit Answer"`.
   - **Timer & Hints:** Puzzle countdown in header nav row; shared 3-hint allocation with confirmation modal.
