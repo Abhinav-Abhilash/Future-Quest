@@ -801,6 +801,11 @@ export const Screens = {
         { num: '1', title: 'WORD TARGETS', text: 'Review target tech keywords or definition clues listed in the right-hand panel.' },
         { num: '2', title: 'DRAG & SNAP', text: 'Drag pointer across letters in any of 8 directions, or tap start and end letters.' },
         { num: '3', title: 'CAPSULE LOCK', text: 'Found terms lock in colored capsules, progress scales up, and clue cards flip.' }
+      ],
+      riddle: [
+        { num: '1', title: 'ANALYZE RIDDLE', text: 'Carefully read the cryptic clues, tech specs, and wordplay in the riddle card.' },
+        { num: '2', title: 'TYPE KEYCAPS', text: 'Type letters into the character slots or use backspace to edit your deduction.' },
+        { num: '3', title: 'VERIFY & UNLOCK', text: 'Click Check Answer or complete the phrase to lock in your solution and reveal the secret clue.' }
       ]
     };
 

@@ -132,11 +132,11 @@ export const CONFIG = {
     puzzle_1: "Tomorrow starts with the code you write today",
     puzzle_2: "LEARN BUILD LEAD",
     puzzle_3: "CODE THE FUTURE",
-    puzzle_4: "GREEN",
+    puzzle_4: "CINNAMON BUN",
     puzzle_5: "HAVING",
     puzzle_6: "O(N^2)",
     puzzle_7: "AROUND",
-    puzzle_8: "^",
+    puzzle_8: "ROADSTER",
     puzzle_9: "2",
     puzzle_10: "15",
     puzzle_11: "CAP"
@@ -283,34 +283,38 @@ export const CONFIG = {
     },
     puzzle_4: {
       id: "puzzle_4",
-      type: "ascii",
-      title: "Shifted ASCII Decoder",
-      category: "Operating Systems",
-      whatToDo: "These ASCII codes have been uniformly offset. Use the stepper [-] / [+] to shift the codes back to standard ASCII, then decode the 4-word phrase.",
-      prompt: "Adjust the uniform offset by -1 to bring the decimal codes into line with standard lowercase ASCII.",
-      hint: "Notice the first code 100. In lowercase ASCII, 99 is 'c', so all codes are offset by +1. Stepping by -1 normalizes them.",
+      type: "riddle",
+      title: "The 17-Year-Old OS Riddle",
+      category: "Operating Systems & Hardware",
+      whatToDo: "Decrypt the identity riddle: read the cryptic clues about the legendary 17-year-old operating system's nickname, and type the letter keycaps.",
+      prompt: "Identify the 17-year-old mobile OS with sweet, spiced roots.",
+      hint: "Android was launched in 2008 (~17 years ago), sports a green alien mascot, and used confectionery code-names with aromatic spices.",
       clueType: "spec",
       clue: {
-        title: "Brand Color Palette Specification",
+        title: "Clue Fragment 4: System Architecture & Palette",
         type: "spec",
         specs: [
-          { label: "Primary Accent", value: "#2563EB (Cobalt Blue)" },
-          { label: "Canvas Surface", value: "#0F172A (Deep Slate)" },
-          { label: "Light Foundation", value: "#F8FAFC (Clean Off-White)" },
-          { label: "Status Amber", value: "#F59E0B (Industrial Amber)" },
-          { label: "Color Rule", value: "Use Primary Accent on max 15% of total surface area" }
+          { label: "Fragment", value: "Fragment 4" },
+          { label: "OS Foundation", value: "Linux Kernel 2.6+ / AOSP" },
+          { label: "Accent Palette", value: "#F59E0B (Spiced Amber)" },
+          { label: "Display Typography", value: "Space Grotesk / Arial Black" },
+          { label: "Alignment Directive", value: "All telemetry feeds aligned to monospace grid" }
         ]
       },
       data: {
         id: "puzzle_4",
-        hasStepper: true,
-        groups: ["Word 1", "Word 2", "Word 3", "Word 4"],
-        groupSolutions: ["curiosity", "is", "the", "key"],
+        categoryTag: "OPERATING SYSTEMS & HARDWARE",
+        formatBadge: "2 WORDS (8 + 3 LETTERS)",
+        riddleLines: [
+          "My age is 17. I'm the one who helps your software coordinate with hardware.",
+          "I'm very popular, might look like that cliché alien, but don't worry—",
+          "I'm sweet, but have a spice in my name. What confection am I?"
+        ],
+        solution: "CINNAMON BUN",
+        acceptedSolutions: ["CINNAMON BUN", "CINNAMON ROLL"],
         words: [
-          { expectedText: "curiosity", codes: [100, 118, 115, 106, 112, 116, 106, 117, 122], expectedChars: ['c','u','r','i','o','s','i','t','y'] },
-          { expectedText: "is", codes: [106, 116], expectedChars: ['i','s'] },
-          { expectedText: "the", codes: [117, 105, 102], expectedChars: ['t','h','e'] },
-          { expectedText: "key", codes: [108, 102, 122], expectedChars: ['k','e','y'] }
+          { name: "Word 1", length: 8 },
+          { name: "Word 2", length: 3 }
         ]
       }
     },
@@ -447,29 +451,37 @@ export const CONFIG = {
     },
     puzzle_8: {
       id: "puzzle_8",
-      type: "ascii",
-      title: "Caesar-ASCII Hybrid Decoder",
-      category: "Compiler & Text Tools",
-      whatToDo: "Phase 1: Decode the ASCII numbers into ciphertext words. Phase 2: Use the Caesar cipher dial to shift the text into the final motto.",
-      prompt: "Decode the two ASCII words first, then shift the Caesar dial backward by 3 positions to reveal the slogan.",
-      hint: "Phase 1 codes decode to IXWXUH and UHDGB. Shifting by -3 (or +23 modulo 26) yields 'FUTURE READY'.",
-      clueType: "text",
+      type: "riddle",
+      title: "The Orbital Starman Riddle",
+      category: "Automotive & Aerospace",
+      whatToDo: "Deduce the vehicle described in the cosmic riddle. Type the 8-letter model name into the tactile keycaps.",
+      prompt: "Solve the riddle of the spacefaring convertible piloted by Starman.",
+      hint: "In February 2018, Falcon Heavy launched Elon Musk's cherry electric convertible into heliocentric orbit carrying a dummy in a spacesuit.",
+      clueType: "spec",
       clue: {
-        title: "Technical Compliance Specification",
-        type: "text",
-        content: "Security Policy Requirement: All remote edge telemetry streams must be cryptographically hashed using SHA-256 before ingestion into cluster storage."
+        title: "Clue Fragment 7: Aerospace Telemetry & Specs",
+        type: "spec",
+        specs: [
+          { label: "Fragment", value: "Fragment 7" },
+          { label: "Payload Vehicle", value: "Midnight Cherry Roadster + Starman" },
+          { label: "Orbital Speed", value: "22,000 km/h (Heliocentric)" },
+          { label: "Telemetry Carrier", value: "Deep Space Network S-Band" },
+          { label: "Security Directive", value: "Verify SHA-256 cryptographic hashes on all telemetry frames" }
+        ]
       },
       data: {
         id: "puzzle_8",
-        isCaesarHybrid: true,
-        groups: ["Phase 1: Word 1", "Phase 1: Word 2", "Phase 2: Motto"],
-        groupSolutions: ["IXWXUH", "UHDGB", "FUTURE READY"],
-        cipherWords: ["IXWXUH", "UHDGB"],
-        finalText: "FUTURE READY",
-        targetShift: 23,
+        categoryTag: "AEROSPACE & AUTOMOTIVE TELEMETRY",
+        formatBadge: "1 WORD (8 LETTERS)",
+        riddleLines: [
+          "Born on asphalt, now sailing through space,",
+          "Drop my roof to feel wind in your face.",
+          "With Starman at the wheel, what car am I?"
+        ],
+        solution: "ROADSTER",
+        acceptedSolutions: ["ROADSTER"],
         words: [
-          { expectedText: "IXWXUH", codes: [73, 88, 87, 88, 85, 72], expectedChars: ['I','X','W','X','U','H'] },
-          { expectedText: "UHDGB", codes: [85, 72, 68, 71, 66], expectedChars: ['U','H','D','G','B'] }
+          { name: "Vehicle Model", length: 8 }
         ]
       }
     },

@@ -2961,3 +2961,215 @@ body.lite-mode .cell-correct-pop {
     height: 4px;
   }
 }
+
+/* ============================================================
+   RIDDLE WORKSTATION (Task 4 & Task 8)
+   ============================================================ */
+
+.riddle-workstation {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.riddle-card {
+  background: #120E22;
+  border: 1px solid #3D3063;
+  border-radius: 8px;
+  padding: 22px 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.riddle-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.riddle-category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #FF9900;
+  background: rgba(255, 153, 0, 0.12);
+  border: 1px solid rgba(255, 153, 0, 0.3);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.riddle-icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
+
+.riddle-format-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted, #7E7492);
+  letter-spacing: 0.06em;
+}
+
+.riddle-quote-block {
+  margin: 0;
+  padding: 16px 20px;
+  border-left: 4px solid #FF9900;
+  background: rgba(27, 20, 48, 0.7);
+  border-radius: 0 8px 8px 0;
+}
+
+.riddle-line {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #F0EDF6;
+  font-style: italic;
+}
+
+.riddle-line:last-child {
+  margin-bottom: 0;
+}
+
+.riddle-preview-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #0B0814;
+  border: 1px solid #2B2144;
+  border-radius: 6px;
+}
+
+.riddle-preview-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted, #7E7492);
+  letter-spacing: 0.08em;
+}
+
+.riddle-preview-value {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #FFC928;
+}
+
+.riddle-words-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: center;
+  margin: 4px 0;
+}
+
+.riddle-word-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.riddle-word-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #A99FC0;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.riddle-slots-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.riddle-slot-wrap {
+  display: inline-flex;
+}
+
+.riddle-letter-slot {
+  width: 42px;
+  height: 48px;
+  font-size: 22px;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+  background: #16102B;
+  border: 2px solid #483873;
+  border-radius: 6px;
+  color: #FFFFFF;
+  box-shadow: 0 3px 0 #090610, inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  outline: none;
+  transition: border-color 140ms ease, box-shadow 140ms ease, transform 100ms ease;
+}
+
+.riddle-letter-slot:hover:not(:disabled) {
+  border-color: #7E7492;
+}
+
+.riddle-letter-slot:focus {
+  border-color: #FF9900;
+  box-shadow: 0 0 12px rgba(255, 153, 0, 0.45), 0 3px 0 #090610;
+  transform: translateY(-1px);
+}
+
+.riddle-letter-slot.slot-solved {
+  border-color: #3FB950;
+  background: rgba(63, 185, 80, 0.16);
+  color: #3FB950;
+  box-shadow: 0 0 10px rgba(63, 185, 80, 0.4);
+}
+
+.riddle-status-bar {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.riddle-helper-text {
+  font-size: 11px;
+  color: var(--text-muted, #7E7492);
+  letter-spacing: 0.04em;
+}
+
+.riddle-stamp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  background: rgba(63, 185, 80, 0.15);
+  border: 1.5px solid #3FB950;
+  border-radius: 16px;
+  color: #3FB950;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 480px) {
+  .riddle-card {
+    padding: 16px 14px;
+  }
+  .riddle-letter-slot {
+    width: 34px;
+    height: 42px;
+    font-size: 18px;
+  }
+  .riddle-slots-row {
+    gap: 6px;
+  }
+}

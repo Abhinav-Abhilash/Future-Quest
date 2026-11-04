@@ -99,12 +99,14 @@ t3.groupedEquations.forEach(grp => {
 report('T3 BODMAS Dynamic Check (CODE THE FUTURE)', t3_ok);
 
 // -------------------------------------------------------------
-// T4: Shifted ASCII (curiosity is the key)
+// T4: Riddle - The 17-Year-Old OS (CINNAMON BUN)
 // -------------------------------------------------------------
 const t4 = CONFIG.PUZZLES.puzzle_4.data;
-const t4_decoded = t4.words.map(w => w.codes.map(c => String.fromCharCode(c - 1)).join('')).join(' ');
-const t4_expected = t4.groupSolutions.join(' ');
-report('T4 Shifted ASCII Dynamic Check (-1 offset)', t4_decoded === t4_expected && t4_decoded === 'curiosity is the key', t4_decoded);
+const t4_ok = t4.solution === 'CINNAMON BUN' && 
+  t4.acceptedSolutions.includes('CINNAMON BUN') &&
+  t4.words.map(w => w.length).reduce((a, b) => a + b, 0) === 11 &&
+  t4.riddleLines.length >= 3;
+report('T4 Riddle Dynamic Check (CINNAMON BUN)', t4_ok);
 
 // -------------------------------------------------------------
 // T5: BODMAS Anagram (QUEST)
@@ -150,17 +152,14 @@ t7.words.forEach(word => {
 report('T7 Word Search Dynamic Check (20 words in grid)', t7_ok);
 
 // -------------------------------------------------------------
-// T8: Caesar-ASCII Hybrid (FUTURE READY)
+// T8: Riddle - The Orbital Starman (ROADSTER)
 // -------------------------------------------------------------
 const t8 = CONFIG.PUZZLES.puzzle_8.data;
-const t8_raw = t8.words.map(w => w.codes.map(c => String.fromCharCode(c)).join(''));
-const t8_shifted = t8_raw.map(w => {
-  return w.split('').map(ch => {
-    const code = ch.charCodeAt(0);
-    return String.fromCharCode(((code - 65 + t8.targetShift) % 26) + 65);
-  }).join('');
-}).join(' ');
-report('T8 Caesar-ASCII Dynamic Check (FUTURE READY)', t8_shifted === t8.finalText && t8_shifted === 'FUTURE READY', t8_shifted);
+const t8_ok = t8.solution === 'ROADSTER' &&
+  t8.acceptedSolutions.includes('ROADSTER') &&
+  t8.words.map(w => w.length).reduce((a, b) => a + b, 0) === 8 &&
+  t8.riddleLines.length >= 3;
+report('T8 Riddle Dynamic Check (ROADSTER)', t8_ok);
 
 // -------------------------------------------------------------
 // T9: Slotted BODMAS (SIGNAL)

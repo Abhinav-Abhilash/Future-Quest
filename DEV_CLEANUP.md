@@ -84,7 +84,33 @@ Four real puzzle challenges and their corresponding submission fragment clues ha
 
 ---
 
-## 4. Production Deployment Checklist
+## 4. Custom Riddle Challenges (Task 4 & Task 8)
+
+Two creative identity decryption riddle challenges featuring auto-advancing tactile keycaps, live deduction preview, paste/backspace support, and stamping feedback:
+
+### Task 4 (`puzzle_4`) - The 17-Year-Old OS Riddle
+- **Type / Difficulty:** `riddle` / Medium 🟡 (Yellow Food Badge)
+- **Riddle:**
+  > *"My age is 17. I'm the one who helps your software coordinate with hardware.*  
+  > *I'm very popular, might look like that cliché alien, but don't worry—*  
+  > *I'm sweet, but have a spice in my name. What confection am I?"*
+- **Solution:** `"CINNAMON BUN"` (accepts `"CINNAMON BUN"` and `"CINNAMON ROLL"`, 8 + 3 letters).
+- **Theme:** Android OS history (launched 2008 / 17 years ago, green bugdroid alien mascot, confectionery dessert codename series).
+- **Unlocked Reward:** **Clue Fragment 4 (System Architecture & Palette Spec)**.
+
+### Task 8 (`puzzle_8`) - The Orbital Starman Riddle
+- **Type / Difficulty:** `riddle` / Hard 🔴 (Red Food Badge)
+- **Riddle:**
+  > *"Born on asphalt, now sailing through space,*  
+  > *Drop my roof to feel wind in your face.*  
+  > *With Starman at the wheel, what car am I?"*
+- **Solution:** `"ROADSTER"` (8 letters).
+- **Theme:** SpaceX Falcon Heavy 2018 orbital launch of Elon Musk's cherry Tesla Roadster carrying the Starman mannequin into heliocentric orbit.
+- **Unlocked Reward:** **Clue Fragment 7 (Aerospace Telemetry & Specs)**.
+
+---
+
+## 5. Production Deployment Checklist
 
 When preparing the platform for live competition:
 
