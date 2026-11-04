@@ -985,7 +985,7 @@ input, select, textarea {
   color: var(--text-secondary);
 }
 
-.step-badge {
+.landing-step .step-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1237,7 +1237,7 @@ input, select, textarea {
   color: var(--text-secondary);
 }
 
-.step-badge {
+.landing-step .step-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;

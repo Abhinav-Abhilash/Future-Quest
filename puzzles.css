@@ -314,47 +314,123 @@
   margin-bottom: 10px;
 }
 
+/* 3-Column Responsive Step Grid */
 .howto-steps-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
 }
 
+@media (max-width: 800px) {
+  .howto-steps-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+/* Step Card */
 .howto-step-card {
-  padding: 10px 12px;
-  background: #171226;
-  border: 1px solid #3D3063;
-  border-bottom: 3px solid #090610;
-  border-radius: 4px;
+  padding: 14px 16px;
+  background: #171228;
+  border: 1px solid #352654;
+  border-bottom: 3px solid #0D0818;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
 }
 
+.howto-step-card:hover {
+  border-color: #553C8B;
+}
+
+/* Header Row: Badge + Title with perfect vertical centering */
 .howto-step-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 4px;
+  gap: 10px;
+  margin-bottom: 2px;
 }
 
-.step-badge {
-  font-size: 10px;
-  font-weight: 700;
-  color: #0F0B1A;
-  background: var(--module-accent, var(--accent, #FF9900));
-  border-radius: 3px;
-  padding: 1px 6px;
+/* Step Badge: Crisp Pill with Mini Icon and Number */
+.howto-step-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  width: auto !important;
+  min-width: unset !important;
+  height: auto !important;
+  padding: 4px 9px !important;
+  border-radius: 4px !important;
+  font-family: var(--font-mono, monospace) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+  background: rgba(255, 153, 0, 0.15) !important;
+  border: 1px solid rgba(255, 153, 0, 0.45) !important;
+  color: #FFB340 !important;
 }
 
-.step-title {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-primary, #F0EDF6);
+.howto-step-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
-.step-desc {
+.howto-step-icon svg {
+  display: block;
+}
+
+/* Distinct color accents per step */
+.step-badge-1 {
+  background: rgba(56, 189, 248, 0.15) !important;
+  border-color: rgba(56, 189, 248, 0.45) !important;
+  color: #38BDF8 !important;
+}
+
+.step-badge-2 {
+  background: rgba(250, 204, 21, 0.15) !important;
+  border-color: rgba(250, 204, 21, 0.45) !important;
+  color: #FACC15 !important;
+}
+
+.step-badge-3 {
+  background: rgba(74, 222, 128, 0.15) !important;
+  border-color: rgba(74, 222, 128, 0.45) !important;
+  color: #4ADE80 !important;
+}
+
+/* Step Title */
+.howto-step-title {
+  font-family: var(--font-mono, monospace);
   font-size: 12px;
-  color: var(--text-secondary, #A69CB8);
+  font-weight: 700;
+  color: #F5F3FF;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   margin: 0;
-  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+/* Step Description */
+.howto-step-desc {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #A69CB8;
+  margin: 0;
+  flex: 1;
 }
 
 /* Revealed Hint Box */

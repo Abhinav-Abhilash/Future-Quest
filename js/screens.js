@@ -803,7 +803,7 @@ export const Screens = {
       ascii: [
         { num: '1', title: 'DECIMAL CODES', text: "Observe the decimal ASCII values on each active card (e.g. 65='A', 97='a')." },
         { num: '2', title: 'TABLE / STEPPER', text: 'Reference the side ASCII chart or rotate stepper/cipher dials to find characters.' },
-        { num: '3', title: 'CARD LOCK', text: 'Type letters into slots. When a word is correct, it slides together and stamps the poster.' }
+        { num: '3', title: 'CARD LOCK', text: 'Type letters into slots. When a word is correct, it slides together and locks the word.' }
       ],
       bodmas: [
         { num: '1', title: 'BODMAS ORDER', text: 'Calculate equations following Brackets, Powers, Multiplication/Division, Addition/Subtraction.' },
@@ -835,14 +835,23 @@ export const Screens = {
       } catch (e) {}
     }
 
+    const STEP_ICONS = {
+      '1': `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+      '2': `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>`,
+      '3': `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
+    };
+
     const steps = HOWTO_GUIDES[puzzleType] || HOWTO_GUIDES.ascii;
     const howToStepsHtml = steps.map(s => `
       <div class="howto-step-card keycap">
         <div class="howto-step-header">
-          <span class="step-badge mono">STEP ${s.num}</span>
-          <span class="step-title">${s.title}</span>
+          <span class="howto-step-badge step-badge-${s.num} mono">
+            <span class="howto-step-icon">${STEP_ICONS[s.num] || ''}</span>
+            <span>STEP ${s.num}</span>
+          </span>
+          <h4 class="howto-step-title mono">${s.title}</h4>
         </div>
-        <p class="step-desc">${s.text}</p>
+        <p class="howto-step-desc">${s.text}</p>
       </div>
     `).join('');
 
