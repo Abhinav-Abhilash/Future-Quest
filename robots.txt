@@ -6,3 +6,4 @@ Disallow: /#/vault
 Disallow: /#/register
 
 Sitemap: https://futurequest.jainsoft.co.in/sitemap.xml
+

@@ -2,52 +2,64 @@
 
 A fast, lightweight, framework-free frontend shell for **Future Quest 2026** (`future quest'26`), an online tech treasure hunt hosted by **JAIN (Deemed-to-be University) Kochi, School of Future**, designed for 11th and 12th grade school teams.
 
-Built as an immersive, highly performant competition terminal and interactive treasure hunt. The frontend balances an engaging visual style inspired by the official event flyer with a dense, practical competition interface (similar to CTFd and LeetCode contest platforms). It strictly adheres to performance, accessibility, and SEO best practices (zero external font requests, self-hosted WOFF2 Latin subsets, crawler-readable semantic HTML, zero-flash session routing, and responsive layouts).
+Built as an immersive, highly performant competition terminal and interactive treasure hunt. The frontend strictly separates the **scoped landing experience** from the **core competition terminal**:
+- **Competition Screens (Grid, Puzzle, Vault, Register, Rules):** Dense, practical contest interface (similar to CTFd and LeetCode contest pages) styled with a clean dark graphite neutral base (`#0d1117`), engineer blue accent (`#388bfd`), 1px borders, IBM Plex Mono tabular numbers, and unified purple gradient tiles.
+- **Landing Experience (`#/landing`):** Scoped flyer-inspired palette (`--lp-*`) loaded strictly under `body.is-landing` via separate, lazy-loaded [`landing.css`](file:///c:/Users/user/Downloads/Future%20Quest/landing.css) and [`landing.js`](file:///c:/Users/user/Downloads/Future%20Quest/landing.js) with a centered airy hero and an interactive clue-card gallery.
 
 ---
 
-## Brand Theme & Design System
+## Architecture & Scoped Design System
 
-The visual identity is directly derived from the official **Future Quest 2026** event flyer:
+### 1. Global / Competition Screens (`styles.css`)
+- **Theme:** Dark graphite (`--bg-page: #0d1117`, `--bg-surface: #161b22`, `--bg-card: #1c2128`) with engineer blue (`--accent: #388bfd`).
+- **Unified Purple Gradient Tiles (Tiles 1 to 11):** High-contrast diagonal gradient (`linear-gradient(135deg, #9068DB 0%, #5A3792 40%, #3A2166 70%, #24133F 100%)`) with a thin lavender border, `"Task N"` label, large mono number, and status badge.
+- **Submit Tile (Tile 12):** Flat solid red (`#DC2626`) button with lock icon + `"Submit"`.
+- **Status Colors:** Green (`#3fb950`) solved, Red (`#f85149`) failed, Amber (`#d29922`) in progress or low time.
+- **Typography:** Body and UI in IBM Plex Sans / system stack; countdown timers in self-hosted **IBM Plex Mono** (500 weight).
 
-- **Page Base:** Near-black violet (`#0F0B1A`) providing deep contrast.
-- **Hero Band:** Rich deep violet gradient (`#2B1580` down to `#0F0B1A`).
-- **Primary Accent:** Radiant orange-to-yellow gradient (`#FF8A00` to `#FFC21A`), reserved strictly for primary interactive actions, grand prize figures, and key highlights.
-- **Badge Highlights:** Golden yellow (`#FFC928`).
-- **Submit Tile:** Flat solid red (`#DC2626`).
-- **Tile Styles:** High-contrast purple gradient (`linear-gradient(135deg, #9068DB 0%, #5A3792 40%, #3A2166 70%, #24133F 100%)`) with a thin lavender border.
-- **Status Colors (Dedicated Meaning):** Green (`#10B981`) for solved, Red (`#EF4444`) for failed, Amber (`#F59E0B`) for in-progress or low time. Status colors are never reused for decorative styling.
-- **Typography:**
-  - Headings: Bold rounded geometric sans **Poppins** (700 and 800 weights), matching the flyer's wordmark.
-  - Body: Native system UI font stack (`system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`) for crisp legibility and zero font overhead.
-  - Timers & Numbers: **IBM Plex Mono** (500 weight) for stable tabular countdowns.
-  - **Self-Hosted WOFF2 Latin Subsets:** Stored directly in `fonts/` (<31 KB total for all 3 fonts). Zero Google Fonts network requests, `font-display: swap`, and preloading on the primary heading font.
+### 2. Scoped Landing Experience (`landing.css` & `landing.js`)
+- **Scoped Variables (`--lp-*`):** Flat near-black violet canvas (`--lp-bg-base: #0F0B1A`), deeper violet hero band (`--lp-hero-band-top: #2B1580`), solid yellow-orange accent (`--lp-accent-solid: #FF9900`, no gradient), golden yellow badge (`--lp-badge-yellow: #FFC928`), and flat solid card colors (violet, orange, yellow, teal, pink, deep blue).
+- **Background:** Flat near-black violet with a subtle static dotted map grid pattern (CSS only, no animation). When leaving the landing page, the canvas immediately returns to dark graphite (`#0d1117`).
+- **Heading Typography:** Bold geometric sans **Poppins** (700 and 800 weights) loaded **only on the landing route** inside `landing.css`.
+- **Landing Nav Variant:** Minimal sticky header showing the wordmark on the left, Rules link, and a compact `"Start Event"` pill button on the right. (Pre-session registration and rules navigation remain standard without the pill).
+- **Redesigned Hero:** Centered, airy layout with `"Powered by JAIN School of Future"` overhead tag, large responsive `clamp()` title with `"2026"` in solid yellow-orange, supporting copy, two pill buttons (primary min-height 48px, secondary outlined), and metadata caption.
+- **Clue-Card Gallery:**
+  - Two staggered rows of cards (16px radius, mixed dimensions from 180x200px to 240x260px with vertical offsets for a hand-placed look).
+  - Left and right edge soft fade masks.
+  - 12 unique flat solid cards referencing 12 original illustrations drawn once in an inline SVG sprite (`#art-key`, `#art-chest`, `#art-compass`, `#art-map`, `#art-lantern`, `#art-gem`, `#art-scroll`, `#art-padlock`, `#art-hourglass`, `#art-magnifier`, `#art-cipher`, `#art-torch`).
+  - Top row drifts slowly left and bottom row drifts slowly right (~70s loop, `transform: translate3d` only).
+  - Pauses on hover, keyboard focus, and when the tab is hidden (`visibilitychange`).
+  - Started/stopped with `IntersectionObserver` so drift only runs while visible.
+  - Hover tilt (max 4 degrees) and 3D flip on click/tap/Enter revealing 12 playful original one-liner riddles from `CONFIG.LANDING_RIDDLES`.
+  - Three cards hide a tiny glint (`data-secret-id`). Discovering them triggers toast feedback, updates the footer tracker (`Secrets found: X/3`, persisted in `sessionStorage`), and shows `"Map decoded"` at 3/3.
+  - Mobile, reduced motion, and lite mode: automatic drift is disabled and rendered as a single swipeable row (`scroll-snap-type: x mandatory`).
 
 ---
 
-## Architecture & File Structure
+## File Structure
 
 ```text
 Future Quest/
 ├── index.html          # Semantic HTML5 SPA entry point & static SEO landing view
-├── styles.css          # Design system, brand tokens, animations, and responsive rules
+├── styles.css          # Core dark graphite design system and contest screens
+├── landing.css         # Scoped landing styles (hero, clue-card gallery, flyer tokens)
+├── landing.js          # Scoped landing interactions (gallery drift, flips, secret glints)
 ├── robots.txt          # SEO crawler instructions
 ├── sitemap.xml         # XML sitemap for search indexing
 ├── DEV_CLEANUP.md      # Inventory and instructions for dev/test feature removal
 ├── README.md           # Documentation and run instructions
 ├── fonts/              # Self-hosted WOFF2 Latin font subsets (<31 KB total)
+│   ├── ibm-plex-mono-500.woff2
 │   ├── poppins-700.woff2
-│   ├── poppins-800.woff2
-│   └── ibm-plex-mono-500.woff2
+│   └── poppins-800.woff2
 └── js/
-    ├── config.js       # Central CONFIG: event metadata, timers, mock puzzles, clue data
+    ├── config.js       # Central CONFIG: event metadata, riddles, timers, mock puzzles
     ├── state.js        # Game state manager module with localStorage persistence
     ├── router.js       # Hash-based SPA router with guards (#/landing, #/register, #/grid, #/puzzle/:id, #/vault, #/rules)
-    ├── icons.js        # Inline SVG icons (key, chest, compass, lantern, trophy, etc.)
-    ├── fx.js           # Lightweight FX and interaction engine (spotlight, counters, route draw, bursts)
+    ├── icons.js        # Standard inline SVG icon helpers
     ├── modal.js        # Accessible, focus-trapping modal dialog manager
-    ├── screens.js      # View renderers for Register, Grid, Puzzle, Vault, and Rules screens
-    └── app.js          # Main coordinator, sticky navbar updates, master timer loop, and FX wiring
+    ├── screens.js      # Clean contest view renderers for Register, Grid, Puzzle, Vault, Rules
+    └── app.js          # Main coordinator, sticky navbar, master loop, and lazy asset loader
 ```
 
 ---
@@ -73,81 +85,12 @@ npx serve .
 npx http-server -p 8000
 ```
 
-### Option 3: VS Code Live Server
-1. Open the repository in Visual Studio Code.
-2. Click **Go Live** on the bottom status bar (using the Live Server extension).
-
 ---
 
-## Key Competition Systems
+## Competition Rules & Logic (Strictly Preserved)
 
-### 1. Timing System (`js/config.js`)
-All timing constants reside in the `CONFIG` object:
-- **Master Countdown:** 2 hours (7,200 seconds) for the entire game.
-  - Stored against `timerStartedAt` to survive browser refreshes and closed tabs.
-  - Progress bar under nav visualizes elapsed master time.
-  - Switches to amber color when under 10 minutes remain.
-  - Displays notifications at 10 and 5 minutes remaining.
-  - Auto-terminates the puzzle phase at 0 seconds, locking all puzzles and moving directly to the Submission Vault (`#/vault`) with "Time is up".
-- **Per-Puzzle Countdown & Mystery Difficulty:**
-  - Mock difficulties: Easy (10 min), Medium (15 min), Hard (20 min).
-  - Mock distribution: **2 easy, 5 medium, 4 hard** (easily reconfigurable in `CONFIG.TILE_DIFFICULTY`).
-  - **Difficulty is a mystery:** The grid and navbar never show or hint at difficulty or time limits before a puzzle is opened (no labels, CSS classes, data attributes, tooltips, or aria-labels). Tile IDs (`puzzle_1`..`puzzle_11`) are opaque numbers and do not reveal difficulty.
-  - Difficulty and the individual puzzle's time limit appear **only** on the puzzle screen after the tile has been opened, and remain visible there permanently.
-  - *Production Note:* In production, difficulty and time limits must be supplied dynamically by the backend server upon tile access, as client-side code can be inspected using browser DevTools.
-  - Countdown runs only while the puzzle screen is active.
-  - Navigating "Back to Grid" pauses the puzzle timer and stores accumulated milliseconds (`timeSpentMs`).
-  - Reloading while on the puzzle screen does **not** pause the timer (`activeSince` timestamp anchor is persisted).
-  - Timing out immediately fails the puzzle permanently and returns the user to the grid.
-
-### 2. State & Persistence (`js/state.js`)
-- Persisted to `localStorage` under `future_quest_2026_state`.
-- **Zero-Flash Session Guard:** A minimal inline script in `<head>` checks `localStorage` and immediately adds `.has-active-session` to `document.documentElement` if a game is in progress. CSS rules immediately suppress the static landing page before the first paint, preventing any visual flicker.
-- **Backend Migration Note:** `localStorage` acts as a client-side cache for this prototype. All state operations are encapsulated inside `GameState` in `js/state.js`, allowing a future REST/WebSocket backend to replace `localStorage` without altering any screen presentation logic.
-
-### 3. Grid & Puzzle Phase
-- **12 Tiles (3 columns mobile, 4 columns desktop):**
-  - **Tiles 1 to 11 (Unified Purple Gradient Tiles):**
-    - High-contrast diagonal gradient with a thin lavender border.
-    - Top-left: Small white label `"Task N"` (12px, font-weight 600).
-    - Bottom-left: Large white monospace number (`01` through `11`).
-    - Top-right: Status corner badge (`In progress` / `Solved` / `Failed`).
-    - Fully responsive: Label is kept on one line and truncates cleanly on narrow viewports without overlapping the badge.
-  - **Tile 12 (Red Submit Button):** Flat solid red tile with lock icon + `"Submit"`. Clicking opens the Vault Confirmation modal. Pulses when all 11 puzzles have been attempted.
-  - **Tile States (Supported across all tiles):**
-    - `UNOPENED`: Default look without badges.
-    - `OPENED_IN_PROGRESS`: Amber corner badge with clock icon + `"In progress"`.
-    - `SOLVED`: Green corner badge with check icon + `"Solved"`. Tile is locked.
-    - `FAILED`: Red corner badge with cross icon + `"Failed"`. Tile is dimmed and locked for good.
-- **Puzzle Screen Layout:**
-  - **Heading:** `"Task N"` with difficulty badge and category badge.
-  - **Progress Bar:** 3px timer progress bar tracking remaining puzzle time.
-  - **"What to do" Block:** Contextual instruction card explaining the objective for that puzzle.
-  - **Problem Statement & Input:** Mock technical question with input and `"Submit Answer"`.
-  - **Attempts Keys Display:** 3 interactive key icons (intact vs broken) showing remaining attempts.
-  - **Hint Lanterns Display:** 3 interactive lantern icons (lit vs dark) showing team hints remaining.
-  - **Solve Moment:** 16-piece CSS particle burst and clue unlocked notification.
-
-### 4. Interactive Treasure Hunt FX Engine (`js/fx.js`)
-- **Lantern Hero Spotlight:** Dynamic radial lighting follows cursor/touch on the landing hero, revealing 3 hidden ancient glyphs (key, compass, gem).
-- **Prize Figures Count-Up:** Animated count-up from ₹0 to ₹50,000 using `IntersectionObserver`.
-- **Dotted Route Draw:** Self-drawing route path showing the 4 steps of the contest.
-- **3D Preview Tile Flips:** Interactive preview tiles on the landing page that flip 180° on click and subtly tilt on hover.
-- **Clue Pouch Strip:** Sticky horizontal inventory strip beneath the navigation bar displaying collected clue gems and locked slots.
-- **Lite Mode / Reduced Motion:** Respects `prefers-reduced-motion: reduce`, detects low-end devices (`hardwareConcurrency <= 4`), and includes a user toggle button ("Effects: Standard / Minimal") stored in `localStorage`.
-
-### 5. Submission Vault (`#/vault`)
-- Accessed via Tile 12 with an explicit confirmation modal or automatically upon master timer expiration.
-- Freezes the master timer and permanently makes all puzzle tiles read-only.
-- Displays performance metrics: puzzles solved, hints used, and duration.
-- Contains the clue inventory (unsolved/failed puzzles show as locked slots without leaking details).
-- Provides a client-side verification hash placeholder (to be cryptographically generated on the server in production).
-- Directs teams to the final Google Form submission link.
-
-### 6. Testing & Developer Tools (`DEV_MODE = true`)
-When `DEV_MODE` is set to `true` in `js/config.js`, the following testing tools are active (see `DEV_CLEANUP.md` for complete cleanup documentation):
-- **Dev Reset Bar (`#dev-reset-bar`):** A fixed bar at the bottom-right of every screen with a `DEV` tag and "Reset all progress" button. Opens a confirmation modal that clears `localStorage`, resets all timers, secret glyphs, and notice flags, and returns the platform to `#/landing` in a clean state.
-- **Puzzle Screen Toolbar:**
-  - **Mark Solved (dev):** Instantly marks the puzzle solved and reveals its clue.
-  - **Mark Failed (dev):** Instantly fails the puzzle and locks it.
-  - **Skip timer to 10s:** Fast-forwards puzzle time to test auto-fail and timeout handling.
+1. **Master Countdown:** 2 hours (7,200 seconds) continuous timer stored against `timerStartedAt`. Automatically terminates puzzle access and enters the vault at 0 seconds.
+2. **Mystery Difficulty:** Puzzles carry independent limits (Easy 10m, Medium 15m, Hard 20m) with distribution (2 easy, 5 medium, 4 hard). Difficulty and time limits are never revealed or hinted at on the grid or nav before opening.
+3. **Attempts & Hints:** Maximum 3 attempts per puzzle (3 incorrect attempts permanently fail the puzzle). Shared allocation of 3 hints total for the team.
+4. **Submission Vault (`#/vault`):** Freezes timer, locks tiles into read-only mode, displays clue inventory, and outputs client verification hash.
+5. **Developer Reset System (`DEV_MODE = true`):** Fixed bottom-right bar with "Reset all progress" button clears all state and resets to `#/landing`. Set `CONFIG.DEV_MODE = false` for live production.

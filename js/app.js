@@ -1,8 +1,9 @@
 /**
  * Future Quest 2026 - Main Application Controller
  * 
- * Orchestrates navigation, sticky navbar, master countdown loop,
+ * Orchestrates SPA routing, sticky navigation, master countdown loop,
  * notice announcements (10m and 5m remaining), and automated vault locking.
+ * Lazy-loads landing-only assets (landing.css, landing.js) strictly on the landing route.
  */
 
 import { CONFIG } from './config.js';
@@ -11,7 +12,6 @@ import { Router } from './router.js';
 import { Screens } from './screens.js';
 import { ICONS } from './icons.js';
 import { Modal } from './modal.js';
-import { Fx } from './fx.js';
 
 class App {
   constructor() {
@@ -20,12 +20,12 @@ class App {
     this.notified10Min = false;
     this.notified5Min = false;
     this.mobileMenuOpen = false;
+    this.landingModule = null;
 
     // DEV-ONLY: Expose only when CONFIG.DEV_MODE is true for testing/inspection
     if (CONFIG.DEV_MODE) {
       window.GameState = GameState;
       window.CONFIG = CONFIG;
-      window.Fx = Fx;
     }
   }
 
@@ -34,9 +34,6 @@ class App {
     const navContainer = document.getElementById('app-navbar');
 
     document.body.classList.toggle('dev-mode', !!CONFIG.DEV_MODE);
-
-    // Initialize lite-mode & reduced motion sync
-    Fx.initLiteModeSync();
 
     this.router = new Router({}, (route, params) => {
       this.closeMobileMenu();
@@ -50,13 +47,9 @@ class App {
     // Initial router kick-off
     this.router.start();
 
-    // Subscribe to state updates for reactive nav & pouch updates
+    // Subscribe to state updates for reactive nav updates (e.g. hints count)
     GameState.subscribe(() => {
       this.updateNavbar(navContainer, this.router.currentRoute);
-      const pouchEl = document.getElementById('clue-pouch-strip');
-      if (pouchEl && GameState.hasSession()) {
-        Fx.updateCluePouch(pouchEl, GameState.state);
-      }
     });
 
     // DEV-ONLY: Initialize fixed dev reset bar at bottom-right
@@ -111,10 +104,8 @@ class App {
       console.warn('Dev reset error clearing storage:', e);
     }
 
-    // Reset zero-flash session state & secret glyphs
+    // Reset zero-flash session state
     document.documentElement.classList.remove('has-active-session');
-    Fx.secretsFound.clear();
-    Fx.updateSecretsCounter();
 
     // 2. Clear all running intervals
     if (this.masterInterval) {
@@ -154,45 +145,65 @@ class App {
   }
 
   /**
+   * Lazy load landing-only assets (landing.css, landing.js) when entering #/landing.
+   */
+  loadLandingAssets() {
+    document.body.classList.add('is-landing');
+
+    // Lazy load landing.css if not already in document
+    if (!document.getElementById('landing-css')) {
+      const link = document.createElement('link');
+      link.id = 'landing-css';
+      link.rel = 'stylesheet';
+      link.href = 'landing.css';
+      document.head.appendChild(link);
+    }
+
+    // Lazy load landing.js module
+    import('./landing.js').then(module => {
+      this.landingModule = module;
+      if (module && typeof module.initLanding === 'function') {
+        module.initLanding();
+      }
+    }).catch(err => {
+      console.warn('Could not lazy-load landing.js:', err);
+    });
+  }
+
+  /**
+   * Clean up landing assets and observers when leaving #/landing.
+   */
+  leaveLanding() {
+    document.body.classList.remove('is-landing');
+    if (this.landingModule && typeof this.landingModule.cleanupLanding === 'function') {
+      this.landingModule.cleanupLanding();
+    }
+  }
+
+  /**
    * Render the active screen.
    */
   renderCurrentScreen(container, route, params) {
     window.scrollTo({ top: 0, behavior: 'instant' });
 
     const staticLanding = document.getElementById('static-landing-view');
-    const pouchEl = document.getElementById('clue-pouch-strip');
 
+    // Landing route handling
     if (route === 'landing' || (!GameState.hasSession() && (route === '' || route === 'home'))) {
-      if (staticLanding) {
-        staticLanding.style.display = '';
-        Fx.initLanternHero(document.getElementById('landing-hero'));
-        Fx.initPrizeCountUp(staticLanding);
-        Fx.initRoutePathDraw(staticLanding);
-        Fx.initGridPreviewFlip(staticLanding);
-      }
+      this.loadLandingAssets();
+      if (staticLanding) staticLanding.style.display = '';
       if (container) container.style.display = 'none';
-      if (pouchEl) pouchEl.style.display = 'none';
       return;
     }
 
-    // For all other routes: hide static landing, show container
-    if (staticLanding) {
-      staticLanding.style.display = 'none';
-    }
-    if (container) {
-      container.style.display = 'block';
-    }
-
-    if (pouchEl && GameState.hasSession()) {
-      Fx.updateCluePouch(pouchEl, GameState.state);
-    }
+    // Leaving landing: restore non-landing canvas & cleanup landing observers
+    this.leaveLanding();
+    if (staticLanding) staticLanding.style.display = 'none';
+    if (container) container.style.display = 'block';
 
     switch (route) {
       case 'landing':
-        // If hasSession, route guard redirects to /grid
-        if (GameState.hasSession()) {
-          this.router.navigate('/grid');
-        }
+        if (GameState.hasSession()) this.router.navigate('/grid');
         break;
       case 'register':
         Screens.renderRegister(container, this.router);
@@ -234,7 +245,30 @@ class App {
     const state = GameState.state;
 
     if (!hasSession) {
-      // Landing & registration pre-session: keep minimal clean header (wordmark plus Rules)
+      if (currentRoute === 'landing' || currentRoute === '' || currentRoute === 'home') {
+        // Landing-only nav variant: wordmark on left, Rules link, and compact Start Event pill on right
+        navContainer.innerHTML = `
+          <header class="app-nav nav-pre-entry nav-landing-variant" role="banner">
+            <div class="nav-inner">
+              <div class="nav-left">
+                <a href="#/landing" class="nav-brand" aria-label="Future Quest 2026">
+                  <span class="brand-text">Future Quest 2026</span>
+                  <span class="brand-badge lp-nav-badge">SFT</span>
+                </a>
+                <div class="nav-links">
+                  <a href="#/rules" class="nav-link">Rules</a>
+                </div>
+              </div>
+              <div class="nav-right">
+                <a href="#/register" class="lp-nav-pill-btn">Start Event</a>
+              </div>
+            </div>
+          </header>
+        `;
+        return;
+      }
+
+      // Pre-session registration and rules nav (minimal clean header: wordmark plus Rules, no Start Event pill)
       navContainer.innerHTML = `
         <header class="app-nav nav-pre-entry" role="banner">
           <div class="nav-inner">
@@ -251,6 +285,7 @@ class App {
       return;
     }
 
+    // Active session game nav (clean dark graphite style)
     const remainingSec = GameState.getMasterRemainingSeconds();
     const isAmber = remainingSec <= 600 && !state.vaultEntered;
     const hintsCount = state.hintsRemaining;
@@ -324,22 +359,7 @@ class App {
           </div>
         </div>
       </header>
-
-      <!-- Master Timer Thin Progress Bar under Nav -->
-      <div class="master-timer-progress-wrap" id="master-timer-progress-wrap" aria-hidden="true">
-        <div class="master-timer-progress" id="master-timer-progress"></div>
-      </div>
-
-      <!-- Master Clue Pouch Strip -->
-      <div class="clue-pouch-strip" id="clue-pouch-strip"></div>
     `;
-
-    // Render initial clue pouch slots & progress bar
-    const pouchEl = navContainer.querySelector('#clue-pouch-strip');
-    if (pouchEl) {
-      Fx.updateCluePouch(pouchEl, state);
-    }
-    Fx.updateMasterProgressBar(remainingSec, 7200);
 
     // Bind mobile menu toggle
     const toggleBtn = navContainer.querySelector('#mobile-nav-toggle');
@@ -415,9 +435,6 @@ class App {
         clockEl.textContent = Screens.formatTime(remainingSec, true);
       }
 
-      // Update master progress bar
-      Fx.updateMasterProgressBar(remainingSec, 7200);
-
       if (badgeEl) {
         if (remainingSec <= 600 && !state.vaultEntered) {
           badgeEl.classList.add('timer-amber');
@@ -453,4 +470,3 @@ document.addEventListener('DOMContentLoaded', () => {
   const app = new App();
   app.init();
 });
-

@@ -37,6 +37,7 @@ export const CONFIG = {
     school: "School of Future",
     poweredBy: "Powered by JAIN School of Future",
     title: "Future Quest '26",
+    paragraph: "A tech treasure hunt for Higher Secondary students. Solve puzzles, collect clues and rebuild the hidden poster.",
     tagline: "No coding. Just curiosity, creativity & teamwork.",
     prizes: {
       winner: "₹50,000",
@@ -71,6 +72,22 @@ export const CONFIG = {
     queriesPhone: "7034065252",
     registrationUrl: "https://docs.google.com/forms/d/e/1FAIpQLSc_JU_SFT_FQ2026_REGISTRATION_PLACEHOLDER/viewform"
   },
+
+  // Playful landing clue-card riddles (cosmetic one-liners for interactive card flip)
+  LANDING_RIDDLES: [
+    "I have cities without houses, forests without trees, and rivers without water. (A map!)",
+    "I have no voice, but I speak to you; I have no brain, but I solve things too. (A computer!)",
+    "I have a ring but no fingers, and I can be broken without touch. (A secret code!)",
+    "The more you take from me, the bigger I get. (A treasure hole!)",
+    "I run constantly without legs, have a face without eyes, and count your time. (A clock!)",
+    "I have teeth but cannot bite, yet I unlock the deepest mysteries of the night. (A key!)",
+    "Light as a feather, yet the strongest thinker cannot hold me for long. (Your breath!)",
+    "Feed me and I live, give me a drink and I perish. (A lantern spark!)",
+    "I have billions of branches and nodes, yet no trunk or leaves. (The web!)",
+    "Turn me on my side and I am everything; cut me in half and I am nothing. (The number 8!)",
+    "I wear a dial but have no telephone, pointing to true north all on my own. (A compass!)",
+    "I hold ancient secrets without moving an inch, guarded by a lock that won't flinch. (A chest!)"
+  ],
 
   // Granular animation & interaction feature toggles
   EFFECTS: {
