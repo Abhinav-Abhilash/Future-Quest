@@ -2,11 +2,11 @@
  * Future Quest 2026 - Screens & Views
  * 
  * Implements rendering and event binding for:
- * - Entry Screen (#/home)
- * - Grid Screen (#/grid)
- * - Puzzle Screen (#/puzzle/:id)
- * - Vault Screen (#/vault)
- * - Rules Screen (#/rules)
+ * - Registration Screen (#/register)
+ * - Grid Screen (#/grid) with HUD, Clue Pouch, and Tile Motion
+ * - Puzzle Screen (#/puzzle/:id) with Single-stage tactile UX and sealed clue reveal
+ * - Vault Screen (#/vault) with Door Reveal Ceremony and 4-Step Checklist
+ * - Rules Screen (#/rules) with Quick Facts & Sticky TOC
  */
 
 import { CONFIG, getTileLabel } from './config.js';
@@ -15,11 +15,22 @@ import { ICONS } from './icons.js';
 import { Modal } from './modal.js';
 import { PUZZLE_REGISTRY } from './puzzles/index.js';
 import { PUZZLE_ART } from './puzzles/art.js';
+import { Toast } from './app.js';
+
+const showToast = (msg, type) => {
+  if (typeof window !== 'undefined' && window.Toast && typeof window.Toast.show === 'function') {
+    window.Toast.show(msg, type);
+  } else if (typeof Toast !== 'undefined' && typeof Toast.show === 'function') {
+    Toast.show(msg, type);
+  }
+};
 
 export const Screens = {
   activePuzzleInterval: null,
   activePuzzleModule: null,
   activePuzzleId: null,
+  announced120: false,
+  announced30: false,
 
   /**
    * Safely unmount active interactive puzzle module.
@@ -34,6 +45,8 @@ export const Screens = {
     }
     this.activePuzzleModule = null;
     this.activePuzzleId = null;
+    this.announced120 = false;
+    this.announced30 = false;
   },
 
   /**
@@ -88,6 +101,7 @@ export const Screens = {
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text).then(() => {
         btnElement.innerHTML = `${ICONS.check} <span>Copied!</span>`;
+        showToast('Copied to clipboard!', 'success');
         setTimeout(() => { btnElement.innerHTML = originalHtml; }, 1800);
       }).catch(() => {
         this.fallbackCopy(text, btnElement, originalHtml);
@@ -108,6 +122,7 @@ export const Screens = {
     try {
       document.execCommand('copy');
       btnElement.innerHTML = `${ICONS.check} <span>Copied!</span>`;
+      showToast('Copied to clipboard!', 'success');
       setTimeout(() => { btnElement.innerHTML = originalHtml; }, 1800);
     } catch (err) {
       console.error('Copy fallback failed:', err);
@@ -128,128 +143,7 @@ export const Screens = {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  },
-
-  // =========================================================================
-  // 0. LANDING SCREEN (#/landing)
-  // =========================================================================
-  renderLanding(container, router) {
-    if (this.activePuzzleInterval) {
-      clearInterval(this.activePuzzleInterval);
-      this.activePuzzleInterval = null;
-    }
-
-    // Build static 12-tile preview (tiles 1 to 11 purple gradient, tile 12 flat red Submit)
-    let previewTilesHtml = '';
-    for (let i = 1; i <= 11; i++) {
-      const numStr = String(i).padStart(2, '0');
-      previewTilesHtml += `
-        <div class="preview-tile preview-tile-gradient">
-          <span class="preview-tile-tag">Task ${i}</span>
-          <span class="preview-tile-num mono">${numStr}</span>
-        </div>
-      `;
-    }
-    previewTilesHtml += `
-      <div class="preview-tile preview-tile-submit">
-        <span class="preview-submit-icon">${ICONS.lock}</span>
-        <span class="preview-submit-label">Submit</span>
-      </div>
-    `;
-
-    container.innerHTML = `
-      <section class="screen-container landing-screen" aria-labelledby="landing-title">
-        <header class="landing-header">
-          <div class="brand-institution">Jain University - School of Future Technology</div>
-          <h1 id="landing-title" class="landing-title">Future Quest 2026</h1>
-          <p class="landing-sentence">
-            An online puzzle round for school teams. Solve puzzles, collect clues, then rebuild the hidden poster.
-          </p>
-          <div class="landing-actions">
-            <a href="#/register" class="btn btn-primary btn-lg">Start Event</a>
-            <a href="#/rules" class="btn btn-secondary btn-lg">Read the rules</a>
-          </div>
-        </header>
-
-        <!-- Compact Facts Row (Monospace Values) -->
-        <div class="landing-facts-grid" role="region" aria-label="Contest Facts">
-          <div class="fact-cell">
-            <span class="fact-label">Eligibility</span>
-            <span class="fact-val mono">Grades 11 and 12</span>
-          </div>
-          <div class="fact-cell">
-            <span class="fact-label">Team Size</span>
-            <span class="fact-val mono">Teams of 3 to 5</span>
-          </div>
-          <div class="fact-cell">
-            <span class="fact-label">Duration</span>
-            <span class="fact-val mono">2 hours</span>
-          </div>
-          <div class="fact-cell">
-            <span class="fact-label">Format</span>
-            <span class="fact-val mono">11 puzzles + submission</span>
-          </div>
-        </div>
-
-        <!-- How it Works & Before You Start -->
-        <div class="landing-details-grid">
-          <div class="landing-card">
-            <h2 class="landing-section-title">How it works</h2>
-            <ol class="landing-steps-list">
-              <li class="landing-step-item">
-                <span class="step-badge mono">1</span>
-                <span class="step-text">Register your team.</span>
-              </li>
-              <li class="landing-step-item">
-                <span class="step-badge mono">2</span>
-                <span class="step-text">Open any task in any order and solve it before its timer runs out.</span>
-              </li>
-              <li class="landing-step-item">
-                <span class="step-badge mono">3</span>
-                <span class="step-text">Every solved task unlocks a clue for the poster.</span>
-              </li>
-              <li class="landing-step-item">
-                <span class="step-badge mono">4</span>
-                <span class="step-text">Open Submit when you are done and send your poster.</span>
-              </li>
-            </ol>
-          </div>
-
-          <div class="landing-card">
-            <h2 class="landing-section-title">Before you start</h2>
-            <ul class="landing-checklist">
-              <li class="landing-check-item">
-                <span class="check-icon">${ICONS.check}</span>
-                <span class="check-text">Whole team present</span>
-              </li>
-              <li class="landing-check-item">
-                <span class="check-icon">${ICONS.check}</span>
-                <span class="check-text">One shared device</span>
-              </li>
-              <li class="landing-check-item">
-                <span class="check-icon">${ICONS.check}</span>
-                <span class="check-text">Stable internet</span>
-              </li>
-              <li class="landing-check-item">
-                <span class="check-icon">${ICONS.check}</span>
-                <span class="check-text">The timer cannot be paused once it starts</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Static Non-clickable Grid Preview -->
-        <div class="landing-preview-card">
-          <div class="landing-preview-header">
-            <h2 class="landing-section-title" style="border:none; padding:0; margin:0;">Grid preview</h2>
-            <span class="text-muted" style="font-size: 11px; font-family: var(--font-mono);">12 Slots &bull; Fixed Preview</span>
-          </div>
-          <div class="landing-preview-grid" aria-hidden="true">
-            ${previewTilesHtml}
-          </div>
-        </div>
-      </section>
-    `;
+    showToast(`Downloading ${link.download}`, 'info');
   },
 
   // =========================================================================
@@ -266,8 +160,8 @@ export const Screens = {
       <section class="screen-container entry-screen" aria-labelledby="register-title">
         <div class="entry-card">
           <header class="entry-header">
-            <div class="brand-institution">Jain University - School of Future Technology</div>
-            <h1 id="register-title" class="entry-title">Future Quest 2026</h1>
+            <div class="brand-institution">${CONFIG.EVENT.fullName}</div>
+            <h1 id="register-title" class="entry-title">${CONFIG.EVENT.title}</h1>
             <p class="entry-subtitle">Team Registration & Round Access</p>
           </header>
 
@@ -302,15 +196,36 @@ export const Screens = {
               <span class="field-error" id="school-name-error"></span>
             </div>
 
+            <!-- Ready Check Pre-round Checklist -->
+            <div class="ready-checklist" role="region" aria-label="Pre-round Readiness Checklist">
+              <div class="ready-checklist-title mono">PRE-ROUND READINESS CHECK:</div>
+              <label class="ready-check-item">
+                <input type="checkbox" id="chk-team-ready" class="ready-checkbox" />
+                <span class="ready-check-text">Our team (3 to 5 members) is assembled and ready.</span>
+              </label>
+              <label class="ready-check-item">
+                <input type="checkbox" id="chk-device-ready" class="ready-checkbox" />
+                <span class="ready-check-text">We have a stable internet connection and are using one shared device.</span>
+              </label>
+              <label class="ready-check-item">
+                <input type="checkbox" id="chk-timer-ready" class="ready-checkbox" />
+                <span class="ready-check-text">We understand that the 2-hour timer cannot be paused once started.</span>
+              </label>
+              <label class="ready-check-item">
+                <input type="checkbox" id="chk-rules-ready" class="ready-checkbox" />
+                <span class="ready-check-text">We have read and agree to the competition rules.</span>
+              </label>
+            </div>
+
             <div class="entry-notice">
               <span class="notice-icon">${ICONS.clock}</span>
               <p class="notice-text">
-                The 2-hour contest timer starts immediately when you click <strong>Begin Round</strong>. Ensure your entire team is assembled before proceeding.
+                The 2-hour contest timer starts immediately after the launch countdown. Ensure your entire team is assembled before proceeding.
               </p>
             </div>
 
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary btn-block">Begin Round</button>
+              <button type="submit" class="btn btn-primary btn-block" id="btn-begin-round" disabled>Begin Round</button>
             </div>
           </form>
 
@@ -327,6 +242,20 @@ export const Screens = {
     const teamError = document.getElementById('team-name-error');
     const schoolError = document.getElementById('school-name-error');
     const alertError = document.getElementById('entry-error');
+    const submitBtn = document.getElementById('btn-begin-round');
+    const checkboxes = form.querySelectorAll('.ready-checkbox');
+
+    const validateReadyState = () => {
+      const hasTeam = teamInput.value.trim().length > 0;
+      const hasSchool = schoolInput.value.trim().length > 0;
+      const allChecked = Array.from(checkboxes).every(chk => chk.checked);
+
+      submitBtn.disabled = !(hasTeam && hasSchool && allChecked);
+    };
+
+    teamInput.addEventListener('input', validateReadyState);
+    schoolInput.addEventListener('input', validateReadyState);
+    checkboxes.forEach(chk => chk.addEventListener('change', validateReadyState));
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -352,14 +281,52 @@ export const Screens = {
         isValid = false;
       }
 
-      if (!isValid) {
-        alertError.textContent = 'Please fill out all required fields before starting.';
+      const allChecked = Array.from(checkboxes).every(chk => chk.checked);
+      if (!allChecked) {
+        alertError.textContent = 'Please confirm all pre-round readiness checklist items.';
         alertError.style.display = 'block';
+        isValid = false;
+      }
+
+      if (!isValid) {
+        if (!alertError.textContent) {
+          alertError.textContent = 'Please fill out all required fields before starting.';
+          alertError.style.display = 'block';
+        }
         return;
       }
 
-      GameState.initSession(teamVal, schoolVal);
-      router.navigate('/grid');
+      // 3-2-1 Countdown Overlay Ceremony BEFORE GameState.initSession()
+      const overlay = document.createElement('div');
+      overlay.className = 'launch-countdown-overlay';
+      overlay.setAttribute('role', 'alert');
+      overlay.setAttribute('aria-live', 'assertive');
+      overlay.innerHTML = `
+        <div class="launch-countdown-digit show" id="launch-digit">3</div>
+        <div class="launch-countdown-caption">Preparing Contest Round...</div>
+      `;
+      document.body.appendChild(overlay);
+
+      let count = 3;
+      const digitEl = overlay.querySelector('#launch-digit');
+      const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          digitEl.classList.remove('show');
+          void digitEl.offsetWidth; // Reflow for animation trigger
+          digitEl.textContent = count;
+          digitEl.classList.add('show');
+        } else {
+          clearInterval(interval);
+          digitEl.textContent = 'GO!';
+          setTimeout(() => {
+            overlay.remove();
+            // Official 2-hour timer begins right now
+            GameState.initSession(teamVal, schoolVal);
+            router.navigate('/grid');
+          }, 500);
+        }
+      }, 1000);
     });
   },
 
@@ -388,28 +355,97 @@ export const Screens = {
     GameState.checkExpiredPuzzles();
 
     const isVaultEntered = state.vaultEntered;
+    const gridOrder = state.gridOrder || [];
+
+    // Calculate solved, failed, and progress
+    let solvedCount = 0;
+    let failedCount = 0;
+    gridOrder.forEach(id => {
+      if (id === 'vault_12') return;
+      const b = state.blocks[id];
+      if (b) {
+        if (b.status === 'SOLVED') solvedCount++;
+        if (b.status === 'FAILED') failedCount++;
+      }
+    });
+
+    const isAllAttempted = (solvedCount + failedCount === 11);
+    const progressPct = Math.round((solvedCount / 11) * 100);
+    const ringCircumference = 150.8; // 2 * pi * 24
+    const ringDashOffset = ringCircumference * (1 - (solvedCount / 11));
+    const masterRemaining = GameState.getMasterRemainingSeconds();
+
+    // Check if first load in this session for stagger-in motion
+    const isFirstLoad = !window.__gridFirstLoadDone;
+    window.__gridFirstLoadDone = true;
+
+    // Build Clue Pouch 11-slot strip
+    let pouchSlotsHtml = '';
+    gridOrder.forEach((itemId, idx) => {
+      if (itemId === 'vault_12') return;
+      const tileNum = idx + 1;
+      const formattedNum = String(tileNum).padStart(2, '0');
+      const block = state.blocks[itemId];
+      const isSolved = block && block.status === 'SOLVED';
+      const clue = block ? block.unlockedClue : null;
+
+      if (isSolved && clue) {
+        let iconSvg = ICONS.check;
+        if (clue.type === 'spec') iconSvg = ICONS.clueSpec || ICONS.check;
+        else if (clue.type === 'text') iconSvg = ICONS.clueText || ICONS.check;
+        else if (clue.type === 'image') iconSvg = ICONS.clueImage || ICONS.check;
+
+        pouchSlotsHtml += `
+          <div 
+            class="pouch-slot pouch-slot-filled pouch-stamp" 
+            data-puzzle-id="${itemId}" 
+            title="Task ${tileNum}: ${clue.title} (Solved)" 
+            tabindex="0"
+            role="button"
+            aria-label="Task ${tileNum} clue unlocked"
+          >
+            <span class="pouch-slot-icon">${iconSvg}</span>
+            <span class="pouch-slot-num">${formattedNum}</span>
+          </div>
+        `;
+      } else {
+        pouchSlotsHtml += `
+          <div 
+            class="pouch-slot" 
+            data-puzzle-id="${itemId}" 
+            title="Task ${tileNum}: Locked" 
+            tabindex="0"
+            role="button"
+            aria-label="Task ${tileNum} clue locked"
+          >
+            <span class="pouch-slot-icon">${ICONS.lock}</span>
+            <span class="pouch-slot-num">${formattedNum}</span>
+          </div>
+        `;
+      }
+    });
 
     // NOTE: Difficulty is a mystery. The grid and the nav bar never show or hint at
     // difficulty or time limits before a puzzle is opened. No difficulty in tile labels,
     // CSS classes, data attributes, tooltips, or aria-labels. Tile IDs (puzzle_1..11)
     // are opaque and do not reveal difficulty.
-    // Build 12 tiles
     let tilesHtml = '';
-    const gridOrder = state.gridOrder || [];
 
     gridOrder.forEach((itemId, index) => {
       const tileNumber = index + 1;
       const formattedNum = String(tileNumber).padStart(2, '0');
+      const staggerClass = isFirstLoad ? 'stagger-in' : '';
+      const staggerDelay = isFirstLoad ? `style="animation-delay: ${index * 40}ms;"` : '';
 
       if (itemId === 'vault_12' || index === 11) {
-        // Tile 12: Red Submit Button
-        // Solid red button (flat red, no gradient), full tile size, with label "Submit" and small lock icon.
-        // It is never shuffled and is always in the last (bottom-right) slot.
+        // Tile 12: Red Submit Button (with subtle pulse if all tasks are complete)
+        const readyClass = (isAllAttempted || solvedCount === 11) ? 'tile-submit-ready' : '';
         tilesHtml += `
           <button 
             type="button" 
-            class="tile-card tile-style-submit"
+            class="tile-card tile-style-submit ${readyClass} ${staggerClass}"
             id="tile-vault-btn"
+            ${staggerDelay}
             aria-label="Tile 12: Submit (Opens Vault Confirmation)"
           >
             <div class="tile-submit-content">
@@ -426,6 +462,7 @@ export const Screens = {
         let statusClass = 'status-unopened';
         let statusBadgeHtml = '';
         let isClickable = true;
+        let elapsedIndicator = '';
 
         if (status === 'OPENED_IN_PROGRESS') {
           statusClass = 'status-in-progress';
@@ -435,6 +472,7 @@ export const Screens = {
               <span class="badge-text">In progress</span>
             </div>
           `;
+          elapsedIndicator = `<div class="tile-time-elapsed">In progress</div>`;
         } else if (status === 'SOLVED') {
           statusClass = 'status-solved';
           statusBadgeHtml = `
@@ -470,15 +508,17 @@ export const Screens = {
         tilesHtml += `
           <button 
             type="button" 
-            class="tile-card tile-puzzle tile-style-gradient ${statusClass} ${!isClickable ? 'tile-disabled' : ''}" 
+            class="tile-card tile-puzzle tile-style-gradient ${statusClass} ${staggerClass} ${!isClickable ? 'tile-disabled' : ''}" 
             data-puzzle-id="${itemId}"
             data-tile-index="${index}"
             data-tile-num="${tileNumber}"
+            ${staggerDelay}
             ${!isClickable ? 'disabled aria-disabled="true"' : ''}
             aria-label="Task ${tileNumber}, Status: ${statusHumanLabel}"
           >
             <div class="tile-task-tag">Task ${tileNumber}</div>
             <div class="tile-gradient-number mono">${formattedNum}</div>
+            ${elapsedIndicator}
             ${statusBadgeHtml}
           </button>
         `;
@@ -487,12 +527,14 @@ export const Screens = {
 
     container.innerHTML = `
       <section class="screen-container grid-screen" aria-labelledby="grid-page-title">
+        <!-- Grid Header with Helper Line -->
         <header class="grid-header">
           <div class="grid-header-main">
             <h1 id="grid-page-title" class="page-title">Puzzle Grid</h1>
             <p class="page-description">
               Select any open tile to solve its puzzle. Solve puzzles to unlock clues and technical specifications for your final poster submission.
             </p>
+            <p class="grid-helper-line">Pick any tile. Your timer starts when you open it.</p>
           </div>
           ${isVaultEntered ? `
             <div class="alert alert-info">
@@ -502,6 +544,52 @@ export const Screens = {
           ` : ''}
         </header>
 
+        <!-- Grid HUD Header -->
+        <div class="grid-hud-header" role="region" aria-label="Contest HUD Bar">
+          <div class="hud-stat-group">
+            <div class="hud-progress-ring-box" title="Solved ${solvedCount} of 11 puzzles (${progressPct}%)">
+              <div class="hud-progress-ring">
+                <svg class="hud-ring-svg" viewBox="0 0 56 56" aria-hidden="true">
+                  <circle class="hud-ring-bg" cx="28" cy="28" r="24" fill="none" stroke-width="4"></circle>
+                  <circle class="hud-ring-fill" cx="28" cy="28" r="24" fill="none" stroke-width="4" stroke-dasharray="150.8" stroke-dashoffset="${ringDashOffset}"></circle>
+                </svg>
+                <div class="hud-ring-text">${solvedCount}/11</div>
+              </div>
+              <div class="hud-stat-item">
+                <span class="hud-stat-label">Progress</span>
+                <span class="hud-stat-value">${progressPct}% Solved</span>
+              </div>
+            </div>
+
+            <div class="hud-stat-item">
+              <span class="hud-stat-label">Time Remaining</span>
+              <span class="hud-stat-value mono">${this.formatTime(masterRemaining, true)}</span>
+            </div>
+
+            <div class="hud-stat-item">
+              <span class="hud-stat-label">Hints Remaining</span>
+              <span class="hud-stat-value">${state.hintsRemaining !== undefined ? state.hintsRemaining : 3}/3</span>
+            </div>
+          </div>
+
+          <div class="hud-stat-item">
+            <span class="hud-stat-label">Active Team</span>
+            <span class="hud-stat-value text-truncate" style="max-width: 180px;">${state.teamName || 'Team'}</span>
+          </div>
+        </div>
+
+        <!-- Clue Pouch Strip -->
+        <div class="clue-pouch-strip" role="region" aria-label="Unlocked Clue Pouch">
+          <div class="pouch-label">
+            ${ICONS.pouch || ''}
+            <span>Clue Pouch</span>
+          </div>
+          <div class="pouch-slots-row">
+            ${pouchSlotsHtml}
+          </div>
+        </div>
+
+        <!-- 12 Tiles Grid -->
         <div class="puzzle-grid" role="region" aria-label="Puzzle Grid of 12 Tiles">
           ${tilesHtml}
         </div>
@@ -531,6 +619,27 @@ export const Screens = {
         }
       });
     }
+
+    // Bind clicks to pouch slots (navigates to puzzle if opened/solved)
+    const pouchSlots = container.querySelectorAll('.pouch-slot');
+    pouchSlots.forEach(slot => {
+      slot.addEventListener('click', () => {
+        const puzzleId = slot.dataset.puzzleId;
+        if (!puzzleId) return;
+        const b = state.blocks[puzzleId];
+        if (b && b.status !== 'UNOPENED' && !isVaultEntered) {
+          router.navigate(`/puzzle/${puzzleId}`);
+        } else if (isVaultEntered) {
+          router.navigate('/vault');
+        }
+      });
+      slot.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          slot.click();
+        }
+      });
+    });
   },
 
   // =========================================================================
@@ -566,6 +675,7 @@ export const Screens = {
     // They appear only on the puzzle screen after the tile has been opened and stay visible afterwards.
     const block = GameState.openPuzzle(puzzleId);
     const difficulty = CONFIG.TILE_DIFFICULTY[puzzleId] || 'easy';
+    const totalPuzzleSec = CONFIG.DIFFICULTY_TIME[difficulty] || 600;
 
     // Find tile index in gridOrder for display and determine tile label
     const tileIndex = (state.gridOrder || []).indexOf(puzzleId);
@@ -632,6 +742,8 @@ export const Screens = {
       </div>
     `).join('');
 
+    const initialScalePct = Math.max(0, Math.min(1, initialRemainingSec / totalPuzzleSec));
+
     // Render Streamlined Single-Stage Screen
     container.innerHTML = `
       <section class="screen-container puzzle-screen" aria-labelledby="puzzle-band-task-heading">
@@ -645,7 +757,7 @@ export const Screens = {
               <div class="puzzle-header-task-info">
                 <span id="puzzle-band-task-heading" class="puzzle-band-task-label mono">TASK ${tileNumber}</span>
                 <div class="difficulty-badge difficulty-${difficulty}">
-                  ${difficulty.toUpperCase()} (${Math.floor(CONFIG.DIFFICULTY_TIME[difficulty] / 60)} MIN)
+                  ${difficulty.toUpperCase()} (${Math.floor(totalPuzzleSec / 60)} MIN)
                 </div>
                 <div class="puzzle-category-tag mono">${puzzleConfig.category}</div>
               </div>
@@ -658,6 +770,15 @@ export const Screens = {
               </div>
               <div class="puzzle-band-big-num mono" aria-hidden="true">${tileNumber}</div>
             </div>
+          </div>
+
+          <!-- Per-puzzle Timer Progress Scale Bar -->
+          <div class="puzzle-timer-track">
+            <div 
+              class="puzzle-timer-scale-bar ${initialRemainingSec < 120 ? 'timer-amber' : ''}" 
+              id="puzzle-timer-scale" 
+              style="transform: scaleX(${initialScalePct});"
+            ></div>
           </div>
         </header>
 
@@ -681,6 +802,9 @@ export const Screens = {
           <div class="howto-drawer-inner">
             <div class="howto-drawer-title mono">HOW TO SOLVE THIS PUZZLE:</div>
             <div class="howto-steps-grid">${howToStepsHtml}</div>
+            <div class="howto-footer-action" style="margin-top: 14px; text-align: right;">
+              <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-howto-gotit">Got it, close instructions</button>
+            </div>
           </div>
         </div>
 
@@ -710,15 +834,19 @@ export const Screens = {
         <footer class="puzzle-sticky-action-bar" id="puzzle-sticky-action-bar" role="region" aria-label="Puzzle Actions">
           <div class="action-bar-inner">
             <div class="action-bar-left">
+              <!-- Attempts with Tactile Key Icons -->
               <div class="action-bar-attempts" id="action-attempts-box" title="${attemptsLeft} attempts remaining">
                 <span class="action-bar-label mono">ATTEMPTS</span>
-                <div class="action-pips" id="action-attempts-pips">
+                <div class="key-pips-row" id="action-attempts-pips">
                   ${Array.from({ length: CONFIG.MAX_ATTEMPTS }, (_, i) => `
-                    <span class="action-pip ${i < attemptsLeft ? 'pip-remaining' : 'pip-spent'}">${i < attemptsLeft ? PUZZLE_ART.pipFilled : PUZZLE_ART.pipHollow}</span>
+                    <span class="key-pip ${i < attemptsLeft ? '' : 'key-snapped'}" title="${i < attemptsLeft ? 'Attempt available' : 'Attempt spent'}">
+                      ${i < attemptsLeft ? ICONS.key : ICONS.keyBroken}
+                    </span>
                   `).join('')}
                 </div>
               </div>
               
+              <!-- Hints with Lantern Icon Button -->
               <div class="action-bar-hints" id="action-hints-box">
                 <button 
                   type="button" 
@@ -726,7 +854,7 @@ export const Screens = {
                   id="btn-use-hint"
                   ${state.hintsRemaining <= 0 || block.hintUsed || block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled aria-disabled="true"' : ''}
                 >
-                  <span class="btn-hint-icon">${ICONS.hint}</span>
+                  <span class="btn-hint-lantern ${block.hintUsed ? 'lantern-dark' : 'lantern-lit'}">${block.hintUsed ? ICONS.lanternDark : ICONS.lanternLit}</span>
                   <span>${block.hintUsed ? 'Hint Used' : 'Hint'}</span>
                   <span class="hint-mini-pips" id="action-hint-pips">
                     ${Array.from({ length: 3 }, (_, i) => `
@@ -770,6 +898,25 @@ export const Screens = {
       </section>
     `;
 
+    // 16-Piece CSS Celebration Particle Burst
+    const triggerSolveBurst = () => {
+      const stage = container.querySelector('#puzzle-stage');
+      if (!stage) return;
+      const burstContainer = document.createElement('div');
+      burstContainer.className = 'solve-burst-container';
+      for (let i = 0; i < 16; i++) {
+        const p = document.createElement('div');
+        p.className = 'burst-particle';
+        const angle = `${i * (360 / 16)}deg`;
+        const dist = `${45 + (i % 3) * 18}px`;
+        p.style.setProperty('--angle', angle);
+        p.style.setProperty('--dist', dist);
+        burstContainer.appendChild(p);
+      }
+      stage.appendChild(burstContainer);
+      setTimeout(() => burstContainer.remove(), 700);
+    };
+
     // Helper: Update status banner, action bar notice, and unlocked clue view
     const renderStatusAndClue = () => {
       const currentBlock = GameState.state?.blocks[puzzleId] || block;
@@ -783,7 +930,9 @@ export const Screens = {
       const remAttempts = Math.max(0, CONFIG.MAX_ATTEMPTS - (currentBlock.attemptsUsed || 0));
       if (attemptsPipsEl) {
         attemptsPipsEl.innerHTML = Array.from({ length: CONFIG.MAX_ATTEMPTS }, (_, i) => `
-          <span class="action-pip ${i < remAttempts ? 'pip-remaining' : 'pip-spent'}">${i < remAttempts ? PUZZLE_ART.pipFilled : PUZZLE_ART.pipHollow}</span>
+          <span class="key-pip ${i < remAttempts ? '' : 'key-snapped'}" title="${i < remAttempts ? 'Attempt available' : 'Attempt spent'}">
+            ${i < remAttempts ? ICONS.key : ICONS.keyBroken}
+          </span>
         `).join('');
       }
 
@@ -800,7 +949,7 @@ export const Screens = {
             <div class="alert alert-success" role="status">
               <span class="alert-icon">${ICONS.check}</span>
               <div class="alert-content">
-                <strong>Puzzle Solved:</strong> Correct answer confirmed. Technical clue unlocked below.
+                <strong>Puzzle Solved:</strong> Correct answer confirmed. Technical clue unsealed below.
               </div>
             </div>
           `;
@@ -826,7 +975,7 @@ export const Screens = {
         if (statusBanner) statusBanner.innerHTML = '';
       }
 
-      // Clue Box with slide-in animation
+      // Sealed Clue Card with 3D Flip
       if (clueContainer) {
         if (currentBlock.status === 'SOLVED' && currentBlock.unlockedClue) {
           const clue = currentBlock.unlockedClue;
@@ -899,7 +1048,19 @@ export const Screens = {
             `;
           }
 
-          clueContainer.innerHTML = clueInnerHtml;
+          clueContainer.innerHTML = `
+            <div class="sealed-clue-card is-unsealed">
+              <div class="sealed-flipper">
+                <div class="sealed-front">
+                  <span class="sealed-seal-icon">${ICONS.gem || ICONS.checkCircle}</span>
+                  <span class="sealed-label">TECHNICAL CLUE UNSEALED</span>
+                </div>
+                <div class="sealed-back">
+                  ${clueInnerHtml}
+                </div>
+              </div>
+            </div>
+          `;
           clueContainer.classList.add('clue-visible');
 
           const copySpecsBtn = clueContainer.querySelector('#btn-copy-specs');
@@ -951,13 +1112,24 @@ export const Screens = {
         },
         onSolved: () => {
           GameState.markSolved(puzzleId);
+          triggerSolveBurst();
+          showToast(`Task ${tileNumber} solved! Clue unsealed.`, 'success');
           renderStatusAndClue();
         },
         onWrongCheck: () => {
           const res = GameState.recordWrong(puzzleId);
           renderStatusAndClue();
+          // Shake the action bar attempts row
+          const pipsRow = container.querySelector('#action-attempts-pips');
+          if (pipsRow) {
+            pipsRow.classList.add('key-shake');
+            setTimeout(() => pipsRow.classList.remove('key-shake'), 400);
+          }
           if (res.failed) {
             this.showNotice(`Maximum attempts reached for ${tileLabel}. The puzzle has failed.`, 'danger');
+            showToast(`Task ${tileNumber} failed: maximum attempts reached.`, 'danger');
+          } else {
+            showToast(`Incorrect answer. ${res.attemptsRemaining} attempts left.`, 'amber');
           }
         }
       };
@@ -986,6 +1158,15 @@ export const Screens = {
       });
     }
 
+    const gotItBtn = container.querySelector('#btn-howto-gotit');
+    if (gotItBtn && howToDrawer) {
+      gotItBtn.addEventListener('click', () => {
+        howToDrawer.classList.remove('drawer-expanded');
+        if (howToBtn) howToBtn.setAttribute('aria-expanded', 'false');
+        try { localStorage.setItem(howToKey, '1'); } catch (e) {}
+      });
+    }
+
     const hintBtn = container.querySelector('#btn-use-hint');
     if (hintBtn) {
       hintBtn.addEventListener('click', () => {
@@ -1011,8 +1192,14 @@ export const Screens = {
             `).join('');
           }
           hintBtn.disabled = true;
+          const lanternIcon = hintBtn.querySelector('.btn-hint-lantern');
+          if (lanternIcon) {
+            lanternIcon.className = 'btn-hint-lantern lantern-dark';
+            lanternIcon.innerHTML = ICONS.lanternDark;
+          }
           const hintSpan = hintBtn.querySelector('span:nth-child(2)');
           if (hintSpan) hintSpan.textContent = 'Hint Used';
+          showToast('Hint unlocked for this puzzle.', 'info');
         });
       });
     }
@@ -1034,6 +1221,7 @@ export const Screens = {
 
       if (devSolve) devSolve.addEventListener('click', () => {
         GameState.markSolved(puzzleId);
+        triggerSolveBurst();
         renderStatusAndClue();
       });
       if (devFail) devFail.addEventListener('click', () => {
@@ -1049,6 +1237,8 @@ export const Screens = {
     this.activePuzzleInterval = setInterval(() => {
       const remainingSec = GameState.getPuzzleRemainingSeconds(puzzleId);
       const timerEl = document.getElementById('puzzle-countdown');
+      const scaleBar = document.getElementById('puzzle-timer-scale');
+
       if (timerEl) {
         timerEl.textContent = this.formatTime(remainingSec);
         const badge = timerEl.closest('.puzzle-timer-badge');
@@ -1062,6 +1252,26 @@ export const Screens = {
         }
       }
 
+      if (scaleBar) {
+        const pct = Math.max(0, Math.min(1, remainingSec / totalPuzzleSec));
+        scaleBar.style.transform = `scaleX(${pct})`;
+        if (remainingSec < 120) {
+          scaleBar.classList.add('timer-amber');
+        } else {
+          scaleBar.classList.remove('timer-amber');
+        }
+      }
+
+      // Polite voice/text announcements at 2:00 and 0:30
+      if (remainingSec === 120 && !this.announced120) {
+        this.announced120 = true;
+        showToast(`2 minutes remaining for Task ${tileNumber}`, 'amber');
+      }
+      if (remainingSec === 30 && !this.announced30) {
+        this.announced30 = true;
+        showToast(`30 seconds remaining for Task ${tileNumber}!`, 'danger');
+      }
+
       // Handle expiration
       const b = GameState.state?.blocks[puzzleId];
       if (remainingSec <= 0 && b && b.status === 'OPENED_IN_PROGRESS') {
@@ -1070,6 +1280,7 @@ export const Screens = {
         clearInterval(this.activePuzzleInterval);
         this.activePuzzleInterval = null;
         this.showNotice(`Time expired for ${tileLabel}. The puzzle has failed.`, 'danger');
+        showToast(`Time expired for Task ${tileNumber}!`, 'danger');
         router.navigate('/grid');
       }
     }, 1000);
@@ -1091,12 +1302,32 @@ export const Screens = {
       return;
     }
 
+    // Vault Door Reveal Ceremony (once per browser session)
+    const doorKey = 'future_quest_vault_doors_opened';
+    if (!sessionStorage.getItem(doorKey)) {
+      sessionStorage.setItem(doorKey, '1');
+      const doorOverlay = document.createElement('div');
+      doorOverlay.className = 'vault-door-overlay';
+      doorOverlay.innerHTML = `
+        <div class="vault-door-half vault-door-left"></div>
+        <div class="vault-door-half vault-door-right"></div>
+      `;
+      document.body.appendChild(doorOverlay);
+      requestAnimationFrame(() => {
+        doorOverlay.classList.add('doors-open');
+      });
+      setTimeout(() => {
+        if (doorOverlay.parentNode) doorOverlay.remove();
+      }, 1300);
+    }
+
     const summary = GameState.getSummary();
     const verificationHash = GameState.generateVerificationHash();
 
     // Assemble Clue Inventory
     const gridOrder = state.gridOrder || [];
     let inventoryHtml = '';
+    const allClueTexts = [];
 
     gridOrder.forEach((itemId, idx) => {
       if (itemId === 'vault_12') return;
@@ -1115,13 +1346,16 @@ export const Screens = {
         if (clue.type === 'spec') {
           const specSummary = (clue.specs || []).map(s => `${s.label}: ${s.value}`).join(' | ');
           clueBodyHtml = `<div class="vault-clue-spec-snippet"><code>${specSummary}</code></div>`;
+          const specExport = (clue.specs || []).map(s => `${s.label}: ${s.value}`).join('\n');
+          allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Specifications) ---\n${specExport}`);
           actionBtnHtml = `
-            <button type="button" class="btn btn-secondary btn-sm btn-vault-copy" data-text="${encodeURIComponent((clue.specs || []).map(s => `${s.label}: ${s.value}`).join('\n'))}">
+            <button type="button" class="btn btn-secondary btn-sm btn-vault-copy" data-text="${encodeURIComponent(specExport)}">
               ${ICONS.copy} <span>Copy Specs</span>
             </button>
           `;
         } else if (clue.type === 'text') {
           clueBodyHtml = `<div class="vault-clue-text-snippet">${clue.content}</div>`;
+          allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Text) ---\n${clue.content}`);
           actionBtnHtml = `
             <button type="button" class="btn btn-secondary btn-sm btn-vault-copy" data-text="${encodeURIComponent(clue.content)}">
               ${ICONS.copy} <span>Copy Text</span>
@@ -1129,6 +1363,7 @@ export const Screens = {
           `;
         } else if (clue.type === 'image') {
           clueBodyHtml = `<div class="vault-clue-image-snippet">${clue.svgContent}</div>`;
+          allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Vector Asset) ---\n[Attached SVG: ${clue.filename}]`);
           actionBtnHtml = `
             <button type="button" class="btn btn-secondary btn-sm btn-vault-download" data-svg="${encodeURIComponent(clue.svgContent)}" data-filename="${clue.filename}">
               ${ICONS.download} <span>Download SVG</span>
@@ -1165,13 +1400,15 @@ export const Screens = {
       }
     });
 
+    const fullExportText = allClueTexts.join('\n\n');
+
     container.innerHTML = `
       <section class="screen-container vault-screen" aria-labelledby="vault-page-title">
         <header class="vault-header">
-          <div class="brand-institution">Jain University &bull; School of Future Technology</div>
+          <div class="brand-institution">${CONFIG.EVENT.fullName}</div>
           <h1 id="vault-page-title" class="page-title">Submission Vault</h1>
           <p class="page-description">
-            Your competition time has stopped. All puzzle locks are finalized. Review your unlocked clues and submit your final poster design.
+            Your competition time has stopped. All puzzle locks are finalized. Review your unlocked clues, copy specifications, and submit your final poster design.
           </p>
         </header>
 
@@ -1184,31 +1421,50 @@ export const Screens = {
           </div>
         ` : ''}
 
-        <!-- Performance Summary Grid -->
-        <div class="metrics-grid" role="region" aria-label="Contest Performance Summary">
-          <div class="metric-card">
-            <div class="metric-label">Puzzles Solved</div>
-            <div class="metric-value"><strong>${summary.solved}</strong> <span class="metric-sub">/ ${summary.total}</span></div>
+        <!-- 4-STEP VAULT WORKFLOW -->
+
+        <!-- STEP 1: Performance Summary -->
+        <div class="vault-step-card" role="region" aria-label="Step 1: Contest Performance Summary">
+          <div class="vault-step-header">
+            <span class="vault-step-badge">STEP 1</span>
+            <h2 class="vault-step-title">Contest Performance Summary</h2>
           </div>
-          <div class="metric-card">
-            <div class="metric-label">Hints Used</div>
-            <div class="metric-value"><strong>${summary.hintsUsed}</strong> <span class="metric-sub">/ ${CONFIG.TOTAL_HINTS}</span></div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Total Time Taken</div>
-            <div class="metric-value mono"><strong>${summary.timeTakenFormatted}</strong></div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Team / School</div>
-            <div class="metric-value text-truncate" title="${state.teamName}">${state.teamName}</div>
-            <div class="metric-sub text-truncate" title="${state.schoolName}">${state.schoolName}</div>
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-label">Puzzles Solved</div>
+              <div class="metric-value"><strong>${summary.solved}</strong> <span class="metric-sub">/ ${summary.total}</span></div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Hints Used</div>
+              <div class="metric-value"><strong>${summary.hintsUsed}</strong> <span class="metric-sub">/ ${CONFIG.TOTAL_HINTS}</span></div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Total Time Taken</div>
+              <div class="metric-value mono">
+                <strong>${summary.timeTakenFormatted}</strong>
+                <span class="vault-frozen-badge">FROZEN</span>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Team / School</div>
+              <div class="metric-value text-truncate" title="${state.teamName}">${state.teamName}</div>
+              <div class="metric-sub text-truncate" title="${state.schoolName}">${state.schoolName}</div>
+            </div>
           </div>
         </div>
 
-        <!-- Clue Inventory -->
-        <div class="vault-section">
-          <div class="vault-section-header">
-            <h2 class="section-title">Unlocked Poster Assets & Specifications</h2>
+        <!-- STEP 2: Clue Inventory -->
+        <div class="vault-step-card" role="region" aria-label="Step 2: Poster Assets & Specifications">
+          <div class="vault-step-header">
+            <span class="vault-step-badge">STEP 2</span>
+            <div class="vault-clues-header-actions">
+              <h2 class="vault-step-title">Unlocked Poster Assets & Specifications</h2>
+              ${allClueTexts.length > 0 ? `
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-all-clues">
+                  ${ICONS.copy} <span>Copy All Clues</span>
+                </button>
+              ` : ''}
+            </div>
             <p class="section-subtitle">Incorporate unlocked copy, colors, and layout requirements into your final submission.</p>
           </div>
           <div class="inventory-grid">
@@ -1216,10 +1472,11 @@ export const Screens = {
           </div>
         </div>
 
-        <!-- Verification Hash -->
-        <div class="vault-section verification-section">
-          <div class="vault-section-header">
-            <h2 class="section-title">Submission Verification Hash</h2>
+        <!-- STEP 3: Verification Hash -->
+        <div class="vault-step-card verification-section" role="region" aria-label="Step 3: Verification Hash">
+          <div class="vault-step-header">
+            <span class="vault-step-badge">STEP 3</span>
+            <h2 class="vault-step-title">Submission Verification Hash</h2>
             <p class="section-subtitle">
               Copy this verification code and paste it into the submission form. It cryptographically locks your solve count, timestamps, and identity.
             </p>
@@ -1241,8 +1498,29 @@ export const Screens = {
           </div>
         </div>
 
-        <!-- Submission Call to Action -->
-        <div class="vault-section submission-cta-section">
+        <!-- STEP 4: Submission Checklist & Call to Action -->
+        <div class="vault-step-card submission-cta-section" role="region" aria-label="Step 4: Pre-submission Checklist">
+          <div class="vault-step-header">
+            <span class="vault-step-badge">STEP 4</span>
+            <h2 class="vault-step-title">Final Submission Checklist</h2>
+            <p class="section-subtitle">Confirm readiness before proceeding to the external submission form.</p>
+          </div>
+
+          <div class="vault-checklist">
+            <label class="ready-check-item">
+              <input type="checkbox" id="chk-vault-specs" class="vault-pre-check" />
+              <span class="ready-check-text">We incorporated all unlocked specifications into our poster.</span>
+            </label>
+            <label class="ready-check-item">
+              <input type="checkbox" id="chk-vault-hash" class="vault-pre-check" />
+              <span class="ready-check-text">We copied the verification hash and prepared our submission files.</span>
+            </label>
+            <label class="ready-check-item">
+              <input type="checkbox" id="chk-vault-ready" class="vault-pre-check" />
+              <span class="ready-check-text">We are ready to submit our final poster entry.</span>
+            </label>
+          </div>
+
           <div class="cta-card">
             <div class="cta-reminder">
               <span class="reminder-icon">${ICONS.check}</span>
@@ -1256,11 +1534,13 @@ export const Screens = {
                 target="_blank" 
                 rel="noopener noreferrer" 
                 class="btn btn-primary btn-lg"
+                id="btn-vault-final-submit"
+                style="pointer-events: none; opacity: 0.5;"
               >
                 Submit Your Poster &rarr;
               </a>
             </div>
-            <p class="cta-note">Submission form opens in a secure new tab. Ensure all required files and hashes are submitted.</p>
+            <p class="cta-note">Check all 3 items above to enable the submission button. The form opens in a secure new tab.</p>
           </div>
         </div>
       </section>
@@ -1271,6 +1551,13 @@ export const Screens = {
     if (copyHashBtn) {
       copyHashBtn.addEventListener('click', () => {
         this.copyToClipboard(verificationHash, copyHashBtn);
+      });
+    }
+
+    const copyAllBtn = container.querySelector('#btn-copy-all-clues');
+    if (copyAllBtn) {
+      copyAllBtn.addEventListener('click', () => {
+        this.copyToClipboard(fullExportText, copyAllBtn);
       });
     }
 
@@ -1288,6 +1575,24 @@ export const Screens = {
         this.downloadSvg(svg, filename);
       });
     });
+
+    // Bind pre-submit checkboxes to enable submission button
+    const vaultChecks = container.querySelectorAll('.vault-pre-check');
+    const finalSubmitLink = container.querySelector('#btn-vault-final-submit');
+    if (finalSubmitLink) {
+      vaultChecks.forEach(chk => {
+        chk.addEventListener('change', () => {
+          const allOk = Array.from(vaultChecks).every(c => c.checked);
+          if (allOk) {
+            finalSubmitLink.style.pointerEvents = 'auto';
+            finalSubmitLink.style.opacity = '1';
+          } else {
+            finalSubmitLink.style.pointerEvents = 'none';
+            finalSubmitLink.style.opacity = '0.5';
+          }
+        });
+      });
+    }
   },
 
   // =========================================================================
@@ -1305,72 +1610,120 @@ export const Screens = {
     container.innerHTML = `
       <section class="screen-container rules-screen" aria-labelledby="rules-page-title">
         <header class="rules-header">
-          <div class="brand-institution">Jain University &bull; School of Future Technology</div>
+          <div class="brand-institution">${CONFIG.EVENT.fullName}</div>
           <h1 id="rules-page-title" class="page-title">Competition Rules & Specifications</h1>
           <p class="page-description">Future Quest 2026 Official Contest Regulations</p>
         </header>
 
-        <div class="rules-card">
-          <article class="rule-block">
-            <h2 class="rule-heading">1. Eligibility & Team Composition</h2>
-            <p class="rule-text">
-              The competition is strictly open to students enrolled in 11th and 12th grades (or equivalent secondary school years). Teams must consist of <strong>3 to 5 members</strong> from the same educational institution. Each team participates using one shared team terminal.
-            </p>
-          </article>
-
-          <article class="rule-block">
-            <h2 class="rule-heading">2. Contest Master Time Limit</h2>
-            <p class="rule-text">
-              The competition has a strict <strong>2-hour (7,200 seconds)</strong> master countdown. The timer begins the moment your team clicks <em>Begin Round</em> and runs continuously in the background across tab reloads or network drops. When the master countdown reaches zero, the puzzle phase terminates immediately and your session is locked into the Submission Vault.
-            </p>
-          </article>
-
-          <article class="rule-block">
-            <h2 class="rule-heading">3. Per-Puzzle Time Limits</h2>
-            <p class="rule-text">
-              Each individual puzzle carries an independent countdown based on its assigned difficulty:
-            </p>
-            <ul class="rule-list">
-              <li><strong>Easy:</strong> 10 minutes (600 seconds)</li>
-              <li><strong>Medium:</strong> 15 minutes (900 seconds)</li>
-              <li><strong>Hard:</strong> 20 minutes (1,200 seconds)</li>
-            </ul>
-            <p class="rule-text">
-              A puzzle's timer begins when you first enter its screen. A puzzle's timer keeps running if the tab is closed or reloaded, and pauses only when the team clicks "Back to grid". If a puzzle timer reaches zero, the puzzle is permanently marked as <strong>FAILED</strong> and locked.
-            </p>
-          </article>
-
-          <article class="rule-block">
-            <h2 class="rule-heading">4. Puzzle Grid & Attempt Policy</h2>
-            <p class="rule-text">
-              Tiles 1 through 11 are randomized in order at contest initialization. All 11 puzzle tiles are unlocked from the start and can be attempted in any order. Each puzzle permits a maximum of <strong>3 attempts</strong>. Entering 3 incorrect answers permanently marks the puzzle as <strong>FAILED</strong>.
-            </p>
-          </article>
-
-          <article class="rule-block">
-            <h2 class="rule-heading">5. Hint Allocation</h2>
-            <p class="rule-text">
-              Each team is allocated exactly <strong>3 hints total</strong> for the entire 2-hour competition (shared across all 11 puzzles). Spending a hint permanently reveals a clue for that puzzle. Hints are non-refundable and cannot be re-assigned.
-            </p>
-          </article>
-
-          <article class="rule-block">
-            <h2 class="rule-heading">6. Tile 12 & The Submission Vault Warning</h2>
-            <p class="rule-text">
-              Tile 12 is the Submission Vault. Once you confirm entry into the Submission Vault, your master timer stops and all puzzle tiles become read-only. Unsolved puzzles remain unsolved and no further answers can be submitted. You will proceed to collect your unlocked poster assets and your cryptographic verification hash.
-            </p>
-          </article>
-
-          <!-- DEV-ONLY: SCORING RULES placeholder to be finalized by committee -->
-          <article class="rule-block scoring-placeholder-block dev-only">
-            <h2 class="rule-heading">7. Scoring & Evaluation Rubric</h2>
-            <div class="alert alert-neutral">
-              <strong>[SCORING RUBRIC NOTICE]</strong> The official weighted scoring rubric (balancing puzzle solve count, completion speed, and poster technical compliance) will be published by the Jain University SFT Evaluation Committee prior to the round commencement.
-            </div>
-          </article>
+        <!-- 6-Line Quick Facts Card -->
+        <div class="rules-facts-card" role="region" aria-label="Contest Quick Facts">
+          <div class="quick-fact-item">
+            <span class="quick-fact-label">Eligibility</span>
+            <span class="quick-fact-val mono">Grades 11 & 12</span>
+          </div>
+          <div class="quick-fact-item">
+            <span class="quick-fact-label">Team Size</span>
+            <span class="quick-fact-val mono">3 to 5 Members</span>
+          </div>
+          <div class="quick-fact-item">
+            <span class="quick-fact-label">Master Timer</span>
+            <span class="quick-fact-val mono">2 Hours (7,200s)</span>
+          </div>
+          <div class="quick-fact-item">
+            <span class="quick-fact-label">Puzzles</span>
+            <span class="quick-fact-val mono">11 Tasks + Vault</span>
+          </div>
+          <div class="quick-fact-item">
+            <span class="quick-fact-label">Hint Allocation</span>
+            <span class="quick-fact-val mono">3 Hints Total</span>
+          </div>
+          <div class="quick-fact-item">
+            <span class="quick-fact-label">Attempts</span>
+            <span class="quick-fact-val mono">3 per Puzzle</span>
+          </div>
         </div>
 
-        <div class="rules-actions">
+        <!-- Split Layout: Sticky TOC + Collapsible Accordion Rules -->
+        <div class="rules-layout-split">
+          <!-- Desktop Sticky TOC Sidebar -->
+          <nav class="rules-toc-sidebar desktop-only" aria-label="Table of Contents">
+            <div class="rules-toc-title">TABLE OF CONTENTS</div>
+            <ul class="rules-toc-list">
+              <li><a href="#rule-1" class="rules-toc-link">1. Eligibility</a></li>
+              <li><a href="#rule-2" class="rules-toc-link">2. Master Timer</a></li>
+              <li><a href="#rule-3" class="rules-toc-link">3. Puzzle Limits</a></li>
+              <li><a href="#rule-4" class="rules-toc-link">4. Grid & Attempts</a></li>
+              <li><a href="#rule-5" class="rules-toc-link">5. Hint Policy</a></li>
+              <li><a href="#rule-6" class="rules-toc-link">6. Submission Vault</a></li>
+              <li><a href="#rule-7" class="rules-toc-link">7. Scoring Rubric</a></li>
+            </ul>
+          </nav>
+
+          <!-- Rules Content Body with Collapsible Details -->
+          <div class="rules-content-body">
+            <details class="rules-accordion" id="rule-1" open>
+              <summary>1. Eligibility & Team Composition</summary>
+              <p class="rule-text">
+                The competition is strictly open to students enrolled in 11th and 12th grades (or equivalent secondary school years). Teams must consist of <strong>3 to 5 members</strong> from the same educational institution. Each team participates using one shared team terminal.
+              </p>
+            </details>
+
+            <details class="rules-accordion" id="rule-2" open>
+              <summary>2. Contest Master Time Limit</summary>
+              <p class="rule-text">
+                The competition has a strict <strong>2-hour (7,200 seconds)</strong> master countdown. The timer begins the moment your team completes the 3-2-1 launch countdown and runs continuously in the background across tab reloads or network drops. When the master countdown reaches zero, the puzzle phase terminates immediately and your session is locked into the Submission Vault.
+              </p>
+            </details>
+
+            <details class="rules-accordion" id="rule-3" open>
+              <summary>3. Per-Puzzle Time Limits</summary>
+              <p class="rule-text">
+                Each individual puzzle carries an independent countdown based on its assigned difficulty:
+              </p>
+              <ul class="rule-list">
+                <li><strong>Easy:</strong> 10 minutes (600 seconds)</li>
+                <li><strong>Medium:</strong> 15 minutes (900 seconds)</li>
+                <li><strong>Hard:</strong> 20 minutes (1,200 seconds)</li>
+              </ul>
+              <p class="rule-text">
+                A puzzle's timer begins when you first enter its screen. A puzzle's timer keeps running if the tab is closed or reloaded, and pauses only when the team clicks "Back to grid". If a puzzle timer reaches zero, the puzzle is permanently marked as <strong>FAILED</strong> and locked.
+              </p>
+            </details>
+
+            <details class="rules-accordion" id="rule-4" open>
+              <summary>4. Puzzle Grid & Attempt Policy</summary>
+              <p class="rule-text">
+                Tiles 1 through 11 are randomized in order at contest initialization. All 11 puzzle tiles are unlocked from the start and can be attempted in any order. Each puzzle permits a maximum of <strong>3 attempts</strong>. Entering 3 incorrect answers permanently marks the puzzle as <strong>FAILED</strong>.
+              </p>
+            </details>
+
+            <details class="rules-accordion" id="rule-5" open>
+              <summary>5. Hint Allocation</summary>
+              <p class="rule-text">
+                Each team is allocated exactly <strong>3 hints total</strong> for the entire 2-hour competition (shared across all 11 puzzles). Spending a hint permanently reveals a clue for that puzzle. Hints are non-refundable and cannot be re-assigned.
+              </p>
+            </details>
+
+            <details class="rules-accordion" id="rule-6" open>
+              <summary>6. Tile 12 & The Submission Vault Warning</summary>
+              <p class="rule-text">
+                Tile 12 is the Submission Vault. Once you confirm entry into the Submission Vault, your master timer stops and all puzzle tiles become read-only. Unsolved puzzles remain unsolved and no further answers can be submitted. You will proceed to collect your unlocked poster assets and your cryptographic verification hash.
+              </p>
+            </details>
+
+            <!-- DEV-ONLY: SCORING RULES placeholder to be finalized by committee -->
+            <details class="rules-accordion scoring-placeholder-block dev-only" id="rule-7" open>
+              <summary>7. Scoring & Evaluation Rubric</summary>
+              <div class="rule-text">
+                <div class="alert alert-neutral">
+                  <strong>[SCORING RUBRIC NOTICE]</strong> The official weighted scoring rubric (balancing puzzle solve count, completion speed, and poster technical compliance) will be published by the ${CONFIG.EVENT.fullName} Evaluation Committee prior to the round commencement.
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="rules-actions" style="margin-top: var(--space-6);">
           ${hasSession ? `
             <a href="#/grid" class="btn btn-primary">Return to Grid</a>
           ` : `
@@ -1379,5 +1732,19 @@ export const Screens = {
         </div>
       </section>
     `;
+
+    // Smooth scroll for TOC links
+    container.querySelectorAll('.rules-toc-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const targetId = link.getAttribute('href');
+        if (targetId && targetId.startsWith('#')) {
+          const el = container.querySelector(targetId);
+          if (el) {
+            e.preventDefault();
+            el.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      });
+    });
   }
 };

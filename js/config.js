@@ -35,6 +35,7 @@ export const CONFIG = {
   EVENT: {
     institution: "JAIN (Deemed-to-be University) Kochi",
     school: "School of Future",
+    fullName: "JAIN (Deemed-to-be University) Kochi, School of Future",
     poweredBy: "Powered by JAIN School of Future",
     title: "Future Quest '26",
     paragraph: "A tech treasure hunt for Higher Secondary students. Solve puzzles, collect clues and rebuild the hidden poster.",
