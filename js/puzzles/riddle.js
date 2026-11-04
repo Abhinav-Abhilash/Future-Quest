@@ -71,6 +71,12 @@ export function mount(root, data, ctx) {
           <span class="riddle-format-badge mono">${data.formatBadge || 'TYPE THE ANSWER'}</span>
         </div>
 
+        ${data.imageUrl ? `
+          <div class="riddle-image-preview-box" style="margin-bottom: 16px; text-align: center; border-radius: 8px; overflow: hidden; border: 1px solid #3D3063; background: #0B0814; padding: 8px;">
+            <img src="${data.imageUrl}" alt="${data.categoryTag || 'Visual Clue'}" style="max-width: 100%; max-height: 260px; object-fit: contain; display: block; margin: 0 auto; border-radius: 4px;" />
+          </div>
+        ` : ''}
+
         <blockquote class="riddle-quote-block">
           ${(data.riddleLines || []).map(line => `<p class="riddle-line">${line}</p>`).join('')}
         </blockquote>

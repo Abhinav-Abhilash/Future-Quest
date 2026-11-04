@@ -109,33 +109,21 @@ const t4_ok = t4.solution === 'CINNAMON BUN' &&
 report('T4 Riddle Dynamic Check (CINNAMON BUN)', t4_ok);
 
 // -------------------------------------------------------------
-// T5: BODMAS Anagram (QUEST)
+// T5: Reverse-Index Cipher (WHERE HUMAN MEETS AI)
 // -------------------------------------------------------------
 const t5 = CONFIG.PUZZLES.puzzle_5.data;
-let t5_ok = true;
-const t5_letters = t5.equations.map(eq => {
-  const val = evaluateMath(eq.expr);
-  if (val !== eq.expected) t5_ok = false;
-  const letter = String.fromCharCode(64 + val);
-  if (letter !== eq.letter) t5_ok = false;
-  return letter;
-});
-const t5_sorted = [...t5_letters].sort().join('');
-report('T5 BODMAS Dynamic Check (QUEST Anagram)', t5_ok && t5_sorted === 'EQSTU');
+const t5_decoded = t5.words.map(w => w.codes.map(c => String.fromCharCode(64 + (27 - c))).join('')).join(' ');
+const t5_expected = t5.groupSolutions.join(' ');
+report('T5 Reverse-Index Cipher Dynamic Check (WHERE HUMAN MEETS AI)', t5_decoded === t5_expected && t5_decoded === 'WHERE HUMAN MEETS AI', t5_decoded);
 
 // -------------------------------------------------------------
-// T6: Coordinates Route Tracer (BYTE)
+// T6: Visual Cryptic Inspection (SCHOOL OF FUTURE TECHNOLOGY)
 // -------------------------------------------------------------
 const t6 = CONFIG.PUZZLES.puzzle_6.data;
-let t6_ok = true;
-const t6_start = t6.grid[7 - 1][1 - 1]; // (1, 7) = B
-if (t6_start !== 'B') t6_ok = false;
-const t6_spelled = ['B', ...t6.legs.map(leg => {
-  const ch = t6.grid[leg.targetRow - 1][leg.targetCol - 1];
-  if (ch !== leg.letter) t6_ok = false;
-  return ch;
-})].join('');
-report('T6 Route Tracer Dynamic Check (BYTE)', t6_ok && t6_spelled === 'BYTE', t6_spelled);
+const t6_ok = t6.solution === 'SCHOOL OF FUTURE TECHNOLOGY' &&
+  t6.acceptedSolutions.includes('SCHOOL OF FUTURE TECHNOLOGY') &&
+  t6.imageUrl === 'assets/institution_clue.jpg';
+report('T6 Visual Clue Dynamic Check (SCHOOL OF FUTURE TECHNOLOGY)', t6_ok);
 
 // -------------------------------------------------------------
 // T7: Word Search (20 Words)
@@ -162,23 +150,16 @@ const t8_ok = t8.solution === 'ROADSTER' &&
 report('T8 Riddle Dynamic Check (ROADSTER)', t8_ok);
 
 // -------------------------------------------------------------
-// T9: Slotted BODMAS (SIGNAL)
+// T9: Dual Color Palette Riddle (DARK BLUE AND LIGHT STEEL BLUE)
 // -------------------------------------------------------------
 const t9 = CONFIG.PUZZLES.puzzle_9.data;
-let t9_ok = true;
-const t9_slots = [];
-t9.equations.forEach(eq => {
-  const val = evaluateMath(eq.expr);
-  if (val !== eq.expected) t9_ok = false;
-  const letter = String.fromCharCode(64 + val);
-  if (letter !== eq.letter) t9_ok = false;
-  t9_slots[eq.slot] = letter;
-});
-const t9_spelled = t9_slots.slice(1).join('');
-report('T9 Slotted BODMAS Dynamic Check (SIGNAL)', t9_ok && t9_spelled === t9.finalWord && t9_spelled === 'SIGNAL', t9_spelled);
+const t9_ok = t9.solution === 'DARK BLUE AND LIGHT STEEL BLUE' &&
+  t9.acceptedSolutions.includes('DARK BLUE AND LIGHT STEEL BLUE') &&
+  t9.words.map(w => w.length).reduce((a, b) => a + b, 0) === 25;
+report('T9 Dual Color Riddle Dynamic Check (DARK BLUE AND LIGHT STEEL BLUE)', t9_ok);
 
 // -------------------------------------------------------------
-// T10: Cartesian Coordinates Grid (CYBER)
+// T10: Cartesian Coordinates Grid (ALIGN)
 // -------------------------------------------------------------
 const t10 = CONFIG.PUZZLES.puzzle_10.data;
 let t10_ok = true;
@@ -188,21 +169,16 @@ const t10_spelled = t10.mathCoords.map(item => {
   if (cellCh !== item.letter) t10_ok = false;
   return cellCh;
 }).join('');
-report('T10 Cartesian COORDS Dynamic Check (CYBER)', t10_ok && t10_spelled === t10.finalWord && t10_spelled === 'CYBER', t10_spelled);
+report('T10 Cartesian COORDS Dynamic Check (ALIGN)', t10_ok && t10_spelled === t10.finalWord && t10_spelled === 'ALIGN', t10_spelled);
 
 // -------------------------------------------------------------
-// T11: Clue Word Search (8 Words)
+// T11: Hero Headline Title (FUTURE QUEST 2026)
 // -------------------------------------------------------------
 const t11 = CONFIG.PUZZLES.puzzle_11.data;
-let t11_ok = true;
-t11.words.forEach(item => {
-  const found = findWordInGrid(item.word, t11.grid);
-  if (!found) {
-    t11_ok = false;
-    console.error(`  [NOT FOUND] T11 word in grid: ${item.word}`);
-  }
-});
-report('T11 Clue Word Search Dynamic Check (8 words in grid)', t11_ok);
+const t11_ok = t11.solution === 'FUTURE QUEST 2026' &&
+  t11.acceptedSolutions.includes('FUTURE QUEST 2026') &&
+  t11.words.map(w => w.length).reduce((a, b) => a + b, 0) === 15;
+report('T11 Hero Headline Dynamic Check (FUTURE QUEST 2026)', t11_ok);
 
 console.log('=============================================================');
 if (allPassed) {

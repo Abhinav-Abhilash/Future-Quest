@@ -190,47 +190,6 @@ class ModalManager {
 
     this.trapFocus(card);
   }
-
-  /**
-   * DEV-ONLY: Show Dev Reset Confirmation Modal.
-   */
-  showDevResetConfirmation(onConfirm) {
-    this.init();
-    this.lastActiveElement = document.activeElement;
-
-    this.modalRoot.innerHTML = `
-      <div class="modal-backdrop" data-action="backdrop">
-        <div class="modal-card dev-only" role="dialog" aria-modal="true" aria-labelledby="modal-dev-reset-title">
-          <div class="modal-header">
-            <h2 id="modal-dev-reset-title" class="modal-title">Reset All Progress?</h2>
-            <button class="btn-icon" data-action="close" aria-label="Close dialog">
-              ${ICONS.close}
-            </button>
-          </div>
-          <div class="modal-body">
-            <p class="modal-text">
-              Reset all progress and timers on this device? This clears all tiles, hints, attempts, clues and both timers.
-            </p>
-          </div>
-          <div class="modal-actions">
-            <button type="button" class="btn btn-secondary" data-action="close">Cancel</button>
-            <button type="button" class="btn btn-danger" id="btn-dev-reset-confirm">Reset</button>
-          </div>
-        </div>
-      </div>
-    `;
-
-    this.modalRoot.classList.add('is-active');
-    const card = this.modalRoot.querySelector('.modal-card');
-    const confirmBtn = document.getElementById('btn-dev-reset-confirm');
-
-    confirmBtn.addEventListener('click', () => {
-      this.close();
-      onConfirm();
-    });
-
-    this.trapFocus(card);
-  }
 }
 
 export const Modal = new ModalManager();

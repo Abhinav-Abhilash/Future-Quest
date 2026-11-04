@@ -84,29 +84,23 @@ Four real puzzle challenges and their corresponding submission fragment clues ha
 
 ---
 
-## 4. Custom Riddle Challenges (Task 4 & Task 8)
+## 4. Full Competition Puzzle & Clue Spec Inventory (All 11 Tasks)
 
-Two creative identity decryption riddle challenges featuring auto-advancing tactile keycaps, live deduction preview, paste/backspace support, and stamping feedback:
+Every puzzle tile corresponds to a specific element of the final competition poster:
 
-### Task 4 (`puzzle_4`) - The 17-Year-Old OS Riddle
-- **Type / Difficulty:** `riddle` / Medium 🟡 (Yellow Food Badge)
-- **Riddle:**
-  > *"My age is 17. I'm the one who helps your software coordinate with hardware.*  
-  > *I'm very popular, might look like that cliché alien, but don't worry—*  
-  > *I'm sweet, but have a spice in my name. What confection am I?"*
-- **Solution:** `"CINNAMON BUN"` (accepts `"CINNAMON BUN"` and `"CINNAMON ROLL"`, 8 + 3 letters).
-- **Theme:** Android OS history (launched 2008 / 17 years ago, green bugdroid alien mascot, confectionery dessert codename series).
-- **Unlocked Reward:** **Clue Fragment 4 (System Architecture & Palette Spec)**.
-
-### Task 8 (`puzzle_8`) - The Orbital Starman Riddle
-- **Type / Difficulty:** `riddle` / Hard 🔴 (Red Food Badge)
-- **Riddle:**
-  > *"Born on asphalt, now sailing through space,*  
-  > *Drop my roof to feel wind in your face.*  
-  > *With Starman at the wheel, what car am I?"*
-- **Solution:** `"ROADSTER"` (8 letters).
-- **Theme:** SpaceX Falcon Heavy 2018 orbital launch of Elon Musk's cherry Tesla Roadster carrying the Starman mannequin into heliocentric orbit.
-- **Unlocked Reward:** **Clue Fragment 7 (Aerospace Telemetry & Specs)**.
+| Task # | ID | Type | Difficulty Badge | Solution | Unlocked Poster Reward |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Task 1** | `puzzle_1` | `ascii` | 🟢 Easy | `"Tomorrow starts with the code you write today"` | **Quote Subhead Spec** (`Arial`, `14pt`, `Italics`, Black) |
+| **Task 2** | `puzzle_2` | `coords` | 🟢 Easy | `"LEARN BUILD LEAD"` | **Motto Spec** (`LEARN`: Green, `BUILD`: Blue, `LEAD`: Red) |
+| **Task 3** | `puzzle_3` | `bodmas` | 🟡 Medium | `"CODE THE FUTURE"` | **Sub-headline Title Spec** (`Arial Black`, Yellow, `20pt/24pt`) |
+| **Task 4** | `puzzle_4` | `riddle` | 🟡 Medium | `"CINNAMON BUN"` | **Mascot Icon Spec** (Green Android Bugdroid / System Architecture) |
+| **Task 5** | `puzzle_5` | `ascii` | 🟡 Medium | `"WHERE HUMAN MEETS AI"` | **Centerpiece Graphic Asset** (`assets/human_meets_ai.png`, Robot & Human hand) |
+| **Task 6** | `puzzle_6` | `riddle` | 🟡 Medium | `"SCHOOL OF FUTURE TECHNOLOGY"` | **Institution Branding Spec** (`JAIN UNIVERSITY. SCHOOL OF FUTURE TECHNOLOGY`) |
+| **Task 7** | `puzzle_7` | `wordsearch` | 🔴 Hard | `20 Technology Words` | **Word Bank Spec** (20 tech words for body paragraph) |
+| **Task 8** | `puzzle_8` | `riddle` | 🔴 Hard | `"ROADSTER"` | **Vehicle Spec** (Tesla Roadster / Aerospace Telemetry) |
+| **Task 9** | `puzzle_9` | `riddle` | 🔴 Hard | `"DARK BLUE AND LIGHT STEEL BLUE"` | **Canvas Background Asset** (`assets/poster_background_palette.png`, gradient) |
+| **Task 10** | `puzzle_10` | `coords` | 🔴 Hard | `"ALIGN"` | **Geometric Grid Alignment Spec** (Concentric Circles & Rule of Thirds Grid) |
+| **Task 11** | `puzzle_11` | `riddle` | 🟡 Medium | `"FUTURE QUEST 2026"` | **Primary Hero Headline Spec** (`Montserrat ExtraBold`, `36pt`, White) |
 
 ---
 

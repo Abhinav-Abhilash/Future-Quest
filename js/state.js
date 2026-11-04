@@ -528,38 +528,6 @@ class StateManager {
     
     return `FQ26-JU-${teamSlug}-S${summary.solved}-H${summary.hintsUsed}-${hex}`;
   }
-
-  // DEV-ONLY: ===================== DEV MODE HELPERS =====================
-  devSolve(id) {
-    if (!CONFIG.DEV_MODE || !this.state || !this.state.blocks[id]) return;
-    const block = this.state.blocks[id];
-    block.status = 'SOLVED';
-    block.activeSince = null;
-    block.unlockedClue = CONFIG.PUZZLES[id].clue;
-    this.saveState();
-  }
-
-  devFail(id) {
-    if (!CONFIG.DEV_MODE || !this.state || !this.state.blocks[id]) return;
-    const block = this.state.blocks[id];
-    block.status = 'FAILED';
-    block.activeSince = null;
-    this.saveState();
-  }
-
-  devSkipTimer(id) {
-    if (!CONFIG.DEV_MODE || !this.state || !this.state.blocks[id]) return;
-    const block = this.state.blocks[id];
-    const difficulty = CONFIG.TILE_DIFFICULTY[id] || 'easy';
-    const maxSec = CONFIG.DIFFICULTY_TIME[difficulty] || 600;
-    // Set time spent so only 10 seconds remain
-    const targetSpentSec = Math.max(0, maxSec - 10);
-    block.timeSpentMs = targetSpentSec * 1000;
-    if (block.activeSince) {
-      block.activeSince = Date.now();
-    }
-    this.saveState();
-  }
 }
 
 export const GameState = new StateManager();

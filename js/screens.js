@@ -990,18 +990,6 @@ export const Screens = {
             </div>
           </div>
         </footer>
-
-        <!-- DEV-ONLY: DEV MODE TOOLS -->
-        ${CONFIG.DEV_MODE ? `
-          <div class="dev-toolbar dev-only" role="region" aria-label="Development Testing Tools">
-            <div class="dev-label">DEV_MODE Testing Tools:</div>
-            <div class="dev-buttons">
-              <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-dev-solve">Mark Solved (dev)</button>
-              <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-dev-fail">Mark Failed (dev)</button>
-              <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-dev-skip">Skip timer to 10s</button>
-            </div>
-          </div>
-        ` : ''}
       </section>
     `;
 
@@ -1134,22 +1122,28 @@ export const Screens = {
               </div>
             `;
           } else if (clue.type === 'image') {
+            const isRaster = !!clue.imageUrl;
+            const imgContent = isRaster 
+              ? `<img src="${clue.imageUrl}" alt="${clue.title}" class="clue-raster-preview" style="max-width:100%; max-height:220px; border-radius:6px; object-fit:contain; border:1px solid #3D3063;" />`
+              : (clue.svgContent || '');
+            const downloadBtn = isRaster
+              ? `<a href="${clue.imageUrl}" download="${clue.filename || 'clue-asset.png'}" class="btn btn-secondary btn-sm keycap">${ICONS.download} <span>Download Image Asset</span></a>`
+              : `<button type="button" class="btn btn-secondary btn-sm keycap" id="btn-download-svg">${ICONS.download} <span>Download SVG Asset</span></button>`;
+
             clueInnerHtml = `
               <div class="clue-card clue-image keycap" aria-labelledby="clue-heading">
                 <div class="clue-header">
-                  <span class="clue-tag mono">VECTOR ASSET CLUE UNLOCKED</span>
+                  <span class="clue-tag mono">${isRaster ? 'IMAGE ASSET CLUE UNLOCKED' : 'VECTOR ASSET CLUE UNLOCKED'}</span>
                   <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
-                  <p class="clue-caption">${clue.caption}</p>
+                  <p class="clue-caption">${clue.caption || ''}</p>
                 </div>
                 <div class="clue-body">
-                  <div class="svg-preview-box">
-                    ${clue.svgContent}
+                  <div class="svg-preview-box" style="display:flex; justify-content:center; align-items:center; padding:12px; background:#0B0814; border-radius:6px;">
+                    ${imgContent}
                   </div>
                 </div>
                 <div class="clue-actions">
-                  <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-download-svg">
-                    ${ICONS.download} <span>Download SVG Asset</span>
-                  </button>
+                  ${downloadBtn}
                 </div>
               </div>
             `;
@@ -1326,26 +1320,6 @@ export const Screens = {
       });
     }
 
-    // DEV-ONLY: Testing buttons
-    if (CONFIG.DEV_MODE) {
-      const devSolve = container.querySelector('#btn-dev-solve');
-      const devFail = container.querySelector('#btn-dev-fail');
-      const devSkip = container.querySelector('#btn-dev-skip');
-
-      if (devSolve) devSolve.addEventListener('click', () => {
-        GameState.markSolved(puzzleId);
-        triggerSolveBurst();
-        renderStatusAndClue();
-      });
-      if (devFail) devFail.addEventListener('click', () => {
-        GameState.failPuzzle(puzzleId, 'DEV');
-        renderStatusAndClue();
-      });
-      if (devSkip) devSkip.addEventListener('click', () => {
-        GameState.devSkipTimer(puzzleId);
-      });
-    }
-
     // 1-second interval to update puzzle countdown display smoothly
     this.activePuzzleInterval = setInterval(() => {
       const remainingSec = GameState.getPuzzleRemainingSeconds(puzzleId);
@@ -1476,13 +1450,24 @@ export const Screens = {
             </button>
           `;
         } else if (clue.type === 'image') {
-          clueBodyHtml = `<div class="vault-clue-image-snippet">${clue.svgContent}</div>`;
-          allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Vector Asset) ---\n[Attached SVG: ${clue.filename}]`);
-          actionBtnHtml = `
-            <button type="button" class="btn btn-secondary btn-sm btn-vault-download" data-svg="${encodeURIComponent(clue.svgContent)}" data-filename="${clue.filename}">
-              ${ICONS.download} <span>Download SVG</span>
-            </button>
-          `;
+          const isRaster = !!clue.imageUrl;
+          if (isRaster) {
+            clueBodyHtml = `<div class="vault-clue-image-snippet" style="text-align:center; padding:8px; background:#0B0814; border-radius:4px;"><img src="${clue.imageUrl}" alt="${clue.title}" style="max-width:100%; max-height:120px; object-fit:contain; border-radius:4px;" /></div>`;
+            allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Image Asset) ---\n[Image File: ${clue.filename || clue.imageUrl}]`);
+            actionBtnHtml = `
+              <a href="${clue.imageUrl}" download="${clue.filename || 'asset.png'}" class="btn btn-secondary btn-sm">
+                ${ICONS.download} <span>Download Image</span>
+              </a>
+            `;
+          } else {
+            clueBodyHtml = `<div class="vault-clue-image-snippet">${clue.svgContent}</div>`;
+            allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Vector Asset) ---\n[Attached SVG: ${clue.filename}]`);
+            actionBtnHtml = `
+              <button type="button" class="btn btn-secondary btn-sm btn-vault-download" data-svg="${encodeURIComponent(clue.svgContent)}" data-filename="${clue.filename}">
+                ${ICONS.download} <span>Download SVG</span>
+              </button>
+            `;
+          }
         }
 
         inventoryHtml += `
@@ -1837,13 +1822,12 @@ export const Screens = {
               </p>
             </details>
 
-            <!-- DEV-ONLY: SCORING RULES placeholder to be finalized by committee -->
-            <details class="rules-accordion scoring-placeholder-block dev-only" id="rule-7" open>
+            <details class="rules-accordion" id="rule-7">
               <summary>7. Scoring & Evaluation Rubric</summary>
               <div class="rule-text">
-                <div class="alert alert-neutral">
-                  <strong>[SCORING RUBRIC NOTICE]</strong> The official weighted scoring rubric (balancing puzzle solve count, completion speed, and poster technical compliance) will be published by the ${CONFIG.EVENT.fullName} Evaluation Committee prior to the round commencement.
-                </div>
+                <p>
+                  Teams are ranked primarily by total puzzles solved (100 points per puzzle), secondarily by lowest total time taken across solved challenges. Ties are broken by fewer hint requests and fewer incorrect attempts.
+                </p>
               </div>
             </details>
           </div>

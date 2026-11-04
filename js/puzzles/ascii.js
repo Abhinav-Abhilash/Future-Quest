@@ -78,7 +78,32 @@ export function mount(root, data, ctx) {
     <div class="chart-row" id="chart-row-${code}" data-code="${code}"><span class="chart-ch mono"><strong>${label}</strong></span><span class="chart-val mono">${code}</span></div>
   `).join('');
 
-  const asciiChartHtml = `
+  const asciiChartHtml = data.isAtbash ? `
+    <aside class="ascii-chart-sidebar" id="ascii-chart-sidebar" role="region" aria-label="Reverse Alphabet Index Table">
+      <div class="chart-sidebar-header">
+        <span class="chart-header-title">Reverse Index (Z=1 .. A=26)</span>
+        <button type="button" class="chart-close-btn" id="btn-chart-close" aria-label="Close table">✕</button>
+      </div>
+      <div class="chart-sidebar-body">
+        <div class="chart-col">
+          <div class="chart-col-head">A–M (26–14)</div>
+          ${Array.from({ length: 13 }, (_, i) => {
+            const letter = String.fromCharCode(65 + i);
+            const code = 26 - i;
+            return `<div class="chart-row" id="chart-row-${code}" data-code="${code}"><span class="chart-ch mono"><strong>${letter}</strong></span><span class="chart-val mono">${code}</span></div>`;
+          }).join('')}
+        </div>
+        <div class="chart-col">
+          <div class="chart-col-head">N–Z (13–1)</div>
+          ${Array.from({ length: 13 }, (_, i) => {
+            const letter = String.fromCharCode(78 + i);
+            const code = 13 - i;
+            return `<div class="chart-row" id="chart-row-${code}" data-code="${code}"><span class="chart-ch mono"><strong>${letter}</strong></span><span class="chart-val mono">${code}</span></div>`;
+          }).join('')}
+        </div>
+      </div>
+    </aside>
+  ` : `
     <aside class="ascii-chart-sidebar" id="ascii-chart-sidebar" role="region" aria-label="ASCII Decimal Table">
       <div class="chart-sidebar-header">
         <span class="chart-header-title">ASCII Reference Table</span>
@@ -260,7 +285,7 @@ export function mount(root, data, ctx) {
           <div class="ascii-toolbar-row">
             ${stepperHtml}
             <button type="button" class="btn btn-secondary btn-sm keycap-btn btn-chart-toggle" id="btn-chart-toggle">
-              <span>Table (ASCII)</span>
+              <span>${data.isAtbash ? 'Table (Reverse Index)' : 'Table (ASCII)'}</span>
             </button>
           </div>
 

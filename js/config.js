@@ -22,8 +22,8 @@ export const CONFIG = {
   MAX_ATTEMPTS: 3,
   TOTAL_HINTS: 3,
 
-  // DEV-ONLY: Development helpers & UI toggle
-  DEV_MODE: true,
+  // Development helpers & UI toggle
+  DEV_MODE: false,
 
   // DEV-ONLY: Style test flag for fixed tile order (false = sequential 1..11, true = randomized)
   SHUFFLE_TILES: false,
@@ -133,13 +133,13 @@ export const CONFIG = {
     puzzle_2: "LEARN BUILD LEAD",
     puzzle_3: "CODE THE FUTURE",
     puzzle_4: "CINNAMON BUN",
-    puzzle_5: "HAVING",
-    puzzle_6: "O(N^2)",
+    puzzle_5: "WHERE HUMAN MEETS AI",
+    puzzle_6: "SCHOOL OF FUTURE TECHNOLOGY",
     puzzle_7: "AROUND",
     puzzle_8: "ROADSTER",
-    puzzle_9: "2",
-    puzzle_10: "15",
-    puzzle_11: "CAP"
+    puzzle_9: "DARK BLUE AND LIGHT STEEL BLUE",
+    puzzle_10: "ALIGN",
+    puzzle_11: "FUTURE QUEST 2026"
   },
 
   // Interactive puzzle configurations with type, prompt, data, and technical clues
@@ -320,82 +320,75 @@ export const CONFIG = {
     },
     puzzle_5: {
       id: "puzzle_5",
-      type: "bodmas",
-      title: "BODMAS Anagram: QUEST",
-      category: "Database Systems",
-      whatToDo: "Solve the 5 math equations to obtain numbers. Map them to letters (1=A ... 26=Z), then unscramble the letters in the tray to form a 5-letter word.",
-      prompt: "Calculate the numbers for the 5 equations, unlock the letter tiles, and assemble them into the correct word.",
-      hint: "The 5 numbers evaluate to 5 (E), 20 (T), 17 (Q), 19 (S), and 21 (U). Unscramble them to form the event's name.",
-      clueType: "text",
+      type: "ascii",
+      title: "Reverse-Index Cipher: WHERE HUMAN MEETS AI",
+      category: "Cybernetics & Cryptography",
+      whatToDo: "Decode the reverse-index numerical tokens into letters (where Z=1, Y=2, X=3 ... C=24, B=25, A=26). Type the letters to reveal the centerpiece phrase.",
+      prompt: "Decrypt the 4-word centerpiece theme using reverse alphabet indexing.",
+      hint: "Each number represents its reverse alphabet position: 26=A, 25=B, 24=C ... 1=Z (Formula: 27 - letter position). Open the Table drawer for reference.",
+      clueType: "image",
       clue: {
-        title: "Primary Mission Statement Copy",
-        type: "text",
-        content: "Hosted by JAIN (Deemed-to-be University) Kochi, School of Future. Student teams synthesize telemetry to design resilient edge monitoring interfaces."
+        title: "Clue Fragment 3: Centerpiece Graphic (Where Human Meets AI)",
+        type: "image",
+        imageUrl: "assets/human_meets_ai.png",
+        filename: "human_meets_ai.png",
+        caption: "Centerpiece Graphic Asset: Robotic Hand & Human Hand Touching"
       },
       data: {
         id: "puzzle_5",
-        hasAnagramTray: true,
-        groups: ["Target Word"],
-        groupSolutions: ["QUEST"],
-        equations: [
-          { expr: "15 - 2 * 5", display: "15 - 2 * 5", expected: 5, letter: "E" },
-          { expr: "5 * (7 - 3)", display: "5 * (7 - 3)", expected: 20, letter: "T" },
-          { expr: "2 + 3 * 5", display: "2 + 3 * 5", expected: 17, letter: "Q" },
-          { expr: "4^2 + 9 / 3", display: "4^2 + 9 / 3", expected: 19, letter: "S" },
-          { expr: "(4 + 3) * 3", display: "(4 + 3) * 3", expected: 21, letter: "U" }
+        isAtbash: true,
+        groups: ["Word 1", "Word 2", "Word 3", "Word 4"],
+        groupSolutions: ["WHERE", "HUMAN", "MEETS", "AI"],
+        words: [
+          { expectedText: "WHERE", codes: [4, 19, 22, 9, 22], expectedChars: ['W','H','E','R','E'] },
+          { expectedText: "HUMAN", codes: [19, 6, 14, 26, 13], expectedChars: ['H','U','M','A','N'] },
+          { expectedText: "MEETS", codes: [14, 22, 22, 7, 8], expectedChars: ['M','E','E','T','S'] },
+          { expectedText: "AI", codes: [26, 18], expectedChars: ['A','I'] }
         ]
       }
     },
     puzzle_6: {
       id: "puzzle_6",
-      type: "coords",
-      title: "Route Tracer: BYTE",
-      category: "Computer Science",
-      whatToDo: "Follow the step-by-step route directions across the 7×7 grid starting from (1, 7). Tap each destination point to spell out the keyword.",
-      prompt: "Trace the navigation legs starting at coordinate (1, 7) [B] through the grid.",
-      hint: "Start at (1, 7). Step 1 goes 6 steps East to (7, 7). Step 2 goes 2 North, 5 West to (2, 5). Step 3 goes 1 North, 4 East to (6, 4).",
-      clueType: "image",
+      type: "riddle",
+      title: "Visual Cryptic Inspection: Institution Name",
+      category: "Visual Cryptography & Institutional Identity",
+      whatToDo: "Examine the visual elements in the cryptic artwork (Lord Mahavira, cosmic universe, circuit halo, robotics) and deduce the institution department.",
+      prompt: "Identify the hosting institution department from the visual clues.",
+      hint: "Mahavira signifies 'JAIN', the cosmos signifies 'UNIVERSITY', and the neural circuits/robotics signify 'SCHOOL OF FUTURE TECHNOLOGY'.",
+      clueType: "spec",
       clue: {
-        title: "Edge Network Topology Diagram",
-        type: "image",
-        filename: "edge-network-topology.svg",
-        caption: "Architectural Schematic: 4-Node Sensor Mesh",
-        svgContent: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="160" style="background:#090d16; border-radius:4px;">
-  <rect width="320" height="180" fill="#0d1117"/>
-  <line x1="80" y1="50" x2="240" y2="50" stroke="#30363d" stroke-width="2"/>
-  <line x1="80" y1="130" x2="240" y2="130" stroke="#30363d" stroke-width="2"/>
-  <line x1="80" y1="50" x2="80" y2="130" stroke="#30363d" stroke-width="2"/>
-  <line x1="240" y1="50" x2="240" y2="130" stroke="#30363d" stroke-width="2"/>
-  <line x1="80" y1="50" x2="240" y2="130" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4 2"/>
-  <rect x="60" y="35" width="40" height="30" rx="3" fill="#161b22" stroke="#388bfd" stroke-width="1.5"/>
-  <text x="73" y="54" fill="#388bfd" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="700">N1</text>
-  <rect x="220" y="35" width="40" height="30" rx="3" fill="#161b22" stroke="#388bfd" stroke-width="1.5"/>
-  <text x="233" y="54" fill="#388bfd" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="700">N2</text>
-  <rect x="60" y="115" width="40" height="30" rx="3" fill="#161b22" stroke="#388bfd" stroke-width="1.5"/>
-  <text x="73" y="134" fill="#388bfd" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="700">N3</text>
-  <rect x="220" y="115" width="40" height="30" rx="3" fill="#161b22" stroke="#388bfd" stroke-width="1.5"/>
-  <text x="233" y="134" fill="#388bfd" font-family="'IBM Plex Mono', monospace" font-size="11" font-weight="700">N4</text>
-  <text x="160" y="95" text-anchor="middle" fill="#8b949e" font-family="'IBM Plex Mono', monospace" font-size="10">SYNCHRONIZED MESH</text>
-</svg>`
+        title: "Clue Fragment 2: Institution Branding & Logo Spec",
+        type: "spec",
+        specs: [
+          { label: "Fragment", value: "Fragment 2" },
+          { label: "Institution Logo", value: "JGi JAIN (Deemed-to-be University) Kochi" },
+          { label: "Primary Header", value: "JAIN UNIVERSITY." },
+          { label: "Secondary Subhead", value: "SCHOOL OF FUTURE TECHNOLOGY" },
+          { label: "Position", value: "Top-left corner of the poster canvas" },
+          { label: "Font / Weight", value: "Helvetica / Arial Bold, uppercase" }
+        ]
       },
       data: {
         id: "puzzle_6",
-        isRouteTracer: true,
-        groups: ["Route Word"],
-        groupSolutions: ["BYTE"],
-        grid: [
-          ['S', 'K', 'A', 'T', 'E', 'R', 'X'],
-          ['M', 'N', 'O', 'P', 'Q', 'U', 'H'],
-          ['F', 'L', 'D', 'G', 'B', 'I', 'W'],
-          ['C', 'Y', 'Z', 'V', 'J', 'E', 'R'],
-          ['A', 'T', 'H', 'S', 'N', 'O', 'K'],
-          ['P', 'Q', 'U', 'D', 'M', 'L', 'F'],
-          ['B', 'G', 'X', 'I', 'Z', 'V', 'Y']
+        categoryTag: "VISUAL INSTITUTIONAL CRYPTOGRAM",
+        formatBadge: "4 WORDS (6 + 2 + 6 + 10 LETTERS)",
+        imageUrl: "assets/institution_clue.jpg",
+        riddleLines: [
+          "Behold the ancient sage of non-violence and victory (Mahavira),",
+          "Surrounded by cosmic constellations, neural circuits, and cyber robotics.",
+          "Synthesize these symbols: What department and school hosts this quest?"
         ],
-        legs: [
-          { desc: "From (1,7), travel 6 steps East (Right)", targetCol: 7, targetRow: 7, letter: "Y" },
-          { desc: "From (7,7), travel 2 steps North (Up) and 5 steps West (Left)", targetCol: 2, targetRow: 5, letter: "T" },
-          { desc: "From (2,5), travel 1 step North (Up) and 4 steps East (Right)", targetCol: 6, targetRow: 4, letter: "E" }
+        solution: "SCHOOL OF FUTURE TECHNOLOGY",
+        acceptedSolutions: [
+          "SCHOOL OF FUTURE TECHNOLOGY",
+          "JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY",
+          "JAIN UNIVERSITY"
+        ],
+        words: [
+          { name: "Word 1", length: 6 },
+          { name: "Word 2", length: 2 },
+          { name: "Word 3", length: 6 },
+          { name: "Word 4", length: 10 }
         ]
       }
     },
@@ -487,131 +480,127 @@ export const CONFIG = {
     },
     puzzle_9: {
       id: "puzzle_9",
-      type: "bodmas",
-      title: "Slotted BODMAS: SIGNAL",
-      category: "Low-Level Computing",
-      whatToDo: "Evaluate the 6 scrambled math equations using BODMAS. Map each answer to a letter (1=A ... 26=Z) and place it in its designated slot #1 to #6.",
-      prompt: "Solve each equation and observe its slot number to assemble the 6-letter keyword.",
-      hint: "Equation for Slot 1 evaluates to 19 (S), Slot 2 to 9 (I), Slot 3 to 7 (G), Slot 4 to 14 (N), Slot 5 to 1 (A), Slot 6 to 12 (L).",
+      type: "riddle",
+      title: "The Dual Color Palette Riddle",
+      category: "Colorimetry & Graphic Design",
+      whatToDo: "Deduce the two background colors from the poetic colorimetry riddle. Type the color names into the keycaps.",
+      prompt: "Identify the two complementary colors that form the poster canvas background.",
+      hint: "Both colors are shades of blue. One has 'dark' character, and the other has a 'light' mind with 'steel' strength.",
       clueType: "image",
       clue: {
-        title: "Institutional Sponsor & Accreditation Seal",
+        title: "Clue Fragment 1: Official Canvas Background Specification",
         type: "image",
-        filename: "ju-accreditation-seal.svg",
-        caption: "JAIN (Deemed-to-be University) Kochi, School of Future Accreditation Mark",
-        svgContent: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="160" style="background:#090d16; border-radius:4px;">
-  <rect width="320" height="180" fill="#0d1117"/>
-  <rect x="20" y="20" width="280" height="140" fill="none" stroke="#238636" stroke-width="1.5"/>
-  <path d="M35 40 L60 40 L60 65" stroke="#238636" stroke-width="2" fill="none"/>
-  <path d="M285 40 L260 40 L260 65" stroke="#238636" stroke-width="2" fill="none"/>
-  <path d="M35 140 L60 140 L60 115" stroke="#238636" stroke-width="2" fill="none"/>
-  <path d="M285 140 L260 140 L260 115" stroke="#238636" stroke-width="2" fill="none"/>
-  <text x="160" y="65" text-anchor="middle" fill="#3fb950" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="700">VERIFIED ACCREDITATION</text>
-  <text x="160" y="90" text-anchor="middle" fill="#f0f6fc" font-family="'IBM Plex Sans', sans-serif" font-size="14" font-weight="600">JAIN UNIVERSITY KOCHI - SOF</text>
-  <text x="160" y="112" text-anchor="middle" fill="#8b949e" font-family="'IBM Plex Sans', sans-serif" font-size="11">Engineering Excellence & Innovation</text>
-  <text x="160" y="135" text-anchor="middle" fill="#238636" font-family="'IBM Plex Mono', monospace" font-size="10">AUTH CODE: JU-SFT-ACCR-2026</text>
-</svg>`
+        imageUrl: "assets/poster_background_palette.png",
+        filename: "poster_background_palette.png",
+        caption: "Canvas Asset: Dark Blue to Light Steel Blue Gradient with Concentric Circular Alignment Lines"
       },
       data: {
         id: "puzzle_9",
-        groups: ["Keyword"],
-        groupSolutions: ["SIGNAL"],
-        finalWord: "SIGNAL",
-        equations: [
-          { slot: 3, expr: "2 * (3^2 - 2 * 3) + 1", display: "2 * (3^2 - 2 * 3) + 1", expected: 7, letter: "G" },
-          { slot: 6, expr: "3 * (2 + 2)^2 / 4", display: "3 * (2 + 2)^2 / 4", expected: 12, letter: "L" },
-          { slot: 1, expr: "(3 + 2)^2 - 12 / 2", display: "(3 + 2)^2 - 12 / 2", expected: 19, letter: "S" },
-          { slot: 5, expr: "5^2 - 4 * (3 + 3)", display: "5^2 - 4 * (3 + 3)", expected: 1, letter: "A" },
-          { slot: 2, expr: "100 / (2 * 5) - 2^3 + 7", display: "100 / (2 * 5) - 2^3 + 7", expected: 9, letter: "I" },
-          { slot: 4, expr: "(18 - 4) / 2 * 2", display: "(18 - 4) / 2 * 2", expected: 14, letter: "N" }
+        categoryTag: "POSTER PALETTE SPECIFICATION",
+        formatBadge: "6 WORDS (4 + 4 + 3 + 5 + 5 + 4 LETTERS)",
+        riddleLines: [
+          "We are born of the exact same race.",
+          "One of us is full of dark humor with a solid character.",
+          "The other has a very light mind, but a heart as hard as steel.",
+          "What two colors are we?"
+        ],
+        solution: "DARK BLUE AND LIGHT STEEL BLUE",
+        acceptedSolutions: [
+          "DARK BLUE AND LIGHT STEEL BLUE",
+          "DARK BLUE LIGHT STEEL BLUE",
+          "DARK BLUE & LIGHT STEEL BLUE"
+        ],
+        words: [
+          { name: "Color 1 (Part 1)", length: 4 },
+          { name: "Color 1 (Part 2)", length: 4 },
+          { name: "Conjunction", length: 3 },
+          { name: "Color 2 (Part 1)", length: 5 },
+          { name: "Color 2 (Part 2)", length: 5 },
+          { name: "Color 2 (Part 3)", length: 4 }
         ]
       }
     },
     puzzle_10: {
       id: "puzzle_10",
       type: "coords",
-      title: "Cartesian Coordinates: CYBER",
-      category: "Discrete Mathematics",
-      whatToDo: "Attention: This 7×7 grid is Cartesian! Row 1 is at the bottom, Row 7 is at the top. Solve the math expressions for (Col, Row) and retrieve each letter.",
-      prompt: "Evaluate the coordinate formulas to find the grid coordinates (Col, Row), noting that Row 1 is at the bottom.",
-      hint: "Row 1 is at the very bottom. (10/2, 3^2-4) = (5, 5) -> C; (2^2, 12/3) = (4, 4) -> Y; (8-6, 9/3) = (2, 3) -> B...",
+      title: "Geometric Grid Alignment: ALIGN",
+      category: "Design Systems & Layout Geometry",
+      whatToDo: "Locate the 5 Cartesian coordinate points (x, y) on the 7×7 geometry blueprint to spell out the master layout directive.",
+      prompt: "Trace the 5 Cartesian grid points from origin (1,1) bottom-left.",
+      hint: "Cartesian coordinates: (Col, Row) starting from bottom-left (1,1). (1,5)=A, (5,4)=L, (4,7)=I, (3,5)=G, (5,6)=N.",
       clueType: "spec",
       clue: {
-        title: "Footer & Legal Typography Specification",
+        title: "Clue Fragment 10: Geometric Grid Alignment Specification",
         type: "spec",
         specs: [
-          { label: "Component", value: "Poster Metadata Footer" },
-          { label: "Font Family", value: "IBM Plex Mono, monospace" },
-          { label: "Font Size", value: "11px / Line Height: 15px" },
-          { label: "Font Weight", value: "400 (Regular)" },
-          { label: "Color", value: "#64748B (Slate 500)" },
-          { label: "Alignment", value: "Left Aligned, Bottom Anchor" }
+          { label: "Fragment", value: "Fragment 10" },
+          { label: "Concentric Circles", value: "Two concentric guide circles centered at (50%, 48%)" },
+          { label: "Outer Circle Radius", value: "42% canvas width with 0.8px translucent guide stroke" },
+          { label: "Inner Circle Radius", value: "28% canvas width" },
+          { label: "Rule of Thirds", value: "Vertical & horizontal 3×3 guidelines separating header, centerpiece, and body text" }
         ]
       },
       data: {
         id: "puzzle_10",
-        isBottomUp: true,
-        groups: ["Target Word"],
-        groupSolutions: ["CYBER"],
-        finalWord: "CYBER",
+        isCartesian: true,
+        groups: ["Layout Directive"],
+        groupSolutions: ["ALIGN"],
+        finalWord: "ALIGN",
         grid: [
-          ['M', 'Q', 'F', 'U', 'X', 'B', 'A'],
-          ['J', 'L', 'W', 'D', 'S', 'K', 'E'],
-          ['V', 'N', 'H', 'R', 'C', 'P', 'I'],
-          ['T', 'G', 'O', 'Y', 'Z', 'A', 'L'],
+          ['M', 'Q', 'F', 'I', 'X', 'B', 'K'],
+          ['J', 'L', 'W', 'D', 'N', 'K', 'E'],
+          ['A', 'N', 'G', 'R', 'C', 'P', 'Z'],
+          ['T', 'G', 'O', 'Y', 'L', 'D', 'H'],
           ['D', 'B', 'S', 'I', 'M', 'F', 'U'],
           ['R', 'X', 'K', 'Q', 'E', 'W', 'N'],
-          ['Z', 'H', 'P', 'L', 'V', 'J', 'G']
+          ['Z', 'H', 'P', 'L', 'V', 'J', 'O']
         ],
         mathCoords: [
-          { expr: "(10 ÷ 2, 3² - 4)", col: 5, row: 5, letter: "C" },
-          { expr: "(2², 12 ÷ 3)", col: 4, row: 4, letter: "Y" },
-          { expr: "(8 - 6, 9 ÷ 3)", col: 2, row: 3, letter: "B" },
-          { expr: "(3 + 2, 6 ÷ 3)", col: 5, row: 2, letter: "E" },
-          { expr: "(2 × 2, 15 ÷ 3)", col: 4, row: 5, letter: "R" }
+          { expr: "(1, 5)", col: 1, row: 5, letter: "A" },
+          { expr: "(5, 4)", col: 5, row: 4, letter: "L" },
+          { expr: "(4, 7)", col: 4, row: 7, letter: "I" },
+          { expr: "(3, 5)", col: 3, row: 5, letter: "G" },
+          { expr: "(5, 6)", col: 5, row: 6, letter: "N" }
         ]
       }
     },
     puzzle_11: {
       id: "puzzle_11",
-      type: "wordsearch",
-      title: "Clue Word Search: 8 Tech Frontiers",
-      category: "Systems Architecture",
-      whatToDo: "Solve each definition clue in the list, then search for and select its keyword in the 12×12 matrix.",
-      prompt: "Find the 8 frontier technology words matching the clues in the sidebar.",
-      hint: "Clues correspond to NETWORK, CIPHER, KERNEL, BINARY, MATRIX, PACKET, SENSOR, MEMORY.",
-      clueType: "text",
+      type: "riddle",
+      title: "The Main Title Cipher: FUTURE QUEST 2026",
+      category: "Event Identity & Typography",
+      whatToDo: "Solve the grand event identity riddle to reveal the primary hero headline for your poster.",
+      prompt: "Deduce the 3-part event headline and launch year.",
+      hint: "Word 1 is 'FUTURE', Word 2 is 'QUEST', Word 3 is the current event year '2026'.",
+      clueType: "spec",
       clue: {
-        title: "Official Final Verification Token",
-        type: "text",
-        content: "VAULT_RELEASE_TOKEN: JU-SFT-2026-OMEGA-8821-VERIFIED"
+        title: "Clue Fragment 11: Hero Headline Typography Spec",
+        type: "spec",
+        specs: [
+          { label: "Fragment", value: "Fragment 11" },
+          { label: "Main Headline", value: "FUTURE QUEST 2026" },
+          { label: "Font Family", value: "Montserrat ExtraBold / Arial Black" },
+          { label: "Font Size", value: "36pt (Primary Hero Banner)" },
+          { label: "Color", value: "Solid White (#FFFFFF)" },
+          { label: "Position", value: "Upper-center, directly above centerpiece graphic" }
+        ]
       },
       data: {
         id: "puzzle_11",
-        isClueMode: true,
-        grid: [
-          ['K','A','J','F','G','E','T','A','A','H','S','F'],
-          ['M','N','E','T','W','O','R','K','S','F','N','K'],
-          ['M','Z','H','J','E','V','G','Q','H','R','S','Q'],
-          ['M','C','E','K','E','R','N','E','L','Y','E','R'],
-          ['E','I','Y','N','C','X','V','L','P','G','N','B'],
-          ['M','P','G','B','I','N','A','R','Y','G','S','J'],
-          ['O','H','M','F','U','Q','P','T','C','T','O','Q'],
-          ['R','E','H','M','A','T','R','I','X','B','R','W'],
-          ['Y','R','S','C','W','R','D','B','Q','S','X','Z'],
-          ['C','T','E','P','A','C','K','E','T','V','A','Q'],
-          ['G','D','T','W','P','Y','Z','S','R','B','X','F'],
-          ['P','R','E','W','J','W','J','K','T','M','E','D']
+        categoryTag: "PRIMARY EVENT HERO HEADLINE",
+        formatBadge: "3 WORDS (6 + 5 + 4 CHARS)",
+        riddleLines: [
+          "I bridge the years from now to then,",
+          "A grand expedition for young builders and men.",
+          "Add the year when edge computing takes flight:",
+          "What is the official 3-part title of this competition night?"
         ],
+        solution: "FUTURE QUEST 2026",
+        acceptedSolutions: ["FUTURE QUEST 2026"],
         words: [
-          { word: "NETWORK", clue: "Interconnected computing nodes and telemetry mesh" },
-          { word: "CIPHER", clue: "Algorithm for encryption or secret data conversion" },
-          { word: "KERNEL", clue: "Core central module of an operating system" },
-          { word: "BINARY", clue: "Base-2 numeral system of bits (0 and 1)" },
-          { word: "MATRIX", clue: "Rectangular array of data values or mathematical grid" },
-          { word: "PACKET", clue: "Formatted unit of data carried across a network" },
-          { word: "SENSOR", clue: "Edge device detecting physical input and signals" },
-          { word: "MEMORY", clue: "Hardware subsystem for runtime data storage" }
+          { name: "Word 1", length: 6 },
+          { name: "Word 2", length: 5 },
+          { name: "Year", length: 4 }
         ]
       }
     }
