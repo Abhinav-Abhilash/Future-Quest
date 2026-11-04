@@ -28,3 +28,4 @@ console.log(`Total Core JS: raw ${(totalJs.length/1024).toFixed(1)} KB, gzip ${(
 const cssFiles = ["styles.css", "puzzles.css"];
 let totalCss = Buffer.concat(cssFiles.map(f => fs.readFileSync(f)));
 console.log(`Total Core CSS: raw ${(totalCss.length/1024).toFixed(1)} KB, gzip ${(zlib.gzipSync(totalCss).length/1024).toFixed(1)} KB`);
+
