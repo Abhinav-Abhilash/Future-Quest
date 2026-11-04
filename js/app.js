@@ -226,7 +226,8 @@ class App {
     }
 
     // Lazy load landing.js module
-    import('./landing.js').then(module => {
+    const loadLandingModule = () => import('../landing.js').catch(() => import('./landing.js'));
+    loadLandingModule().then(module => {
       this.landingModule = module;
       if (module && typeof module.initLanding === 'function') {
         module.initLanding();

@@ -152,7 +152,7 @@ export function initLanding() {
   }
 
   // 8. Prize numbers count up once when scrolled into view (rAF, 0 CLS)
-  const prizeBanner = document.querySelector('.prizes-banner');
+  const prizeBanner = document.querySelector('.flyer-prize-hero, .prizes-banner');
   if (prizeBanner && 'IntersectionObserver' in window) {
     if (prizesObserver) prizesObserver.disconnect();
     prizesObserver = new IntersectionObserver((entries) => {

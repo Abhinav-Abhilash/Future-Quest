@@ -235,545 +235,83 @@
     </header>
 
     <!-- =======================================================================
-         CLUE-CARD GALLERY (Directly under Hero)
-         ======================================================================= -->
-    <section class="clue-gallery-section scroll-reveal" aria-label="Interactive Clue Card Gallery">
-      <div class="gallery-container">
-        <!-- Row 1: Drifts slowly left -->
-        <div class="gallery-row gallery-row-1">
-          <div class="gallery-track gallery-track-left">
-            <!-- Card 1: Key -->
-            <div class="clue-card card-w-200 card-h-240 card-offset-n8" tabindex="0" role="button" aria-label="Clue card 01. Tap to flip riddle" data-riddle-id="0">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-violet">
-                  <div class="card-top-row"><span class="card-label">Clue 01</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-key"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-violet">
-                  <div class="card-top-row"><span class="card-label">Riddle 01</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I have cities without houses, forests without trees, and rivers without water. (A map!)</p></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip back</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 2: Chest (Secret Glint 1) -->
-            <div class="clue-card card-w-240 card-h-260 card-offset-p10" tabindex="0" role="button" aria-label="Clue card 02. Tap to flip riddle" data-riddle-id="1">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-orange">
-                  <button type="button" class="card-secret-glint" data-secret-id="1" aria-label="Secret glint" title="Discover hidden secret">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" /></svg>
-                  </button>
-                  <div class="card-top-row"><span class="card-label">Clue 02</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-chest"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-orange">
-                  <div class="card-top-row"><span class="card-label">Riddle 02</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I have no voice, but I speak to you; I have no brain, but I solve things too. (A computer!)</p></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip back</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 3: Compass -->
-            <div class="clue-card card-w-180 card-h-220 card-offset-n12" tabindex="0" role="button" aria-label="Clue card 03. Tap to flip riddle" data-riddle-id="2">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-deep-blue">
-                  <div class="card-top-row"><span class="card-label">Clue 03</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-compass"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-deep-blue">
-                  <div class="card-top-row"><span class="card-label">Riddle 03</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I have a ring but no fingers, and I can be broken without touch. (A secret code!)</p></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip back</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 4: Map -->
-            <div class="clue-card card-w-220 card-h-240 card-offset-p6" tabindex="0" role="button" aria-label="Clue card 04. Tap to flip riddle" data-riddle-id="3">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-teal">
-                  <div class="card-top-row"><span class="card-label">Clue 04</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-map"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-teal">
-                  <div class="card-top-row"><span class="card-label">Riddle 04</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">The more you take from me, the bigger I get. (A treasure hole!)</p></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip back</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 5: Lantern -->
-            <div class="clue-card card-w-200 card-h-220 card-offset-n4" tabindex="0" role="button" aria-label="Clue card 05. Tap to flip riddle" data-riddle-id="4">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-yellow">
-                  <div class="card-top-row"><span class="card-label">Clue 05</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-lantern"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-yellow">
-                  <div class="card-top-row"><span class="card-label">Riddle 05</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I run constantly without legs, have a face without eyes, and count time. (A clock!)</p></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip back</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 6: Gem -->
-            <div class="clue-card card-w-220 card-h-260 card-offset-p14" tabindex="0" role="button" aria-label="Clue card 06. Tap to flip riddle" data-riddle-id="5">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-pink">
-                  <div class="card-top-row"><span class="card-label">Clue 06</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-gem"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-pink">
-                  <div class="card-top-row"><span class="card-label">Riddle 06</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I have teeth but cannot bite, yet I unlock the deepest mysteries. (A key!)</p></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip back</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- ================= Duplicate Row 1 for Seamless Loop ================= -->
-            <div class="clue-card card-w-200 card-h-240 card-offset-n8" aria-hidden="true" tabindex="-1">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-violet">
-                  <div class="card-top-row"><span class="card-label">Clue 01</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-key"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-violet">
-                  <div class="card-top-row"><span class="card-label">Riddle 01</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I have cities without houses, forests without trees, and rivers without water. (A map!)</p></div>
-                </div>
-              </div>
-            </div>
-            <div class="clue-card card-w-240 card-h-260 card-offset-p10" aria-hidden="true" tabindex="-1">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-orange">
-                  <div class="card-top-row"><span class="card-label">Clue 02</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-chest"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-orange">
-                  <div class="card-top-row"><span class="card-label">Riddle 02</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I have no voice, but I speak to you; I have no brain, but I solve things too. (A computer!)</p></div>
-                </div>
-              </div>
-            </div>
-            <div class="clue-card card-w-180 card-h-220 card-offset-n12" aria-hidden="true" tabindex="-1">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-deep-blue">
-                  <div class="card-top-row"><span class="card-label">Clue 03</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-compass"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-deep-blue">
-                  <div class="card-top-row"><span class="card-label">Riddle 03</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I have a ring but no fingers, and I can be broken without touch. (A secret code!)</p></div>
-                </div>
-              </div>
-            </div>
-            <div class="clue-card card-w-220 card-h-240 card-offset-p6" aria-hidden="true" tabindex="-1">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-teal">
-                  <div class="card-top-row"><span class="card-label">Clue 04</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-map"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-teal">
-                  <div class="card-top-row"><span class="card-label">Riddle 04</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">The more you take from me, the bigger I get. (A treasure hole!)</p></div>
-                </div>
-              </div>
-            </div>
-            <div class="clue-card card-w-200 card-h-220 card-offset-n4" aria-hidden="true" tabindex="-1">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-yellow">
-                  <div class="card-top-row"><span class="card-label">Clue 05</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-lantern"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-yellow">
-                  <div class="card-top-row"><span class="card-label">Riddle 05</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I run constantly without legs, have a face without eyes, and count time. (A clock!)</p></div>
-                </div>
-              </div>
-            </div>
-            <div class="clue-card card-w-220 card-h-260 card-offset-p14" aria-hidden="true" tabindex="-1">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-pink">
-                  <div class="card-top-row"><span class="card-label">Clue 06</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-gem"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-pink">
-                  <div class="card-top-row"><span class="card-label">Riddle 06</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I have teeth but cannot bite, yet I unlock the deepest mysteries. (A key!)</p></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Row 2: Drifts slowly right -->
-        <div class="gallery-row gallery-row-2">
-          <div class="gallery-track gallery-track-right">
-            <!-- Card 7: Scroll -->
-            <div class="clue-card card-w-200 card-h-220 card-offset-p6" tabindex="0" role="button" aria-label="Clue card 07. Tap to flip riddle" data-riddle-id="6">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-teal">
-                  <div class="card-top-row"><span class="card-label">Clue 07</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-scroll"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-teal">
-                  <div class="card-top-row"><span class="card-label">Riddle 07</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">Light as a feather, yet the strongest thinker cannot hold me for long. (Your breath!)</p></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip back</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 8: Padlock (Secret Glint 2) -->
-            <div class="clue-card card-w-220 card-h-260 card-offset-n8" tabindex="0" role="button" aria-label="Clue card 08. Tap to flip riddle" data-riddle-id="7">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-violet">
-                  <button type="button" class="card-secret-glint" data-secret-id="2" aria-label="Secret glint" title="Discover hidden secret">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" /></svg>
-                  </button>
-                  <div class="card-top-row"><span class="card-label">Clue 08</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-padlock"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-violet">
-                  <div class="card-top-row"><span class="card-label">Riddle 08</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">Feed me and I live, give me a drink and I perish. (A lantern spark!)</p></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip back</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 9: Hourglass -->
-            <div class="clue-card card-w-180 card-h-200 card-offset-p10" tabindex="0" role="button" aria-label="Clue card 09. Tap to flip riddle" data-riddle-id="8">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-orange">
-                  <div class="card-top-row"><span class="card-label">Clue 09</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-hourglass"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-orange">
-                  <div class="card-top-row"><span class="card-label">Riddle 09</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I have billions of branches and nodes, yet no trunk or leaves. (The web!)</p></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip back</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 10: Magnifier -->
-            <div class="clue-card card-w-220 card-h-240 card-offset-n4" tabindex="0" role="button" aria-label="Clue card 10. Tap to flip riddle" data-riddle-id="9">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-pink">
-                  <div class="card-top-row"><span class="card-label">Clue 10</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-magnifier"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-pink">
-                  <div class="card-top-row"><span class="card-label">Riddle 10</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">Turn me on my side and I am everything; cut me in half and I am nothing. (The number 8!)</p></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip back</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 11: Cipher Wheel (Secret Glint 3) -->
-            <div class="clue-card card-w-240 card-h-260 card-offset-p14" tabindex="0" role="button" aria-label="Clue card 11. Tap to flip riddle" data-riddle-id="10">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-deep-blue">
-                  <button type="button" class="card-secret-glint" data-secret-id="3" aria-label="Secret glint" title="Discover hidden secret">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" /></svg>
-                  </button>
-                  <div class="card-top-row"><span class="card-label">Clue 11</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-cipher"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-deep-blue">
-                  <div class="card-top-row"><span class="card-label">Riddle 11</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I wear a dial but have no telephone, pointing to true north all on my own. (A compass!)</p></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip back</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 12: Torch -->
-            <div class="clue-card card-w-200 card-h-220 card-offset-n8" tabindex="0" role="button" aria-label="Clue card Sealed. Tap to flip riddle" data-riddle-id="11">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-yellow">
-                  <div class="card-top-row"><span class="card-label">Sealed</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-torch"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-yellow">
-                  <div class="card-top-row"><span class="card-label">Riddle 12</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I hold ancient secrets without moving an inch, guarded by a lock that won't flinch. (A chest!)</p></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip back</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- ================= Duplicate Row 2 for Seamless Loop ================= -->
-            <div class="clue-card card-w-200 card-h-220 card-offset-p6" aria-hidden="true" tabindex="-1">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-teal">
-                  <div class="card-top-row"><span class="card-label">Clue 07</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-scroll"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-teal">
-                  <div class="card-top-row"><span class="card-label">Riddle 07</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">Light as a feather, yet the strongest thinker cannot hold me for long. (Your breath!)</p></div>
-                </div>
-              </div>
-            </div>
-            <div class="clue-card card-w-220 card-h-260 card-offset-n8" aria-hidden="true" tabindex="-1">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-violet">
-                  <div class="card-top-row"><span class="card-label">Clue 08</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-padlock"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-violet">
-                  <div class="card-top-row"><span class="card-label">Riddle 08</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">Feed me and I live, give me a drink and I perish. (A lantern spark!)</p></div>
-                </div>
-              </div>
-            </div>
-            <div class="clue-card card-w-180 card-h-200 card-offset-p10" aria-hidden="true" tabindex="-1">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-orange">
-                  <div class="card-top-row"><span class="card-label">Clue 09</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-hourglass"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-orange">
-                  <div class="card-top-row"><span class="card-label">Riddle 09</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I have billions of branches and nodes, yet no trunk or leaves. (The web!)</p></div>
-                </div>
-              </div>
-            </div>
-            <div class="clue-card card-w-220 card-h-240 card-offset-n4" aria-hidden="true" tabindex="-1">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-pink">
-                  <div class="card-top-row"><span class="card-label">Clue 10</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-magnifier"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-pink">
-                  <div class="card-top-row"><span class="card-label">Riddle 10</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">Turn me on my side and I am everything; cut me in half and I am nothing. (The number 8!)</p></div>
-                </div>
-              </div>
-            </div>
-            <div class="clue-card card-w-240 card-h-260 card-offset-p14" aria-hidden="true" tabindex="-1">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-deep-blue">
-                  <div class="card-top-row"><span class="card-label">Clue 11</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-cipher"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-deep-blue">
-                  <div class="card-top-row"><span class="card-label">Riddle 11</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I wear a dial but have no telephone, pointing to true north all on my own. (A compass!)</p></div>
-                </div>
-              </div>
-            </div>
-            <div class="clue-card card-w-200 card-h-220 card-offset-n8" aria-hidden="true" tabindex="-1">
-              <div class="clue-card-inner">
-                <div class="clue-card-front card-solid-yellow">
-                  <div class="card-top-row"><span class="card-label">Sealed</span></div>
-                  <div class="card-art-wrap"><svg class="card-art-icon" aria-hidden="true"><use href="#art-torch"></use></svg></div>
-                  <div class="card-bottom-row"><span class="card-flip-prompt">Flip for riddle</span></div>
-                </div>
-                <div class="clue-card-back card-solid-yellow">
-                  <div class="card-top-row"><span class="card-label">Riddle 12</span></div>
-                  <div class="card-riddle-body"><p class="card-riddle-text">I hold ancient secrets without moving an inch, guarded by a lock that won't flinch. (A chest!)</p></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- =======================================================================
-         OTHER LANDING SECTIONS (Restyled to match new Hero)
+         FLYER SHOWCASE HIGHLIGHTS (Compact 3-Block Layout)
          ======================================================================= -->
     <main class="landing-main-content screen-container">
-      <!-- Grand Prize Callout Banner -->
-      <section class="prizes-banner scroll-reveal" aria-labelledby="prizes-heading">
-        <h2 id="prizes-heading" class="sr-only">Competition Prizes</h2>
-        <div class="prizes-grid">
-          <div class="prize-card winner-card">
-            <div class="prize-badge-row">
-              <span class="prize-badge winner-badge">WIN</span>
-            </div>
-            <div class="prize-amount-row mono" data-countup="50000">₹ 50,000</div>
-            <div class="prize-desc">Grand Cash Prize + Championship Trophy</div>
+      <!-- Block A: Flyer-Style Prize Hero Centerpiece -->
+      <section class="flyer-prize-hero" aria-label="Grand Prizes">
+        <div class="grand-prize-display">
+          <div class="win-badge-pill">WIN</div>
+          <div class="grand-prize-val-wrap">
+            <span class="rupee-gold-circle" aria-hidden="true">₹</span>
+            <span class="grand-prize-amount mono" data-countup="50000">₹ 50,000</span>
           </div>
+          <div class="grand-prize-sub">Grand Cash Prize + Championship Trophy</div>
+        </div>
 
-          <div class="prize-card runner-card">
-            <div class="prize-badge-row">
-              <span class="prize-badge runner-badge">Runner-up</span>
-            </div>
-            <div class="prize-amount-row mono" data-countup="25000">₹ 25,000</div>
-            <div class="prize-desc">Runner-up Cash Award + Merit Citations</div>
+        <div class="runner-up-pill-bar">
+          <span class="runner-up-tag">Runner-up</span>
+          <span class="runner-up-amount mono" data-countup="25000">₹ 25,000</span>
+          <span class="runner-up-sub">Cash Award + Merit Citations</span>
+        </div>
+      </section>
+
+      <!-- Block B: The 3 Event Pillars (Compact 3-Chip Row) -->
+      <section class="event-pillars-strip" aria-label="Core Event Highlights">
+        <div class="pillar-chip">
+          <div class="pillar-num-badge mono">01</div>
+          <div class="pillar-info">
+            <h3 class="pillar-title">Online Treasure Hunt</h3>
+            <p class="pillar-desc">Decode clues &amp; rebuild the hidden poster</p>
+          </div>
+        </div>
+
+        <div class="pillar-chip">
+          <div class="pillar-num-badge mono">02</div>
+          <div class="pillar-info">
+            <h3 class="pillar-title">Free AI Bootcamp</h3>
+            <p class="pillar-desc">Hands-on session in future tech &amp; AI</p>
+          </div>
+        </div>
+
+        <div class="pillar-chip">
+          <div class="pillar-num-badge mono">03</div>
+          <div class="pillar-info">
+            <h3 class="pillar-title">Campus Finale at JAIN Kochi</h3>
+            <p class="pillar-desc">Shortlisted teams compete live on campus</p>
           </div>
         </div>
       </section>
 
-      <!-- Compact Facts Row (Monospace Values) -->
-      <section class="landing-facts-grid scroll-reveal" role="region" aria-label="Contest Specifications">
-        <div class="fact-cell">
-          <span class="fact-label">Eligibility</span>
-          <span class="fact-val mono">Grades 11 &amp; 12</span>
-        </div>
-        <div class="fact-cell">
-          <span class="fact-label">Team Size</span>
-          <span class="fact-val mono">Teams of 3 to 5</span>
-        </div>
-        <div class="fact-cell">
-          <span class="fact-label">Duration</span>
-          <span class="fact-val mono">2 hours (7,200s)</span>
-        </div>
-        <div class="fact-cell">
-          <span class="fact-label">Registration</span>
-          <span class="fact-val mono">Free / No Fee</span>
-        </div>
-      </section>
-
-      <!-- Three Core Event Perks -->
-      <section class="perks-section scroll-reveal" aria-labelledby="perks-heading">
-        <h2 id="perks-heading" class="landing-section-title">Event Highlights</h2>
-        <div class="perks-grid">
-          <div class="perk-card">
-            <div class="perk-icon-wrap">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="6" width="20" height="14" rx="2"></rect>
-                <path d="M2 11h20"></path>
-                <circle cx="12" cy="11" r="1.5" fill="currentColor"></circle>
-              </svg>
-            </div>
-            <h3 class="perk-title">Online Treasure Hunt</h3>
-            <p class="perk-desc">Solve technical puzzles, decode hidden clues, and assemble the secret poster.</p>
+      <!-- Block C: Essential Quick-Info Strip (From the Bottom of the Flyer) -->
+      <section class="flyer-quick-info-strip" aria-label="Contest Specifications and Registration Details">
+        <div class="quick-info-cell">
+          <div class="quick-info-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
           </div>
-
-          <div class="perk-card">
-            <div class="perk-icon-wrap">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m18 16 4-4-4-4"></path>
-                <path d="m6 8-4 4 4 4"></path>
-                <path d="m14.5 4-5 16"></path>
-              </svg>
-            </div>
-            <h3 class="perk-title">Free AI Bootcamp</h3>
-            <p class="perk-desc">Hands-on masterclass in future technologies, prompt engineering, and generative AI.</p>
-          </div>
-
-          <div class="perk-card">
-            <div class="perk-icon-wrap">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                <path d="M4 22h16"></path>
-                <path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-2.34"></path>
-                <path d="M14 14.66V17c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-2.34"></path>
-                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-              </svg>
-            </div>
-            <h3 class="perk-title">Campus Finale at JAIN Kochi</h3>
-            <p class="perk-desc">Grand on-campus final round showcase with awards, project demos, and direct university mentoring.</p>
+          <div class="quick-info-body">
+            <strong class="quick-info-title">Teams of 3–5</strong>
+            <span class="quick-info-sub">Exclusively for Higher Secondary / 11th &amp; 12th students</span>
           </div>
         </div>
-      </section>
 
-      <!-- How it Works & Before You Start (2 Columns) -->
-      <div class="landing-details-grid scroll-reveal">
-        <section class="landing-card" aria-labelledby="how-it-works-title">
-          <h2 id="how-it-works-title" class="landing-section-title" style="margin-bottom: 20px;">How it works</h2>
-          <ol class="landing-steps-list">
-            <li class="landing-step-item">
-              <span class="step-badge mono">1</span>
-              <span class="step-text"><strong>Register your team:</strong> Input your Team Name and School Name to enter the live arena.</span>
-            </li>
-            <li class="landing-step-item">
-              <span class="step-badge mono">2</span>
-              <span class="step-text"><strong>Solve in any order:</strong> Open any puzzle tile on the grid and submit answers before time runs out.</span>
-            </li>
-            <li class="landing-step-item">
-              <span class="step-badge mono">3</span>
-              <span class="step-text"><strong>Unlock technical clues:</strong> Every solved task unlocks specifications, copy snippets, or SVG assets.</span>
-            </li>
-            <li class="landing-step-item">
-              <span class="step-badge mono">4</span>
-              <span class="step-text"><strong>Submit your final poster:</strong> Open Tile 12 (Submit Vault) to lock your run and submit your entry.</span>
-            </li>
-          </ol>
-        </section>
-
-        <section class="landing-card" aria-labelledby="before-start-title">
-          <h2 id="before-start-title" class="landing-section-title" style="margin-bottom: 20px;">Before you start</h2>
-          <ul class="landing-checklist">
-            <li class="landing-check-item">
-              <span class="check-icon">✓</span>
-              <span class="check-text"><strong>Whole team present:</strong> Teams of 3 to 5 students (11th &amp; 12th grades).</span>
-            </li>
-            <li class="landing-check-item">
-              <span class="check-icon">✓</span>
-              <span class="check-text"><strong>One shared terminal:</strong> Coordinate together on one device with a stable network connection.</span>
-            </li>
-            <li class="landing-check-item">
-              <span class="check-icon">✓</span>
-              <span class="check-text"><strong>2-hour continuous timer:</strong> The master clock cannot be paused once started.</span>
-            </li>
-            <li class="landing-check-item">
-              <span class="check-icon">✓</span>
-              <span class="check-text"><strong>Hints are limited:</strong> Exactly 3 hints per team for the entire competition.</span>
-            </li>
-          </ul>
-        </section>
-      </div>
-
-      <!-- Static Grid Preview -->
-      <section class="landing-preview-card scroll-reveal" aria-labelledby="preview-title">
-        <div class="landing-preview-header">
-          <h2 id="preview-title" class="landing-section-title" style="margin: 0;">Grid Preview</h2>
-          <span style="font-size: 12px; font-family: var(--font-mono); color: var(--lp-text-muted);">12 Slots &bull; Fixed Preview</span>
+        <div class="quick-info-cell">
+          <div class="quick-info-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+          </div>
+          <div class="quick-info-body">
+            <strong class="quick-info-title">Registration FREE</strong>
+            <span class="quick-info-sub">Register via your school coordinator or online form</span>
+          </div>
         </div>
-        <div class="landing-preview-grid" aria-hidden="true">
-          <div class="preview-tile preview-tile-gradient"><span class="preview-tile-tag">Task 1</span><span class="preview-tile-num mono">01</span></div>
-          <div class="preview-tile preview-tile-gradient"><span class="preview-tile-tag">Task 2</span><span class="preview-tile-num mono">02</span></div>
-          <div class="preview-tile preview-tile-gradient"><span class="preview-tile-tag">Task 3</span><span class="preview-tile-num mono">03</span></div>
-          <div class="preview-tile preview-tile-gradient"><span class="preview-tile-tag">Task 4</span><span class="preview-tile-num mono">04</span></div>
-          <div class="preview-tile preview-tile-gradient"><span class="preview-tile-tag">Task 5</span><span class="preview-tile-num mono">05</span></div>
-          <div class="preview-tile preview-tile-gradient"><span class="preview-tile-tag">Task 6</span><span class="preview-tile-num mono">06</span></div>
-          <div class="preview-tile preview-tile-gradient"><span class="preview-tile-tag">Task 7</span><span class="preview-tile-num mono">07</span></div>
-          <div class="preview-tile preview-tile-gradient"><span class="preview-tile-tag">Task 8</span><span class="preview-tile-num mono">08</span></div>
-          <div class="preview-tile preview-tile-gradient"><span class="preview-tile-tag">Task 9</span><span class="preview-tile-num mono">09</span></div>
-          <div class="preview-tile preview-tile-gradient"><span class="preview-tile-tag">Task 10</span><span class="preview-tile-num mono">10</span></div>
-          <div class="preview-tile preview-tile-gradient"><span class="preview-tile-tag">Task 11</span><span class="preview-tile-num mono">11</span></div>
-          <div class="preview-tile preview-tile-submit">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-            <span class="preview-submit-label">Submit</span>
+
+        <div class="quick-info-cell">
+          <div class="quick-info-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+          </div>
+          <div class="quick-info-body">
+            <strong class="quick-info-title">Queries &amp; Portal</strong>
+            <span class="quick-info-sub">Call: <a href="tel:7034065252" class="quick-info-link">7034065252</a> &bull; <a href="https://www.jainsoft.co.in" target="_blank" rel="noopener noreferrer" class="quick-info-link">www.jainsoft.co.in</a></span>
           </div>
         </div>
       </section>

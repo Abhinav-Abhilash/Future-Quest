@@ -303,552 +303,266 @@ body.is-landing .hero-meta-line {
   text-align: center;
 }
 
-/* ==========================================================================
-   5. Clue-Card Gallery Section (Directly under Hero)
-   ========================================================================== */
-body.is-landing .clue-gallery-section {
-  width: 100%;
-  overflow: hidden;
-  padding: 36px 0 52px;
-  position: relative;
-  background-color: rgba(15, 11, 26, 0.6);
-  border-bottom: 1px solid var(--lp-border-subtle);
-  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
-}
-
-body.is-landing .gallery-container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-body.is-landing .gallery-row {
-  width: 100%;
-  overflow: visible;
-  display: flex;
-}
-
-body.is-landing .gallery-track {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  width: max-content;
-  will-change: transform;
-}
-
-/* Drift animations */
-body.is-landing .gallery-track-left {
-  animation: lp-drift-left 68s linear infinite;
-}
-
-body.is-landing .gallery-track-right {
-  animation: lp-drift-right 72s linear infinite;
-}
-
-@keyframes lp-drift-left {
-  0% { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(-50%, 0, 0); }
-}
-
-@keyframes lp-drift-right {
-  0% { transform: translate3d(-50%, 0, 0); }
-  100% { transform: translate3d(0, 0, 0); }
-}
-
-/* Pause drift on hover, keyboard focus, or when offscreen/tab-hidden */
-body.is-landing .gallery-row:hover .gallery-track,
-body.is-landing .gallery-row:focus-within .gallery-track,
-body.is-landing .clue-gallery-section.gallery-paused .gallery-track {
-  animation-play-state: paused;
-}
-
-/* ==========================================================================
-   6. Clue Card Styling & 3D Flip
-   ========================================================================== */
-body.is-landing .clue-card {
-  perspective: 800px;
-  flex-shrink: 0;
-  cursor: pointer;
-  outline: none;
-  user-select: none;
-  transition: transform 180ms ease;
-}
-
-body.is-landing .clue-card:focus-visible {
-  outline: 2px solid var(--lp-accent-solid);
-  outline-offset: 4px;
-  border-radius: 16px;
-}
-
-/* Variable card sizes */
-body.is-landing .card-w-180 { width: 180px; }
-body.is-landing .card-w-200 { width: 200px; }
-body.is-landing .card-w-220 { width: 220px; }
-body.is-landing .card-w-240 { width: 240px; }
-
-body.is-landing .card-h-200 { height: 200px; }
-body.is-landing .card-h-220 { height: 220px; }
-body.is-landing .card-h-240 { height: 240px; }
-body.is-landing .card-h-260 { height: 260px; }
-
-/* Staggered vertical offsets (hand-placed feel) */
-body.is-landing .card-offset-n12 { transform: translateY(-12px); }
-body.is-landing .card-offset-n8  { transform: translateY(-8px); }
-body.is-landing .card-offset-n4  { transform: translateY(-4px); }
-body.is-landing .card-offset-0   { transform: translateY(0); }
-body.is-landing .card-offset-p6  { transform: translateY(6px); }
-body.is-landing .card-offset-p10 { transform: translateY(10px); }
-body.is-landing .card-offset-p14 { transform: translateY(14px); }
-
-/* 3D Flip Container */
-body.is-landing .clue-card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  transition: transform 420ms cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 16px;
-}
-
-body.is-landing .clue-card.is-flipped .clue-card-inner {
-  transform: rotateY(180deg);
-}
-
-/* Card Faces */
-body.is-landing .clue-card-front,
-body.is-landing .clue-card-back {
+/* Screen reader accessibility utility */
+.sr-only {
   position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #FFFFFF;
-}
-
-body.is-landing .clue-card-back {
-  transform: rotateY(180deg);
-  text-align: center;
-}
-
-/* Flat solid palette colors (strictly no gradient on cards) */
-body.is-landing .card-solid-violet { background-color: var(--lp-card-violet); }
-body.is-landing .card-solid-orange { background-color: var(--lp-card-orange); }
-body.is-landing .card-solid-yellow { background-color: var(--lp-card-yellow); color: #0F0B1A; }
-body.is-landing .card-solid-teal   { background-color: var(--lp-card-teal); }
-body.is-landing .card-solid-pink   { background-color: var(--lp-card-pink); }
-body.is-landing .card-solid-deep-blue { background-color: var(--lp-card-deep-blue); }
-
-/* Card Inner Content */
-body.is-landing .card-top-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-body.is-landing .card-label {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  background-color: rgba(0, 0, 0, 0.25);
-  color: inherit;
-}
-
-body.is-landing .card-art-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-}
-
-body.is-landing .card-art-icon {
-  width: 58px;
-  height: 58px;
-  fill: currentColor;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
-}
-
-body.is-landing .card-bottom-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
-body.is-landing .card-flip-prompt {
-  font-size: 11px;
-  font-weight: 500;
-  opacity: 0.85;
-  letter-spacing: 0.3px;
-}
-
-/* Back Face Riddle */
-body.is-landing .card-riddle-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  padding: 0 4px;
-}
-
-body.is-landing .card-riddle-text {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.45;
-  color: inherit;
-  margin: 0;
-}
-
-/* Tiny Secret Glint Badge */
-body.is-landing .card-secret-glint {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.2);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #FFFFFF;
+  width: 1px;
+  height: 1px;
   padding: 0;
-  transition: transform 150ms ease, background-color 150ms ease;
-  z-index: 5;
-}
-
-body.is-landing .card-secret-glint:hover {
-  transform: scale(1.2);
-  background-color: rgba(255, 255, 255, 0.4);
-}
-
-body.is-landing .card-secret-glint.is-found {
-  background-color: var(--lp-badge-yellow);
-  color: #0F0B1A;
-  box-shadow: 0 0 10px var(--lp-badge-yellow);
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ==========================================================================
-   7. Other Landing Sections (Facts, Prizes, Perks, How it Works, etc.)
+   5. Main Content Wrapper (Tight spacing, zero dead void)
    ========================================================================== */
 body.is-landing .landing-main-content {
   max-width: 1140px;
   margin: 0 auto;
-  padding: 56px var(--space-4) 72px;
+  padding: 32px var(--space-4) 48px;
   display: flex;
   flex-direction: column;
-  gap: 64px;
+  gap: 32px;
 }
 
-/* Section Title */
-body.is-landing .landing-section-title {
+/* ==========================================================================
+   6. Flyer Showcase: Block A - Prize Hero Centerpiece
+   ========================================================================== */
+body.is-landing .flyer-prize-hero {
+  background: radial-gradient(circle at 50% 30%, rgba(43, 21, 128, 0.45) 0%, rgba(24, 17, 44, 0.8) 100%);
+  border: 1.5px solid var(--lp-border-emphasis);
+  border-radius: 20px;
+  padding: 36px 24px 28px;
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 12px 36px rgba(15, 11, 26, 0.6);
+}
+
+body.is-landing .grand-prize-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+body.is-landing .win-badge-pill {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-110px) rotate(-8deg);
+  background: #FFFFFF;
+  color: #0F0B1A;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.8px;
+  padding: 3px 14px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  z-index: 2;
+  user-select: none;
+}
+
+body.is-landing .grand-prize-val-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+body.is-landing .rupee-gold-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFC928 0%, #FF8A00 100%);
+  color: #0F0B1A;
   font-family: 'Poppins', sans-serif;
   font-size: 24px;
-  font-weight: 700;
-  color: #FFFFFF;
-  margin-bottom: 24px;
-  text-align: left;
-}
-
-/* Facts Grid */
-body.is-landing .landing-facts-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-
-body.is-landing .fact-cell {
-  background-color: var(--lp-surface-card);
-  border: 1px solid var(--lp-border-default);
-  border-radius: 12px;
-  padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  transition: border-color 150ms ease;
-}
-
-body.is-landing .fact-cell:hover {
-  border-color: var(--lp-border-emphasis);
-}
-
-body.is-landing .fact-label {
-  font-size: 12px;
-  color: var(--lp-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 600;
-}
-
-body.is-landing .fact-val {
-  font-family: var(--font-mono);
-  font-size: 16px;
-  font-weight: 600;
-  color: #FFFFFF;
-}
-
-/* Prizes Banner */
-body.is-landing .prizes-banner {
-  background: var(--lp-surface-card);
-  border: 1px solid var(--lp-border-default);
-  border-radius: 16px;
-  padding: 32px;
-}
-
-body.is-landing .prizes-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-}
-
-body.is-landing .prize-card {
-  background-color: rgba(15, 11, 26, 0.6);
-  border: 1px solid var(--lp-border-default);
-  border-radius: 12px;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-body.is-landing .prize-badge-row {
+  font-weight: 800;
   display: flex;
   align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(255, 153, 0, 0.4);
+  flex-shrink: 0;
 }
 
-body.is-landing .prize-badge {
+body.is-landing .grand-prize-amount {
+  font-size: clamp(38px, 6vw, 56px);
+  font-weight: 700;
+  color: #FFC928;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  text-shadow: 0 2px 16px rgba(255, 201, 40, 0.25);
+}
+
+body.is-landing .grand-prize-sub {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--lp-text-secondary);
+  margin-top: 8px;
+  letter-spacing: 0.3px;
+}
+
+/* Runner-up Pill Bar */
+body.is-landing .runner-up-pill-bar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 8px 20px;
+  border-radius: 9999px;
+  background-color: rgba(15, 11, 26, 0.7);
+  border: 1px solid var(--lp-border-default);
+  flex-wrap: wrap;
+}
+
+body.is-landing .runner-up-tag {
+  background-color: var(--lp-badge-yellow-bg);
+  color: var(--lp-badge-yellow);
+  border: 1px solid rgba(255, 201, 40, 0.35);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
   padding: 3px 10px;
   border-radius: 9999px;
 }
 
-body.is-landing .winner-badge {
-  background-color: rgba(255, 153, 0, 0.16);
-  color: var(--lp-accent-solid);
-  border: 1px solid rgba(255, 153, 0, 0.4);
-}
-
-body.is-landing .runner-badge {
-  background-color: var(--lp-badge-yellow-bg);
-  color: var(--lp-badge-yellow);
-  border: 1px solid rgba(255, 201, 40, 0.4);
-}
-
-body.is-landing .prize-amount-row {
-  font-family: var(--font-mono);
-  font-size: clamp(32px, 4vw, 44px);
+body.is-landing .runner-up-amount {
+  font-size: 18px;
   font-weight: 700;
   color: #FFFFFF;
-  margin: 6px 0;
 }
 
-body.is-landing .winner-card .prize-amount-row {
-  color: var(--lp-accent-solid);
+body.is-landing .runner-up-sub {
+  font-size: 13px;
+  color: var(--lp-text-muted);
 }
 
-body.is-landing .runner-card .prize-amount-row {
-  color: var(--lp-badge-yellow);
-}
-
-body.is-landing .prize-desc {
-  font-size: 14px;
-  color: var(--lp-text-secondary);
-}
-
-/* Perks Grid */
-body.is-landing .perks-grid {
+/* ==========================================================================
+   7. Flyer Showcase: Block B - 3 Event Pillars (Compact 3-Chip Row)
+   ========================================================================== */
+body.is-landing .event-pillars-strip {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 16px;
 }
 
-body.is-landing .perk-card {
+body.is-landing .pillar-chip {
   background-color: var(--lp-surface-card);
   border: 1px solid var(--lp-border-default);
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 14px;
+  padding: 18px 20px;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 14px;
   transition: border-color 150ms ease, transform 150ms ease;
 }
 
-body.is-landing .perk-card:hover {
+body.is-landing .pillar-chip:hover {
   border-color: var(--lp-border-emphasis);
   transform: translateY(-2px);
 }
 
-body.is-landing .perk-icon-wrap {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background-color: rgba(255, 153, 0, 0.12);
+body.is-landing .pillar-num-badge {
+  font-size: 13px;
+  font-weight: 700;
   color: var(--lp-accent-solid);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background-color: rgba(255, 153, 0, 0.12);
+  border: 1px solid rgba(255, 153, 0, 0.3);
+  border-radius: 8px;
+  padding: 4px 8px;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
-body.is-landing .perk-title {
+body.is-landing .pillar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+body.is-landing .pillar-title {
   font-family: 'Poppins', sans-serif;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   color: #FFFFFF;
   margin: 0;
 }
 
-body.is-landing .perk-desc {
-  font-size: 14px;
+body.is-landing .pillar-desc {
+  font-size: 13px;
   color: var(--lp-text-secondary);
-  line-height: 1.55;
+  line-height: 1.45;
   margin: 0;
 }
 
-/* How It Works & Before You Start (2 Columns) */
-body.is-landing .landing-details-grid {
+/* ==========================================================================
+   8. Flyer Showcase: Block C - Essential Quick-Info Strip
+   ========================================================================== */
+body.is-landing .flyer-quick-info-strip {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-}
-
-body.is-landing .landing-card {
-  background-color: var(--lp-surface-card);
-  border: 1px solid var(--lp-border-default);
-  border-radius: 16px;
-  padding: 32px;
-}
-
-body.is-landing .landing-steps-list,
-body.is-landing .landing-checklist {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
+  background-color: rgba(24, 17, 44, 0.65);
+  border: 1px solid var(--lp-border-subtle);
+  border-radius: 16px;
+  padding: 16px 20px;
 }
 
-body.is-landing .landing-step-item,
-body.is-landing .landing-check-item {
+body.is-landing .quick-info-cell {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
 }
 
-body.is-landing .step-badge {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 700;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: var(--lp-accent-solid);
-  color: var(--lp-accent-dark);
+body.is-landing .quick-info-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: rgba(255, 201, 40, 0.1);
+  color: var(--lp-badge-yellow);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-body.is-landing .step-text,
-body.is-landing .check-text {
+body.is-landing .quick-info-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+body.is-landing .quick-info-title {
+  font-family: 'Poppins', sans-serif;
   font-size: 14px;
-  color: var(--lp-text-secondary);
-  line-height: 1.5;
-}
-
-body.is-landing .check-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: rgba(63, 185, 80, 0.15);
-  color: #3FB950;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* Grid Preview Section */
-body.is-landing .landing-preview-card {
-  background-color: var(--lp-surface-card);
-  border: 1px solid var(--lp-border-default);
-  border-radius: 16px;
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-body.is-landing .landing-preview-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-body.is-landing .landing-preview-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-body.is-landing .preview-tile {
-  min-height: 84px;
-  border-radius: 6px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-body.is-landing .preview-tile-gradient {
-  background: linear-gradient(135deg, #9068DB 0%, #5A3792 40%, #3A2166 70%, #24133F 100%);
-  border: 1px solid rgba(165, 126, 240, 0.35);
-  color: #FFFFFF;
-}
-
-body.is-landing .preview-tile-tag {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-body.is-landing .preview-tile-num {
-  font-size: 24px;
-  font-weight: 500;
-  color: #FFFFFF;
-}
-
-body.is-landing .preview-tile-submit {
-  background-color: #DC2626;
-  border: 1px solid #B91C1C;
-  color: #FFFFFF;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-body.is-landing .preview-submit-label {
   font-weight: 700;
-  font-size: 14px;
+  color: #FFFFFF;
+}
+
+body.is-landing .quick-info-sub {
+  font-size: 12px;
+  color: var(--lp-text-muted);
+  line-height: 1.4;
+}
+
+body.is-landing .quick-info-link {
+  color: var(--lp-accent-solid);
+  text-decoration: none;
+}
+
+body.is-landing .quick-info-link:hover {
+  text-decoration: underline;
 }
 
 /* Registration Callout Banner */
@@ -963,82 +677,34 @@ body.is-landing .footer-secrets-tracker strong {
 }
 
 /* ==========================================================================
-   8. Responsive Adjustments & Lite Mode
+   9. Responsive Adjustments & Lite Mode
    ========================================================================== */
 @media (max-width: 900px) {
-  body.is-landing .landing-facts-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  body.is-landing .perks-grid {
+  body.is-landing .event-pillars-strip {
     grid-template-columns: 1fr;
   }
-  body.is-landing .prizes-grid {
+  body.is-landing .flyer-quick-info-strip {
     grid-template-columns: 1fr;
-  }
-  body.is-landing .landing-details-grid {
-    grid-template-columns: 1fr;
+    gap: 18px;
   }
 }
 
-@media (max-width: 768px) {
-  /* On mobile: single swipeable row with scroll-snap & no auto drift */
-  body.is-landing .clue-gallery-section {
-    mask-image: none;
-    -webkit-mask-image: none;
-    padding: 24px 0 32px;
+@media (max-width: 600px) {
+  body.is-landing .win-badge-pill {
+    position: static;
+    transform: none;
+    margin-bottom: 8px;
   }
-
-  body.is-landing .gallery-row-2 {
-    display: none;
+  body.is-landing .grand-prize-val-wrap {
+    flex-direction: row;
+    align-items: center;
   }
-
-  body.is-landing .gallery-row-1 {
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    padding: 0 16px;
-  }
-
-  body.is-landing .gallery-row-1::-webkit-scrollbar {
-    display: none;
-  }
-
-  body.is-landing .gallery-track-left {
-    animation: none !important;
-    gap: 14px;
-  }
-
-  body.is-landing .gallery-track-left > [aria-hidden="true"] {
-    display: none !important;
-  }
-
-  body.is-landing .clue-card {
-    scroll-snap-align: center;
-    flex-shrink: 0;
-    width: 200px;
-    height: 220px;
-    transform: none !important;
-  }
-
-  body.is-landing .landing-preview-grid {
-    grid-template-columns: repeat(3, 1fr);
+  body.is-landing .runner-up-pill-bar {
+    border-radius: 12px;
+    flex-direction: column;
+    gap: 6px;
   }
 }
-
-/* Reduced Motion & Lite Mode */
-@media (prefers-reduced-motion: reduce) {
-  body.is-landing .gallery-track-left,
-  body.is-landing .gallery-track-right {
-    animation: none !important;
-  }
-}
-
-body.lite-mode .gallery-track-left,
-body.lite-mode .gallery-track-right {
-  animation: none !important;
-}
-
 
 /* ==========================================================================
    Motion Polish: Hero Parallax, Lantern Spotlight, Scroll Reveal
@@ -1078,17 +744,15 @@ body.is-landing .hero-inner {
 }
 
 /* Scroll reveal for sections: fade + 16px rise once */
+/* Scroll reveal: Default visible to avoid blank void trap */
 body.is-landing .scroll-reveal {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 320ms cubic-bezier(0.2, 0, 0, 1), transform 320ms cubic-bezier(0.2, 0, 0, 1);
-  will-change: opacity, transform;
+  opacity: 1;
+  transform: none;
 }
 
 body.is-landing .scroll-reveal.is-revealed {
   opacity: 1;
-  transform: translateY(0);
-  will-change: auto;
+  transform: none;
 }
 
 body.is-landing .prize-amount-row {
