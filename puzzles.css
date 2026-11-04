@@ -1898,3 +1898,57 @@ body.lite-mode .ws-clue-card.card-flipped .clue-card-back {
   transform: none !important;
   position: relative;
 }
+
+
+/* ==========================================================================
+   Tactile Physical Feedback Animations (Compositor: transform & opacity only)
+   ========================================================================== */
+@keyframes letterFlipIn {
+  0% {
+    transform: perspective(300px) rotateX(60deg);
+    opacity: 0;
+  }
+  100% {
+    transform: perspective(300px) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes wordSnapTogether {
+  0% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+@keyframes cellCorrectPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+.letter-flip-in {
+  animation: letterFlipIn 200ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.word-snap-together {
+  animation: wordSnapTogether 220ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.cell-correct-pop {
+  animation: cellCorrectPop 240ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter-flip-in,
+  .word-snap-together,
+  .cell-correct-pop {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+body.lite-mode .letter-flip-in,
+body.lite-mode .word-snap-together,
+body.lite-mode .cell-correct-pop {
+  animation: none !important;
+  transform: none !important;
+}

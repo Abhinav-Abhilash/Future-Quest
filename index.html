@@ -206,6 +206,8 @@
          HERO SECTION (Centered & Airy)
          ======================================================================= -->
     <header class="landing-hero" id="landing-hero">
+      <div class="hero-dotted-bg" id="hero-dotted-bg" aria-hidden="true"></div>
+      <div class="hero-spotlight" id="hero-spotlight" aria-hidden="true"></div>
       <div class="hero-inner screen-container">
         <div class="hero-powered-line">Powered by JAIN School of Future</div>
 
@@ -235,7 +237,7 @@
     <!-- =======================================================================
          CLUE-CARD GALLERY (Directly under Hero)
          ======================================================================= -->
-    <section class="clue-gallery-section" aria-label="Interactive Clue Card Gallery">
+    <section class="clue-gallery-section scroll-reveal" aria-label="Interactive Clue Card Gallery">
       <div class="gallery-container">
         <!-- Row 1: Drifts slowly left -->
         <div class="gallery-row gallery-row-1">
@@ -615,14 +617,14 @@
          ======================================================================= -->
     <main class="landing-main-content screen-container">
       <!-- Grand Prize Callout Banner -->
-      <section class="prizes-banner" aria-labelledby="prizes-heading">
+      <section class="prizes-banner scroll-reveal" aria-labelledby="prizes-heading">
         <h2 id="prizes-heading" class="sr-only">Competition Prizes</h2>
         <div class="prizes-grid">
           <div class="prize-card winner-card">
             <div class="prize-badge-row">
               <span class="prize-badge winner-badge">WIN</span>
             </div>
-            <div class="prize-amount-row mono">₹ 50,000</div>
+            <div class="prize-amount-row mono" data-countup="50000">₹ 50,000</div>
             <div class="prize-desc">Grand Cash Prize + Championship Trophy</div>
           </div>
 
@@ -630,14 +632,14 @@
             <div class="prize-badge-row">
               <span class="prize-badge runner-badge">Runner-up</span>
             </div>
-            <div class="prize-amount-row mono">₹ 25,000</div>
+            <div class="prize-amount-row mono" data-countup="25000">₹ 25,000</div>
             <div class="prize-desc">Runner-up Cash Award + Merit Citations</div>
           </div>
         </div>
       </section>
 
       <!-- Compact Facts Row (Monospace Values) -->
-      <section class="landing-facts-grid" role="region" aria-label="Contest Specifications">
+      <section class="landing-facts-grid scroll-reveal" role="region" aria-label="Contest Specifications">
         <div class="fact-cell">
           <span class="fact-label">Eligibility</span>
           <span class="fact-val mono">Grades 11 &amp; 12</span>
@@ -657,7 +659,7 @@
       </section>
 
       <!-- Three Core Event Perks -->
-      <section class="perks-section" aria-labelledby="perks-heading">
+      <section class="perks-section scroll-reveal" aria-labelledby="perks-heading">
         <h2 id="perks-heading" class="landing-section-title">Event Highlights</h2>
         <div class="perks-grid">
           <div class="perk-card">
@@ -702,7 +704,7 @@
       </section>
 
       <!-- How it Works & Before You Start (2 Columns) -->
-      <div class="landing-details-grid">
+      <div class="landing-details-grid scroll-reveal">
         <section class="landing-card" aria-labelledby="how-it-works-title">
           <h2 id="how-it-works-title" class="landing-section-title" style="margin-bottom: 20px;">How it works</h2>
           <ol class="landing-steps-list">
@@ -749,7 +751,7 @@
       </div>
 
       <!-- Static Grid Preview -->
-      <section class="landing-preview-card" aria-labelledby="preview-title">
+      <section class="landing-preview-card scroll-reveal" aria-labelledby="preview-title">
         <div class="landing-preview-header">
           <h2 id="preview-title" class="landing-section-title" style="margin: 0;">Grid Preview</h2>
           <span style="font-size: 12px; font-family: var(--font-mono); color: var(--lp-text-muted);">12 Slots &bull; Fixed Preview</span>
@@ -826,6 +828,9 @@
 
   <!-- Accessible Toast Stack Root Container -->
   <div id="toast-stack-root" class="toast-stack-root" aria-live="polite"></div>
+
+  <!-- Screen-edge feedback flash on wrong check -->
+  <div id="screen-edge-flash" class="screen-edge-flash" aria-hidden="true"></div>
 
   <!-- Application Bootstrap -->
   <script type="module" src="js/app.js"></script>

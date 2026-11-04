@@ -228,15 +228,15 @@ export const CONFIG = {
         title: "Official Event Seal Graphic",
         type: "image",
         filename: "future-quest-seal.svg",
-        caption: "Official Jain University School of Future Technology Competition Emblem",
+        caption: "Official JAIN (Deemed-to-be University) Kochi, School of Future Competition Emblem",
         svgContent: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="160" style="background:#090d16; border-radius:4px;">
   <rect width="320" height="180" fill="#0d1117"/>
   <rect x="10" y="10" width="300" height="160" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 3"/>
   <circle cx="90" cy="90" r="45" fill="none" stroke="#388bfd" stroke-width="3"/>
   <polygon points="90,55 120,110 60,110" fill="none" stroke="#60a5fa" stroke-width="2"/>
   <circle cx="90" cy="90" r="10" fill="#388bfd"/>
-  <text x="155" y="75" fill="#f0f6fc" font-family="'IBM Plex Sans', sans-serif" font-size="16" font-weight="700">JAIN UNIVERSITY</text>
-  <text x="155" y="95" fill="#8b949e" font-family="'IBM Plex Sans', sans-serif" font-size="11">School of Future Technology</text>
+  <text x="155" y="75" fill="#f0f6fc" font-family="'IBM Plex Sans', sans-serif" font-size="15" font-weight="700">JAIN UNIVERSITY KOCHI</text>
+  <text x="155" y="95" fill="#8b949e" font-family="'IBM Plex Sans', sans-serif" font-size="11">School of Future</text>
   <text x="155" y="115" fill="#388bfd" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="600">FQ 2026 OFFICIAL SEAL</text>
   <path d="M155 125 L290 125" stroke="#30363d" stroke-width="1"/>
 </svg>`
@@ -325,7 +325,7 @@ export const CONFIG = {
       clue: {
         title: "Primary Mission Statement Copy",
         type: "text",
-        content: "Hosted by Jain University - School of Future Technology. Student teams synthesize telemetry to design resilient edge monitoring interfaces."
+        content: "Hosted by JAIN (Deemed-to-be University) Kochi, School of Future. Student teams synthesize telemetry to design resilient edge monitoring interfaces."
       },
       data: {
         id: "puzzle_5",
@@ -481,7 +481,7 @@ export const CONFIG = {
         title: "Institutional Sponsor & Accreditation Seal",
         type: "image",
         filename: "ju-accreditation-seal.svg",
-        caption: "School of Future Technology Accreditation Mark",
+        caption: "JAIN (Deemed-to-be University) Kochi, School of Future Accreditation Mark",
         svgContent: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="160" style="background:#090d16; border-radius:4px;">
   <rect width="320" height="180" fill="#0d1117"/>
   <rect x="20" y="20" width="280" height="140" fill="none" stroke="#238636" stroke-width="1.5"/>
@@ -490,7 +490,7 @@ export const CONFIG = {
   <path d="M35 140 L60 140 L60 115" stroke="#238636" stroke-width="2" fill="none"/>
   <path d="M285 140 L260 140 L260 115" stroke="#238636" stroke-width="2" fill="none"/>
   <text x="160" y="65" text-anchor="middle" fill="#3fb950" font-family="'IBM Plex Mono', monospace" font-size="12" font-weight="700">VERIFIED ACCREDITATION</text>
-  <text x="160" y="90" text-anchor="middle" fill="#f0f6fc" font-family="'IBM Plex Sans', sans-serif" font-size="15" font-weight="600">JAIN UNIVERSITY - SFT</text>
+  <text x="160" y="90" text-anchor="middle" fill="#f0f6fc" font-family="'IBM Plex Sans', sans-serif" font-size="14" font-weight="600">JAIN UNIVERSITY KOCHI - SOF</text>
   <text x="160" y="112" text-anchor="middle" fill="#8b949e" font-family="'IBM Plex Sans', sans-serif" font-size="11">Engineering Excellence & Innovation</text>
   <text x="160" y="135" text-anchor="middle" fill="#238636" font-family="'IBM Plex Mono', monospace" font-size="10">AUTH CODE: JU-SFT-ACCR-2026</text>
 </svg>`

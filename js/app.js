@@ -83,11 +83,17 @@ class App {
 
     document.body.classList.toggle('dev-mode', !!CONFIG.DEV_MODE);
 
-    // Apply lite-mode on game screens if reduced effects was toggled
+    // Auto "lite" mode: if prefers-reduced-motion is set, OR hardwareConcurrency <= 4, OR deviceMemory <= 4
     try {
-      const reduceEffects = localStorage.getItem('future_quest_reduce_effects');
-      if (reduceEffects === 'true' || reduceEffects === '1') {
-        document.body.classList.add('lite-mode');
+      const saved = localStorage.getItem('future_quest_reduce_effects');
+      const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const lowConcurrency = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
+      const lowMemory = typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 4;
+      const isLite = saved !== null ? (saved === 'true' || saved === '1') : (prefersReduced || lowConcurrency || lowMemory);
+
+      document.body.classList.toggle('lite-mode', isLite);
+      if (saved === null && isLite) {
+        localStorage.setItem('future_quest_reduce_effects', 'true');
       }
     } catch (e) {
       console.warn('Could not read future_quest_reduce_effects from localStorage:', e);

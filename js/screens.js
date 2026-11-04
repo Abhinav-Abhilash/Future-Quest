@@ -196,23 +196,43 @@ export const Screens = {
               <span class="field-error" id="school-name-error"></span>
             </div>
 
-            <!-- Ready Check Pre-round Checklist -->
+            <!-- Ready Check Pre-round Checklist with Stroke-Dashoffset Tick Motion -->
             <div class="ready-checklist" role="region" aria-label="Pre-round Readiness Checklist">
               <div class="ready-checklist-title mono">PRE-ROUND READINESS CHECK:</div>
               <label class="ready-check-item">
-                <input type="checkbox" id="chk-team-ready" class="ready-checkbox" />
+                <input type="checkbox" id="chk-team-ready" class="ready-checkbox sr-only" />
+                <span class="custom-checkbox" aria-hidden="true">
+                  <svg class="check-svg" viewBox="0 0 16 16">
+                    <polyline points="3 8 6.5 12 13 4"></polyline>
+                  </svg>
+                </span>
                 <span class="ready-check-text">Our team (3 to 5 members) is assembled and ready.</span>
               </label>
               <label class="ready-check-item">
-                <input type="checkbox" id="chk-device-ready" class="ready-checkbox" />
+                <input type="checkbox" id="chk-device-ready" class="ready-checkbox sr-only" />
+                <span class="custom-checkbox" aria-hidden="true">
+                  <svg class="check-svg" viewBox="0 0 16 16">
+                    <polyline points="3 8 6.5 12 13 4"></polyline>
+                  </svg>
+                </span>
                 <span class="ready-check-text">We have a stable internet connection and are using one shared device.</span>
               </label>
               <label class="ready-check-item">
-                <input type="checkbox" id="chk-timer-ready" class="ready-checkbox" />
+                <input type="checkbox" id="chk-timer-ready" class="ready-checkbox sr-only" />
+                <span class="custom-checkbox" aria-hidden="true">
+                  <svg class="check-svg" viewBox="0 0 16 16">
+                    <polyline points="3 8 6.5 12 13 4"></polyline>
+                  </svg>
+                </span>
                 <span class="ready-check-text">We understand that the 2-hour timer cannot be paused once started.</span>
               </label>
               <label class="ready-check-item">
-                <input type="checkbox" id="chk-rules-ready" class="ready-checkbox" />
+                <input type="checkbox" id="chk-rules-ready" class="ready-checkbox sr-only" />
+                <span class="custom-checkbox" aria-hidden="true">
+                  <svg class="check-svg" viewBox="0 0 16 16">
+                    <polyline points="3 8 6.5 12 13 4"></polyline>
+                  </svg>
+                </span>
                 <span class="ready-check-text">We have read and agree to the competition rules.</span>
               </label>
             </div>
@@ -375,9 +395,16 @@ export const Screens = {
     const ringDashOffset = ringCircumference * (1 - (solvedCount / 11));
     const masterRemaining = GameState.getMasterRemainingSeconds();
 
-    // Check if first load in this session for stagger-in motion
-    const isFirstLoad = !window.__gridFirstLoadDone;
-    window.__gridFirstLoadDone = true;
+    // Check if first load in this session for deal-in motion
+    const isDealt = sessionStorage.getItem('future_quest_grid_dealt');
+    if (!isDealt) {
+      try { sessionStorage.setItem('future_quest_grid_dealt', '1'); } catch (e) {}
+    }
+    const isFirstLoad = !isDealt && !document.body.classList.contains('lite-mode');
+
+    // Clue pouch route line dash calculation
+    const routePct = Math.max(0, Math.min(1, solvedCount / 11));
+    const routeDashOffset = 960 * (1 - routePct);
 
     // Build Clue Pouch 11-slot strip
     let pouchSlotsHtml = '';
@@ -431,19 +458,26 @@ export const Screens = {
     // are opaque and do not reveal difficulty.
     let tilesHtml = '';
 
+    // Submit tile: static until ready, then ONE gentle pulse, never looping
+    const isSubmitReady = (isAllAttempted || solvedCount === 11);
+    let submitPulseClass = '';
+    if (isSubmitReady && !sessionStorage.getItem('future_quest_submit_pulsed')) {
+      submitPulseClass = 'tile-submit-ready';
+      try { sessionStorage.setItem('future_quest_submit_pulsed', '1'); } catch (e) {}
+    }
+
     gridOrder.forEach((itemId, index) => {
       const tileNumber = index + 1;
       const formattedNum = String(tileNumber).padStart(2, '0');
-      const staggerClass = isFirstLoad ? 'stagger-in' : '';
+      const staggerClass = isFirstLoad ? 'tile-deal-in' : '';
       const staggerDelay = isFirstLoad ? `style="animation-delay: ${index * 40}ms;"` : '';
 
       if (itemId === 'vault_12' || index === 11) {
-        // Tile 12: Red Submit Button (with subtle pulse if all tasks are complete)
-        const readyClass = (isAllAttempted || solvedCount === 11) ? 'tile-submit-ready' : '';
+        // Tile 12: Red Submit Button (static until ready, then ONE gentle pulse)
         tilesHtml += `
           <button 
             type="button" 
-            class="tile-card tile-style-submit ${readyClass} ${staggerClass}"
+            class="tile-card tile-style-submit ${submitPulseClass} ${staggerClass}"
             id="tile-vault-btn"
             ${staggerDelay}
             aria-label="Tile 12: Submit (Opens Vault Confirmation)"
@@ -578,11 +612,17 @@ export const Screens = {
           </div>
         </div>
 
-        <!-- Clue Pouch Strip -->
+        <!-- Clue Pouch Strip with Animated Route Line -->
         <div class="clue-pouch-strip" role="region" aria-label="Unlocked Clue Pouch">
           <div class="pouch-label">
             ${ICONS.pouch || ''}
             <span>Clue Pouch</span>
+          </div>
+          <div class="pouch-route-container" aria-hidden="true">
+            <svg class="pouch-route-svg" viewBox="0 0 1000 12" preserveAspectRatio="none">
+              <line x1="20" y1="6" x2="980" y2="6" stroke="#2B1E4A" stroke-width="2" stroke-dasharray="6 6" />
+              <line x1="20" y1="6" x2="980" y2="6" stroke="#FFC928" stroke-width="2.5" stroke-dasharray="960" stroke-dashoffset="${routeDashOffset}" class="pouch-route-active" />
+            </svg>
           </div>
           <div class="pouch-slots-row">
             ${pouchSlotsHtml}
@@ -596,11 +636,47 @@ export const Screens = {
       </section>
     `;
 
-    // Bind clicks to puzzle tiles
+    // Desktop Pointer Tilt (max 5 degrees, throttled to 1 rAF, disabled on touch/lite-mode)
+    const gridEl = container.querySelector('.puzzle-grid');
+    if (gridEl && !document.body.classList.contains('lite-mode') && !window.matchMedia('(hover: none) or (pointer: coarse)').matches) {
+      let tileTiltRaf = null;
+      let activeTile = null;
+      let rx = 0;
+      let ry = 0;
+
+      gridEl.querySelectorAll('.tile-puzzle').forEach(tile => {
+        tile.addEventListener('mousemove', (e) => {
+          if (document.body.classList.contains('lite-mode')) return;
+          const rect = tile.getBoundingClientRect();
+          const x = (e.clientX - rect.left) / rect.width - 0.5;
+          const y = (e.clientY - rect.top) / rect.height - 0.5;
+          activeTile = tile;
+          rx = -y * 10;
+          ry = x * 10;
+
+          if (!tileTiltRaf) {
+            tileTiltRaf = requestAnimationFrame(() => {
+              if (activeTile) {
+                activeTile.style.transform = `perspective(600px) translateY(-3px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+              }
+              tileTiltRaf = null;
+            });
+          }
+        }, { passive: true });
+
+        tile.addEventListener('mouseleave', () => {
+          tile.style.transform = '';
+          activeTile = null;
+        });
+      });
+    }
+
+    // Bind clicks to puzzle tiles (save expand transition flag)
     const puzzleButtons = container.querySelectorAll('.tile-puzzle:not([disabled])');
     puzzleButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         const puzzleId = btn.dataset.puzzleId;
+        try { sessionStorage.setItem('future_quest_expand_tile', '1'); } catch (e) {}
         router.navigate(`/puzzle/${puzzleId}`);
       });
     });
@@ -744,9 +820,16 @@ export const Screens = {
 
     const initialScalePct = Math.max(0, Math.min(1, initialRemainingSec / totalPuzzleSec));
 
+    // Shared-element expand-in motion when opening from grid
+    let expandClass = '';
+    if (sessionStorage.getItem('future_quest_expand_tile') && !document.body.classList.contains('lite-mode')) {
+      try { sessionStorage.removeItem('future_quest_expand_tile'); } catch (e) {}
+      expandClass = 'puzzle-expand-in';
+    }
+
     // Render Streamlined Single-Stage Screen
     container.innerHTML = `
-      <section class="screen-container puzzle-screen" aria-labelledby="puzzle-band-task-heading">
+      <section class="screen-container puzzle-screen ${expandClass}" aria-labelledby="puzzle-band-task-heading">
         <!-- 1. Header Band with Flat #3A2166 Surface, matching Purple Tile -->
         <header class="puzzle-header-band" role="banner">
           <div class="puzzle-header-band-inner">
@@ -1119,6 +1202,12 @@ export const Screens = {
         onWrongCheck: () => {
           const res = GameState.recordWrong(puzzleId);
           renderStatusAndClue();
+          // Screen-edge flash feedback (opacity only)
+          const flash = document.getElementById('screen-edge-flash');
+          if (flash && !document.body.classList.contains('lite-mode')) {
+            flash.classList.add('flash-active');
+            setTimeout(() => flash.classList.remove('flash-active'), 280);
+          }
           // Shake the action bar attempts row
           const pipsRow = container.querySelector('#action-attempts-pips');
           if (pipsRow) {
@@ -1302,9 +1391,10 @@ export const Screens = {
       return;
     }
 
-    // Vault Door Reveal Ceremony (once per browser session)
+    // Vault Door Reveal Ceremony (once per browser session, skipped in lite mode)
+    const isLite = document.body.classList.contains('lite-mode') || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     const doorKey = 'future_quest_vault_doors_opened';
-    if (!sessionStorage.getItem(doorKey)) {
+    if (!isLite && !sessionStorage.getItem(doorKey)) {
       sessionStorage.setItem(doorKey, '1');
       const doorOverlay = document.createElement('div');
       doorOverlay.className = 'vault-door-overlay';
@@ -1372,7 +1462,7 @@ export const Screens = {
         }
 
         inventoryHtml += `
-          <div class="inventory-card inventory-unlocked">
+          <div class="inventory-card inventory-unlocked vault-slot-card ${isLite ? '' : 'stagger-in'}" style="animation-delay: ${idx * 40}ms;">
             <div class="inventory-header">
               <span class="inventory-slot-badge">${slotLabel} (${formattedNum})</span>
               <span class="inventory-status-badge status-solved">${ICONS.check} Solved</span>
@@ -1386,7 +1476,7 @@ export const Screens = {
         // Unsolved / Failed slot (no leaked clue information)
         const statusLabel = block && block.status === 'FAILED' ? 'Failed' : 'Unsolved';
         inventoryHtml += `
-          <div class="inventory-card inventory-locked">
+          <div class="inventory-card inventory-locked vault-slot-card ${isLite ? '' : 'stagger-in'}" style="animation-delay: ${idx * 40}ms;">
             <div class="inventory-header">
               <span class="inventory-slot-badge">${slotLabel} (${formattedNum})</span>
               <span class="inventory-status-badge status-locked">${ICONS.lock} ${statusLabel}</span>
