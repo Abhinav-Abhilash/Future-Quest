@@ -22,8 +22,8 @@ export const CONFIG = {
   MAX_ATTEMPTS: 3,
   TOTAL_HINTS: 3,
 
-  // Development helpers & UI toggle
-  DEV_MODE: false,
+  // DEV-ONLY: Development helpers & UI toggle
+  DEV_MODE: true,
 
   // DEV-ONLY: Style test flag for fixed tile order (false = sequential 1..11, true = randomized)
   SHUFFLE_TILES: false,

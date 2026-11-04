@@ -108,6 +108,86 @@ class App {
     GameState.subscribe(() => {
       this.updateNavbar(navContainer, this.router.currentRoute);
     });
+
+    // DEV-ONLY: Initialize fixed dev reset bar across all screens
+    this.initDevResetBar();
+  }
+
+  /**
+   * DEV-ONLY: Mount fixed dev reset bar at bottom-right of screen on every route.
+   */
+  initDevResetBar() {
+    const existing = document.getElementById('dev-reset-bar');
+    if (existing) existing.remove();
+
+    if (!CONFIG.DEV_MODE) return;
+
+    const barEl = document.createElement('aside');
+    barEl.id = 'dev-reset-bar';
+    barEl.className = 'dev-reset-bar dev-only';
+    barEl.setAttribute('aria-label', 'Developer Reset Bar');
+    barEl.innerHTML = `
+      <span class="dev-tag mono">DEV</span>
+      <button type="button" class="btn btn-secondary btn-sm" id="btn-dev-reset-all">Reset all progress</button>
+    `;
+
+    document.body.appendChild(barEl);
+
+    const resetBtn = barEl.querySelector('#btn-dev-reset-all');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        Modal.showDevResetConfirmation(() => {
+          this.performDevReset();
+        });
+      });
+    }
+  }
+
+  /**
+   * DEV-ONLY: Comprehensive first-time visit reset wiping all client state.
+   */
+  performDevReset() {
+    // 1. Clear all storage completely (not just future_quest keys)
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch (e) {
+      console.warn('Storage clear error:', e);
+    }
+
+    // 2. Remove session and state classes from html & body
+    document.documentElement.classList.remove('has-active-session');
+    document.body.classList.remove('has-active-session', 'lite-mode', 'is-landing');
+    window.__gridFirstLoadDone = false;
+
+    // 3. Clear all running intervals and timeouts
+    if (this.masterInterval) {
+      clearInterval(this.masterInterval);
+      this.masterInterval = null;
+    }
+    if (Screens.activePuzzleInterval) {
+      clearInterval(Screens.activePuzzleInterval);
+      Screens.activePuzzleInterval = null;
+    }
+    const maxTimerId = window.setTimeout(() => {}, 0);
+    for (let i = 0; i <= maxTimerId; i++) {
+      window.clearTimeout(i);
+      window.clearInterval(i);
+    }
+
+    // 4. Close any open modal & remove banners/toasts
+    Modal.close();
+    const noticeContainer = document.getElementById('notice-banner-root');
+    if (noticeContainer) noticeContainer.innerHTML = '';
+    const toastRoot = document.getElementById('toast-root');
+    if (toastRoot) toastRoot.innerHTML = '';
+
+    // 5. Reset GameState to null
+    GameState.resetSession();
+
+    // 6. Set hash to #/landing and call location.reload() to destroy & rebuild all in-memory module state
+    window.location.hash = '#/landing';
+    window.location.reload();
   }
 
   /**
