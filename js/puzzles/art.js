@@ -1,8 +1,8 @@
 /**
  * Future Quest 2026 - Puzzle Art & Reward Icons
  * 
- * Standalone inline SVG strings for reward popups and puzzle decorations.
- * Strictly flat SVG strings (no gradients, no external sprite dependencies).
+ * Standalone inline SVG strings for reward popups, pawns, reticles, pips, and puzzle decorations.
+ * Strictly flat SVG strings (no gradients, no blur, no external sprite dependencies).
  */
 
 export const PUZZLE_ART = {
@@ -44,6 +44,29 @@ export const PUZZLE_ART = {
     <rect x="4" y="11" width="16" height="11" rx="2" ry="2"/>
     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
     <circle cx="12" cy="16" r="1.5" fill="currentColor"/>
+  </svg>`,
+
+  // Tactical / Game Interaction Art
+  pawn: `<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none" aria-hidden="true">
+    <circle cx="12" cy="5.5" r="3.25"/>
+    <path d="M8.5 9.5h7l-1 4.5h1.5l1.5 6.5H6.5l1.5-6.5h1.5z"/>
+  </svg>`,
+
+  reticle: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="6.5"/>
+    <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+  </svg>`,
+
+  pipFilled: `<svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor" aria-hidden="true">
+    <circle cx="6" cy="6" r="4.5"/>
+  </svg>`,
+
+  pipHollow: `<svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+    <circle cx="6" cy="6" r="4.25"/>
+  </svg>`,
+
+  arrowDown: `<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M8 2v10m-3.5-3.5 3.5 3.5 3.5-3.5"/>
   </svg>`
 };
 

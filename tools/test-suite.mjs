@@ -51,3 +51,4 @@ if (pass) {
   console.error('SOME PUZZLE INTEGRATION TESTS FAILED!');
   process.exit(1);
 }
+

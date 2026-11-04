@@ -14,6 +14,7 @@ import { GameState } from './state.js';
 import { ICONS } from './icons.js';
 import { Modal } from './modal.js';
 import { PUZZLE_REGISTRY } from './puzzles/index.js';
+import { PUZZLE_ART } from './puzzles/art.js';
 
 export const Screens = {
   activePuzzleInterval: null,
@@ -580,118 +581,221 @@ export const Screens = {
       return;
     }
 
+    const puzzleType = puzzleConfig.type;
     const attemptsLeft = Math.max(0, CONFIG.MAX_ATTEMPTS - (block.attemptsUsed || 0));
 
-    // Render Shell HTML (once)
+    // How-to-play guide definitions
+    const HOWTO_GUIDES = {
+      ascii: [
+        { num: '1', title: 'DECIMAL CODES', text: "Observe the decimal ASCII values on each active card (e.g. 65='A', 97='a')." },
+        { num: '2', title: 'TABLE / STEPPER', text: 'Reference the side ASCII chart or rotate stepper/cipher dials to find characters.' },
+        { num: '3', title: 'CARD LOCK', text: 'Type letters into slots. When a word is correct, it slides together and stamps the poster.' }
+      ],
+      bodmas: [
+        { num: '1', title: 'BODMAS ORDER', text: 'Calculate equations following Brackets, Powers, Multiplication/Division, Addition/Subtraction.' },
+        { num: '2', title: 'NUMBER TO LETTER', text: 'Convert resulting integer into a letter (1=A, 2=B ... 26=Z) using the numbered scale.' },
+        { num: '3', title: 'TRAY & SLOTS', text: 'Place letters into matching target slots or drag anagram tiles into sequence.' }
+      ],
+      coords: [
+        { num: '1', title: 'COORDINATE PAIR', text: 'Read the (Col, Row) pair. Check axis label to confirm standard or Cartesian orientation.' },
+        { num: '2', title: 'CROSSHAIR SWEEP', text: 'Hover or tap on the 7×7 grid. Follow the crosshairs to align column and row.' },
+        { num: '3', title: 'TRANSFER LETTER', text: 'Click target cell to fly letter into the active word chip, or trace route steps.' }
+      ],
+      wordsearch: [
+        { num: '1', title: 'WORD TARGETS', text: 'Review target tech keywords or definition clues listed in the right-hand panel.' },
+        { num: '2', title: 'DRAG & SNAP', text: 'Drag pointer across letters in any of 8 directions, or tap start and end letters.' },
+        { num: '3', title: 'CAPSULE LOCK', text: 'Found terms lock in colored capsules, progress scales up, and clue cards flip.' }
+      ]
+    };
+
+    const howToKey = `future_quest_howto_${puzzleType}`;
+    let alreadySeen = false;
+    try {
+      alreadySeen = !!localStorage.getItem(howToKey);
+    } catch (e) {}
+
+    const isDrawerOpen = !alreadySeen;
+    if (!alreadySeen) {
+      try {
+        localStorage.setItem(howToKey, '1');
+      } catch (e) {}
+    }
+
+    const steps = HOWTO_GUIDES[puzzleType] || HOWTO_GUIDES.ascii;
+    const howToStepsHtml = steps.map(s => `
+      <div class="howto-step-card keycap">
+        <div class="howto-step-header">
+          <span class="step-badge mono">STEP ${s.num}</span>
+          <span class="step-title">${s.title}</span>
+        </div>
+        <p class="step-desc">${s.text}</p>
+      </div>
+    `).join('');
+
+    // Render Streamlined Single-Stage Screen
     container.innerHTML = `
-      <section class="screen-container puzzle-screen" aria-labelledby="puzzle-title">
-        <!-- Puzzle Navigation Bar -->
-        <div class="puzzle-nav-row">
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-back-grid">
-            ${ICONS.arrowLeft} <span>Back to Grid</span>
-          </button>
-          <div class="puzzle-timer-badge ${initialRemainingSec < 120 && block.status === 'OPENED_IN_PROGRESS' ? 'timer-low' : ''}">
-            <span class="timer-icon">${ICONS.clock}</span>
-            <span class="timer-label">Puzzle Timer:</span>
-            <span class="timer-value mono" id="puzzle-countdown">${this.formatTime(initialRemainingSec)}</span>
-          </div>
-        </div>
-
-        <!-- Puzzle Header Card -->
-        <div class="puzzle-header-card">
-          <div class="puzzle-meta-row">
-            <div class="puzzle-number-badge">TASK ${tileNumber}</div>
-            <div class="difficulty-badge difficulty-${difficulty}">
-              ${difficulty.toUpperCase()} (${Math.floor(CONFIG.DIFFICULTY_TIME[difficulty] / 60)} MIN)
+      <section class="screen-container puzzle-screen" aria-labelledby="puzzle-band-task-heading">
+        <!-- 1. Header Band with Flat #3A2166 Surface, matching Purple Tile -->
+        <header class="puzzle-header-band" role="banner">
+          <div class="puzzle-header-band-inner">
+            <div class="puzzle-header-left">
+              <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-back-grid" aria-label="Back to Grid">
+                ${ICONS.arrowLeft} <span>Back to Grid</span>
+              </button>
+              <div class="puzzle-header-task-info">
+                <span id="puzzle-band-task-heading" class="puzzle-band-task-label mono">TASK ${tileNumber}</span>
+                <div class="difficulty-badge difficulty-${difficulty}">
+                  ${difficulty.toUpperCase()} (${Math.floor(CONFIG.DIFFICULTY_TIME[difficulty] / 60)} MIN)
+                </div>
+                <div class="puzzle-category-tag mono">${puzzleConfig.category}</div>
+              </div>
             </div>
-            <div class="category-badge">${puzzleConfig.category}</div>
+            
+            <div class="puzzle-header-right">
+              <div class="puzzle-timer-badge ${initialRemainingSec < 120 && block.status === 'OPENED_IN_PROGRESS' ? 'timer-low' : ''}">
+                <span class="timer-icon">${ICONS.clock}</span>
+                <span class="timer-value mono" id="puzzle-countdown">${this.formatTime(initialRemainingSec)}</span>
+              </div>
+              <div class="puzzle-band-big-num mono" aria-hidden="true">${tileNumber}</div>
+            </div>
           </div>
-          <h1 id="puzzle-title" class="puzzle-title">${tileLabel}</h1>
-        </div>
+        </header>
 
-        <!-- Status Alert Container -->
+        <!-- Status Notification Banner -->
         <div id="puzzle-status-banner"></div>
 
-        <!-- Puzzle Body Card -->
-        <div class="puzzle-body-card">
-          <!-- What to do block -->
-          <div class="puzzle-what-to-do-block">
-            <h2 class="section-title">What to do</h2>
+        <!-- 2. Objective & How to Play Row -->
+        <div class="puzzle-instruction-row">
+          <div class="puzzle-instruction-text">
+            <span class="instruction-label mono">OBJECTIVE:</span>
             <p class="what-to-do-text">${puzzleConfig.whatToDo || 'Analyze the technical requirements and solve the challenge below.'}</p>
           </div>
+          <button type="button" class="btn-toggle-howto keycap" id="btn-toggle-howto" aria-expanded="${isDrawerOpen ? 'true' : 'false'}" aria-controls="puzzle-howto-drawer">
+            <span class="howto-icon">ℹ</span>
+            <span class="howto-btn-text">How to play</span>
+          </button>
+        </div>
 
-          <!-- Problem Statement (Question) -->
-          <div class="puzzle-question">
-            <h2 class="section-title">Problem Statement</h2>
-            <p class="question-text">${puzzleConfig.prompt}</p>
+        <!-- How to Play Drawer -->
+        <div class="puzzle-howto-drawer ${isDrawerOpen ? 'drawer-expanded' : ''}" id="puzzle-howto-drawer" role="region" aria-label="How to play instructions">
+          <div class="howto-drawer-inner">
+            <div class="howto-drawer-title mono">HOW TO SOLVE THIS PUZZLE:</div>
+            <div class="howto-steps-grid">${howToStepsHtml}</div>
           </div>
+        </div>
 
-          <!-- Hint Section -->
-          <div class="puzzle-hint-section" id="puzzle-hint-area">
-            ${block.hintUsed ? `
-              <div class="revealed-hint-box" role="region" aria-label="Revealed Hint">
-                <div class="hint-title-row">
-                  <span class="hint-icon">${ICONS.hint}</span>
-                  <strong>Puzzle Hint:</strong>
-                </div>
+        <!-- Revealed Hint Box (if used) -->
+        <div id="puzzle-hint-display" class="puzzle-hint-display ${block.hintUsed ? 'hint-visible' : ''}">
+          ${block.hintUsed ? `
+            <div class="revealed-hint-box keycap" role="region" aria-label="Revealed Hint">
+              <span class="hint-icon">${ICONS.hint}</span>
+              <div class="hint-content">
+                <strong class="mono">PUZZLE HINT:</strong>
                 <p class="hint-text">${puzzleConfig.hint}</p>
               </div>
-            ` : `
-              <div class="hint-action-row">
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- 3. Puzzle Stage: Flat full-width surface -->
+        <main id="puzzle-stage" class="puzzle-stage-surface">
+          <!-- Dynamic Interactive Module -->
+          <div id="puzzle-interactive-container"></div>
+        </main>
+
+        <!-- 4. Unlocked Technical Clue Container (slides in below stage when solved) -->
+        <div id="puzzle-clue-container" class="puzzle-clue-container"></div>
+
+        <!-- 5. Sticky Bottom Action Bar -->
+        <footer class="puzzle-sticky-action-bar" id="puzzle-sticky-action-bar" role="region" aria-label="Puzzle Actions">
+          <div class="action-bar-inner">
+            <div class="action-bar-left">
+              <div class="action-bar-attempts" id="action-attempts-box" title="${attemptsLeft} attempts remaining">
+                <span class="action-bar-label mono">ATTEMPTS</span>
+                <div class="action-pips" id="action-attempts-pips">
+                  ${Array.from({ length: CONFIG.MAX_ATTEMPTS }, (_, i) => `
+                    <span class="action-pip ${i < attemptsLeft ? 'pip-remaining' : 'pip-spent'}">${i < attemptsLeft ? PUZZLE_ART.pipFilled : PUZZLE_ART.pipHollow}</span>
+                  `).join('')}
+                </div>
+              </div>
+              
+              <div class="action-bar-hints" id="action-hints-box">
                 <button 
                   type="button" 
-                  class="btn btn-secondary btn-sm" 
+                  class="btn btn-secondary btn-sm keycap action-hint-btn" 
                   id="btn-use-hint"
-                  ${state.hintsRemaining <= 0 || block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled aria-disabled="true"' : ''}
+                  ${state.hintsRemaining <= 0 || block.hintUsed || block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled aria-disabled="true"' : ''}
                 >
-                  ${ICONS.hint} <span>Use Hint (${state.hintsRemaining} left)</span>
+                  <span class="btn-hint-icon">${ICONS.hint}</span>
+                  <span>${block.hintUsed ? 'Hint Used' : 'Hint'}</span>
+                  <span class="hint-mini-pips" id="action-hint-pips">
+                    ${Array.from({ length: 3 }, (_, i) => `
+                      <span class="hint-mini-pip ${i < state.hintsRemaining ? 'pip-active' : 'pip-used'}">${i < state.hintsRemaining ? PUZZLE_ART.pipFilled : PUZZLE_ART.pipHollow}</span>
+                    `).join('')}
+                  </span>
                 </button>
-                <span class="hint-note">Using a hint permanently consumes 1 of your team's 3 total hints.</span>
               </div>
-            `}
+            </div>
+
+            <div class="action-bar-center" id="action-notice-center">
+              <span class="action-bar-notice" id="action-bar-notice-text"></span>
+            </div>
+
+            <div class="action-bar-right">
+              ${puzzleType !== 'wordsearch' ? `
+                <button 
+                  type="button" 
+                  class="btn btn-primary keycap action-check-btn" 
+                  id="btn-check-main"
+                  ${block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled' : ''}
+                >
+                  Check Answer
+                </button>
+              ` : ''}
+            </div>
           </div>
-
-          <!-- Attempts Remaining Indicator -->
-          <div class="attempts-indicator" id="puzzle-attempts-area" style="margin: 12px 0;">
-            Attempts remaining: <strong id="puzzle-attempts-count">${attemptsLeft} of ${CONFIG.MAX_ATTEMPTS}</strong>
-          </div>
-
-          <!-- Dynamic Interactive Puzzle Module Container -->
-          <div id="puzzle-interactive-container"></div>
-
-          <!-- Unlocked Clue Container -->
-          <div id="puzzle-clue-container"></div>
-        </div>
+        </footer>
 
         <!-- DEV-ONLY: DEV MODE TOOLS -->
         ${CONFIG.DEV_MODE ? `
           <div class="dev-toolbar dev-only" role="region" aria-label="Development Testing Tools">
             <div class="dev-label">DEV_MODE Testing Tools:</div>
             <div class="dev-buttons">
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-dev-solve">Mark Solved (dev)</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-dev-fail">Mark Failed (dev)</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-dev-skip">Skip timer to 10s</button>
+              <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-dev-solve">Mark Solved (dev)</button>
+              <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-dev-fail">Mark Failed (dev)</button>
+              <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-dev-skip">Skip timer to 10s</button>
             </div>
           </div>
         ` : ''}
       </section>
     `;
 
-    // Helper: Update status banner and unlocked clue view
+    // Helper: Update status banner, action bar notice, and unlocked clue view
     const renderStatusAndClue = () => {
       const currentBlock = GameState.state?.blocks[puzzleId] || block;
       const statusBanner = container.querySelector('#puzzle-status-banner');
       const clueContainer = container.querySelector('#puzzle-clue-container');
-      const attemptsCountEl = container.querySelector('#puzzle-attempts-count');
+      const attemptsPipsEl = container.querySelector('#action-attempts-pips');
+      const actionNotice = container.querySelector('#action-bar-notice-text');
+      const checkBtnMain = container.querySelector('#btn-check-main');
+      const hintBtn = container.querySelector('#btn-use-hint');
 
       const remAttempts = Math.max(0, CONFIG.MAX_ATTEMPTS - (currentBlock.attemptsUsed || 0));
-      if (attemptsCountEl) {
-        attemptsCountEl.textContent = `${remAttempts} of ${CONFIG.MAX_ATTEMPTS}`;
+      if (attemptsPipsEl) {
+        attemptsPipsEl.innerHTML = Array.from({ length: CONFIG.MAX_ATTEMPTS }, (_, i) => `
+          <span class="action-pip ${i < remAttempts ? 'pip-remaining' : 'pip-spent'}">${i < remAttempts ? PUZZLE_ART.pipFilled : PUZZLE_ART.pipHollow}</span>
+        `).join('');
       }
 
-      // Status Banners
-      if (statusBanner) {
-        if (currentBlock.status === 'SOLVED') {
+      // Status Banners & Action Notice
+      if (currentBlock.status === 'SOLVED') {
+        if (checkBtnMain) checkBtnMain.disabled = true;
+        if (hintBtn) hintBtn.disabled = true;
+        if (actionNotice) {
+          actionNotice.textContent = 'SOLVED ✓ Technical clue unlocked';
+          actionNotice.className = 'action-bar-notice notice-success mono';
+        }
+        if (statusBanner) {
           statusBanner.innerHTML = `
             <div class="alert alert-success" role="status">
               <span class="alert-icon">${ICONS.check}</span>
@@ -700,7 +804,15 @@ export const Screens = {
               </div>
             </div>
           `;
-        } else if (currentBlock.status === 'FAILED') {
+        }
+      } else if (currentBlock.status === 'FAILED') {
+        if (checkBtnMain) checkBtnMain.disabled = true;
+        if (hintBtn) hintBtn.disabled = true;
+        if (actionNotice) {
+          actionNotice.textContent = 'LOCKED (Maximum attempts exceeded or time expired)';
+          actionNotice.className = 'action-bar-notice notice-danger mono';
+        }
+        if (statusBanner) {
           statusBanner.innerHTML = `
             <div class="alert alert-danger" role="alert">
               <span class="alert-icon">${ICONS.cross}</span>
@@ -709,15 +821,17 @@ export const Screens = {
               </div>
             </div>
           `;
-        } else {
-          statusBanner.innerHTML = '';
         }
+      } else {
+        if (statusBanner) statusBanner.innerHTML = '';
       }
 
-      // Clue Box
+      // Clue Box with slide-in animation
       if (clueContainer) {
         if (currentBlock.status === 'SOLVED' && currentBlock.unlockedClue) {
           const clue = currentBlock.unlockedClue;
+          let clueInnerHtml = '';
+
           if (clue.type === 'spec') {
             const specRows = (clue.specs || []).map(s => `
               <tr>
@@ -726,10 +840,10 @@ export const Screens = {
               </tr>
             `).join('');
 
-            clueContainer.innerHTML = `
-              <div class="clue-card clue-spec" aria-labelledby="clue-heading" style="margin-top: 20px;">
+            clueInnerHtml = `
+              <div class="clue-card clue-spec keycap" aria-labelledby="clue-heading">
                 <div class="clue-header">
-                  <span class="clue-tag">SPECIFICATION CLUE UNLOCKED</span>
+                  <span class="clue-tag mono">SPECIFICATION CLUE UNLOCKED</span>
                   <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
                 </div>
                 <div class="clue-body">
@@ -738,51 +852,36 @@ export const Screens = {
                   </table>
                 </div>
                 <div class="clue-actions">
-                  <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-specs">
+                  <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-copy-specs">
                     ${ICONS.copy} <span>Copy Specifications</span>
                   </button>
                 </div>
               </div>
             `;
-
-            const copySpecsBtn = clueContainer.querySelector('#btn-copy-specs');
-            if (copySpecsBtn) {
-              copySpecsBtn.addEventListener('click', () => {
-                const specText = (clue.specs || []).map(s => `${s.label}: ${s.value}`).join('\n');
-                this.copyToClipboard(specText, copySpecsBtn);
-              });
-            }
           } else if (clue.type === 'text') {
-            clueContainer.innerHTML = `
-              <div class="clue-card clue-text" aria-labelledby="clue-heading" style="margin-top: 20px;">
+            clueInnerHtml = `
+              <div class="clue-card clue-text keycap" aria-labelledby="clue-heading">
                 <div class="clue-header">
-                  <span class="clue-tag">TEXT CONTENT CLUE UNLOCKED</span>
+                  <span class="clue-tag mono">TEXT CONTENT CLUE UNLOCKED</span>
                   <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
                 </div>
                 <div class="clue-body">
                   <div class="clue-copy-box">
-                    <pre class="clue-pre"><code>${clue.content}</code></pre>
+                    <pre class="clue-pre mono"><code>${clue.content}</code></pre>
                   </div>
                 </div>
                 <div class="clue-actions">
-                  <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-text">
+                  <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-copy-text">
                     ${ICONS.copy} <span>Copy Text</span>
                   </button>
                 </div>
               </div>
             `;
-
-            const copyTextBtn = clueContainer.querySelector('#btn-copy-text');
-            if (copyTextBtn) {
-              copyTextBtn.addEventListener('click', () => {
-                this.copyToClipboard(clue.content || '', copyTextBtn);
-              });
-            }
           } else if (clue.type === 'image') {
-            clueContainer.innerHTML = `
-              <div class="clue-card clue-image" aria-labelledby="clue-heading" style="margin-top: 20px;">
+            clueInnerHtml = `
+              <div class="clue-card clue-image keycap" aria-labelledby="clue-heading">
                 <div class="clue-header">
-                  <span class="clue-tag">VECTOR ASSET CLUE UNLOCKED</span>
+                  <span class="clue-tag mono">VECTOR ASSET CLUE UNLOCKED</span>
                   <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
                   <p class="clue-caption">${clue.caption}</p>
                 </div>
@@ -792,22 +891,41 @@ export const Screens = {
                   </div>
                 </div>
                 <div class="clue-actions">
-                  <button type="button" class="btn btn-secondary btn-sm" id="btn-download-svg">
+                  <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-download-svg">
                     ${ICONS.download} <span>Download SVG Asset</span>
                   </button>
                 </div>
               </div>
             `;
+          }
 
-            const downloadSvgBtn = clueContainer.querySelector('#btn-download-svg');
-            if (downloadSvgBtn) {
-              downloadSvgBtn.addEventListener('click', () => {
-                this.downloadSvg(clue.svgContent, clue.filename);
-              });
-            }
+          clueContainer.innerHTML = clueInnerHtml;
+          clueContainer.classList.add('clue-visible');
+
+          const copySpecsBtn = clueContainer.querySelector('#btn-copy-specs');
+          if (copySpecsBtn) {
+            copySpecsBtn.addEventListener('click', () => {
+              const specText = (clue.specs || []).map(s => `${s.label}: ${s.value}`).join('\n');
+              this.copyToClipboard(specText, copySpecsBtn);
+            });
+          }
+
+          const copyTextBtn = clueContainer.querySelector('#btn-copy-text');
+          if (copyTextBtn) {
+            copyTextBtn.addEventListener('click', () => {
+              this.copyToClipboard(clue.content || '', copyTextBtn);
+            });
+          }
+
+          const downloadSvgBtn = clueContainer.querySelector('#btn-download-svg');
+          if (downloadSvgBtn) {
+            downloadSvgBtn.addEventListener('click', () => {
+              this.downloadSvg(clue.svgContent, clue.filename);
+            });
           }
         } else {
           clueContainer.innerHTML = '';
+          clueContainer.classList.remove('clue-visible');
         }
       }
     };
@@ -815,7 +933,6 @@ export const Screens = {
     renderStatusAndClue();
 
     // Mount the Interactive Module Once
-    const puzzleType = puzzleConfig.type;
     const puzzleModule = PUZZLE_REGISTRY[puzzleType];
     const interactiveContainer = container.querySelector('#puzzle-interactive-container');
 
@@ -860,24 +977,52 @@ export const Screens = {
       });
     }
 
+    const howToBtn = container.querySelector('#btn-toggle-howto');
+    const howToDrawer = container.querySelector('#puzzle-howto-drawer');
+    if (howToBtn && howToDrawer) {
+      howToBtn.addEventListener('click', () => {
+        const isExpanded = howToDrawer.classList.toggle('drawer-expanded');
+        howToBtn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+      });
+    }
+
     const hintBtn = container.querySelector('#btn-use-hint');
     if (hintBtn) {
       hintBtn.addEventListener('click', () => {
         Modal.showHintConfirmation(state.hintsRemaining, () => {
           GameState.useHint(puzzleId);
-          const hintArea = container.querySelector('#puzzle-hint-area');
-          if (hintArea) {
-            hintArea.innerHTML = `
-              <div class="revealed-hint-box" role="region" aria-label="Revealed Hint">
-                <div class="hint-title-row">
-                  <span class="hint-icon">${ICONS.hint}</span>
-                  <strong>Puzzle Hint:</strong>
+          const hintDisplay = container.querySelector('#puzzle-hint-display');
+          if (hintDisplay && puzzleConfig.hint) {
+            hintDisplay.innerHTML = `
+              <div class="revealed-hint-box keycap" role="region" aria-label="Revealed Hint">
+                <span class="hint-icon">${ICONS.hint}</span>
+                <div class="hint-content">
+                  <strong class="mono">PUZZLE HINT:</strong>
+                  <p class="hint-text">${puzzleConfig.hint}</p>
                 </div>
-                <p class="hint-text">${puzzleConfig.hint}</p>
               </div>
             `;
+            hintDisplay.classList.add('hint-visible');
           }
+          const hintPipsEl = container.querySelector('#action-hint-pips');
+          if (hintPipsEl) {
+            hintPipsEl.innerHTML = Array.from({ length: 3 }, (_, i) => `
+              <span class="hint-mini-pip ${i < state.hintsRemaining ? 'pip-active' : 'pip-used'}">${i < state.hintsRemaining ? PUZZLE_ART.pipFilled : PUZZLE_ART.pipHollow}</span>
+            `).join('');
+          }
+          hintBtn.disabled = true;
+          const hintSpan = hintBtn.querySelector('span:nth-child(2)');
+          if (hintSpan) hintSpan.textContent = 'Hint Used';
         });
+      });
+    }
+
+    const checkBtnMain = container.querySelector('#btn-check-main');
+    if (checkBtnMain) {
+      checkBtnMain.addEventListener('click', () => {
+        if (this.activePuzzleModule && typeof this.activePuzzleModule.checkAnswer === 'function') {
+          this.activePuzzleModule.checkAnswer();
+        }
       });
     }
 
@@ -900,8 +1045,7 @@ export const Screens = {
       });
     }
 
-    // Setup 1-second interval to update puzzle countdown display smoothly
-    // DOES NOT rebuild or re-render the mounted interactive puzzle!
+    // 1-second interval to update puzzle countdown display smoothly
     this.activePuzzleInterval = setInterval(() => {
       const remainingSec = GameState.getPuzzleRemainingSeconds(puzzleId);
       const timerEl = document.getElementById('puzzle-countdown');

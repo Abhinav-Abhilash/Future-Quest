@@ -1,15 +1,28 @@
 /**
  * Future Quest 2026 - Word Search Puzzle Module
  * 
- * Handles Tile 7 (12 Tech Words) and Tile 11 (8 Tech Clues).
- * Implements 15x15 dense letter grid, 8-direction snapping, pointer drag,
- * tap-start + tap-end mobile touch support, keyboard navigation,
- * real-time validation, permanent line highlights, and poster strip rewards.
+ * Upgraded UX:
+ * - Responsive 15x15 matrix sizing: min(30px, calc((100vw - 48px) / 15)) fitting 360px without horizontal scrolling.
+ * - Pointer drag drawing rounded SVG capsule snapped to 8 directions; tap-start then tap-end fallback.
+ * - Found words lock in one of 6 flat colors (violet, orange, teal, pink, blue, yellow at 40% opacity).
+ * - Word chip in checklist gets matching color dot and strike-through (200ms transition).
+ * - Animated progress bar with transform: scaleX(...) for 'Found X / N'.
+ * - Tile 11: Clue cards flip (rotateY 180deg) to reveal found words.
  */
 
-import { showRewardPopup } from './popup.js';
+import { showRewardPopup, animateGroupLock, playWrongFeedback, isReducedMotion } from './popup.js';
 
 let activeCleanup = null;
+let activeModuleInstance = null;
+
+const CAPSULE_PALETTE = [
+  '#8b5cf6', // violet
+  '#f59e0b', // orange
+  '#14b8a6', // teal
+  '#ec4899', // pink
+  '#3b82f6', // blue
+  '#eab308'  // yellow
+];
 
 export function unmount() {
   if (activeCleanup) {
@@ -19,6 +32,14 @@ export function unmount() {
       console.warn('Error during wordsearch unmount:', e);
     }
     activeCleanup = null;
+  }
+  activeModuleInstance = null;
+}
+
+export function checkAnswer() {
+  // Wordsearch matches continuously on drag release / 2nd tap
+  if (activeModuleInstance && typeof activeModuleInstance.checkAll === 'function') {
+    activeModuleInstance.checkAll();
   }
 }
 
@@ -91,11 +112,10 @@ export function mount(root, data, ctx) {
 
   const isLocked = ctx.isLocked();
   const saved = ctx.getProgress() || {};
-  const foundWords = new Set(saved.foundWords || []); // set of word uppercase strings
-  const foundLines = saved.foundLines || []; // list of { word, start: [r,c], end: [r,c] }
+  const foundWords = new Set(saved.foundWords || []); // set of uppercase word strings
+  const foundLines = saved.foundLines || []; // list of { word, start: [r,c], end: [r,c], color }
 
   // Target word list & lookup
-  // data.words is either array of string words (Tile 7) or array of { word, clue } (Tile 11)
   const isClueMode = !!data.isClueMode;
   const wordEntries = data.words.map(w => {
     if (typeof w === 'string') {
@@ -110,7 +130,7 @@ export function mount(root, data, ctx) {
   const posterSlotsHtml = wordEntries.map((item, idx) => {
     const isFound = foundWords.has(item.word);
     return `
-      <div class="poster-slot ${isFound ? 'slot-filled' : ''}" id="ws-slot-${idx}" data-word="${item.word}">
+      <div class="poster-slot ${isFound ? 'slot-filled slot-stamped' : ''}" id="ws-slot-${idx}" data-word="${item.word}">
         <span class="slot-label">${isClueMode ? `Clue ${idx + 1}` : item.word}</span>
         <span class="slot-content mono">${isFound ? item.word : ''}</span>
       </div>
@@ -142,28 +162,45 @@ export function mount(root, data, ctx) {
   // Word/Clue checklist HTML
   const listItemsHtml = wordEntries.map((item, idx) => {
     const isFound = foundWords.has(item.word);
+    const existingLine = foundLines.find(l => l.word === item.word);
+    const wordColor = existingLine ? existingLine.color : CAPSULE_PALETTE[idx % CAPSULE_PALETTE.length];
+
     if (isClueMode) {
+      // Tile 11: 3D Flip Clue Card
       return `
-        <li class="ws-list-item ${isFound ? 'item-found' : ''}" id="ws-item-${idx}" data-word="${item.word}">
-          <span class="ws-check-box mono">${isFound ? '✓' : idx + 1}</span>
-          <div class="ws-clue-content">
-            <span class="ws-clue-text">${item.clue}</span>
-            <span class="ws-revealed-word mono">${isFound ? item.word : '-------'}</span>
+        <li class="ws-clue-card ${isFound ? 'card-flipped' : ''}" id="ws-item-${idx}" data-word="${item.word}" data-index="${idx}">
+          <div class="clue-card-flipper">
+            <div class="clue-card-front keycap">
+              <div class="clue-card-meta">
+                <span class="clue-num-badge mono">Clue ${idx + 1}</span>
+                <span class="clue-indicator-dot" style="background: ${wordColor};"></span>
+              </div>
+              <p class="clue-card-text">${item.clue}</p>
+            </div>
+            <div class="clue-card-back keycap" style="border-left: 3px solid ${wordColor};">
+              <span class="clue-solved-tag mono">FOUND ✓</span>
+              <span class="clue-revealed-word mono">${item.word}</span>
+            </div>
           </div>
         </li>
       `;
     }
+
+    // Tile 7: Standard Word Chip with color dot and strike-through
     return `
-      <li class="ws-list-item ${isFound ? 'item-found' : ''}" id="ws-item-${idx}" data-word="${item.word}">
-        <span class="ws-check-box mono">${isFound ? '✓' : '&bull;'}</span>
+      <li class="ws-list-item keycap ${isFound ? 'item-found' : ''}" id="ws-item-${idx}" data-word="${item.word}">
+        <span class="ws-color-dot" style="background: ${isFound ? wordColor : '#30363d'};"></span>
         <span class="ws-word-text mono">${item.word}</span>
+        <span class="ws-check-box mono">${isFound ? '✓' : ''}</span>
       </li>
     `;
   }).join('');
 
+  const progressFraction = targetWords.length > 0 ? (foundWords.size / targetWords.length) : 0;
+
   root.innerHTML = `
-    <div class="puzzle-interactive-module puzzle-wordsearch" id="ws-module-root">
-      <!-- Poster Slot Strip -->
+    <div class="puzzle-interactive-module puzzle-wordsearch ${isClueMode ? 'ws-clue-mode' : ''}" id="ws-module-root">
+      <!-- Poster Strip Slots -->
       <div class="poster-strip-container" role="region" aria-label="Decoded Poster Fragments">
         <div class="poster-strip-title">Found Words (${foundWords.size} of ${targetWords.length}):</div>
         <div class="poster-strip-slots">${posterSlotsHtml}</div>
@@ -171,39 +208,46 @@ export function mount(root, data, ctx) {
 
       <!-- Main Wordsearch Workspace -->
       <div class="ws-layout">
-        <!-- 15x15 Matrix Card -->
+        <!-- 15x15 Matrix Card (Responsive, no scrollbar required) -->
         <div class="ws-grid-card" role="region" aria-label="15 by 15 Wordsearch Grid">
-          <div class="ws-grid-scroll-pane">
-            <div class="ws-grid-inner" id="ws-grid-inner">
-              <!-- SVG Permanent/Active Highlight Overlay -->
-              <svg class="ws-lines-overlay" id="ws-lines-overlay" viewBox="0 0 15 15" preserveAspectRatio="none" aria-hidden="true">
-                <!-- Line paths injected here -->
-              </svg>
-              <!-- 15x15 button elements -->
-              <div class="ws-matrix" id="ws-matrix">${cellsHtml}</div>
-            </div>
+          <div class="ws-matrix-container" id="ws-matrix-container">
+            <!-- SVG Rounded Capsule Overlay (viewBox 0 0 15 15 matches 15x15 grid) -->
+            <svg class="ws-capsule-overlay" id="ws-capsule-overlay" viewBox="0 0 15 15" preserveAspectRatio="none" aria-hidden="true">
+              <g id="ws-capsule-group"></g>
+              <line id="ws-preview-capsule" class="ws-preview-capsule" stroke-linecap="round" stroke-width="0.82" stroke="var(--accent, #388bfd)" stroke-opacity="0" x1="0" y1="0" x2="0" y2="0" />
+            </svg>
+            <!-- 15x15 button grid -->
+            <div class="ws-matrix" id="ws-matrix">${cellsHtml}</div>
           </div>
+          
           <div class="ws-touch-tip text-muted">
-            Tip: Drag across letters or tap the start letter and then tap the end letter to select.
+            Drag across letters or tap the start letter and then tap the end letter to select.
           </div>
         </div>
 
         <!-- Word / Clue Sidebar Checklist -->
         <div class="ws-sidebar" role="region" aria-label="Word Checklist">
           <div class="ws-sidebar-header">
-            <h3 class="ws-sidebar-title">${isClueMode ? 'Target Clues' : 'Target Words'}</h3>
-            <span class="ws-progress-count mono" id="ws-count">${foundWords.size}/${targetWords.length}</span>
+            <div class="ws-header-title-row">
+              <h3 class="ws-sidebar-title">${isClueMode ? 'Target Clues' : 'Target Words'}</h3>
+              <span class="ws-progress-count mono" id="ws-count">${foundWords.size} / ${targetWords.length}</span>
+            </div>
+            <!-- Animated ScaleX Progress Bar -->
+            <div class="ws-progress-track" aria-hidden="true">
+              <div class="ws-progress-fill" id="ws-progress-fill" style="transform: scaleX(${progressFraction});"></div>
+            </div>
           </div>
-          <ul class="ws-checklist">${listItemsHtml}</ul>
+          <ul class="ws-checklist ${isClueMode ? 'ws-clue-cards-list' : ''}" id="ws-checklist-ul">${listItemsHtml}</ul>
         </div>
       </div>
     </div>
   `;
 
   const moduleRoot = root.querySelector('#ws-module-root');
-  const matrix = moduleRoot.querySelector('#ws-matrix');
-  const svgOverlay = moduleRoot.querySelector('#ws-lines-overlay');
+  const capsuleGroup = moduleRoot.querySelector('#ws-capsule-group');
+  const previewCapsule = moduleRoot.querySelector('#ws-preview-capsule');
   const cells = Array.from(moduleRoot.querySelectorAll('.ws-cell'));
+  const progressFill = moduleRoot.querySelector('#ws-progress-fill');
 
   const persist = () => {
     ctx.saveProgress({
@@ -212,49 +256,53 @@ export function mount(root, data, ctx) {
     });
   };
 
-  // Redraw SVG permanent highlight lines
-  const renderSvgLines = () => {
-    if (!svgOverlay) return;
-    svgOverlay.innerHTML = '';
+  // Draw permanent SVG rounded capsules
+  const renderSvgCapsules = () => {
+    if (!capsuleGroup) return;
+    capsuleGroup.innerHTML = '';
 
     foundLines.forEach(line => {
       const lineEl = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      // Coordinates in 15x15 cell units: center of cell is (c + 0.5, r + 0.5)
+      // Cell center is (c + 0.5, r + 0.5) in 15x15 coordinates
       lineEl.setAttribute('x1', String(line.start[1] + 0.5));
       lineEl.setAttribute('y1', String(line.start[0] + 0.5));
       lineEl.setAttribute('x2', String(line.end[1] + 0.5));
       lineEl.setAttribute('y2', String(line.end[0] + 0.5));
-      lineEl.setAttribute('class', 'ws-locked-line');
-      svgOverlay.appendChild(lineEl);
+      lineEl.setAttribute('stroke', line.color || '#388bfd');
+      lineEl.setAttribute('stroke-width', '0.84');
+      lineEl.setAttribute('stroke-linecap', 'round');
+      lineEl.setAttribute('stroke-opacity', '0.40');
+      lineEl.setAttribute('class', 'ws-locked-capsule');
+      capsuleGroup.appendChild(lineEl);
     });
 
-    // Mark cells with .cell-found
+    // Mark cells with .cell-word-found
     foundLines.forEach(line => {
       const coords = getLineCells(line.start[0], line.start[1], line.end[0], line.end[1]);
       coords.forEach(([r, c]) => {
         const cell = moduleRoot.querySelector(`#ws-c-${r}-${c}`);
-        if (cell) cell.classList.add('cell-word-found');
+        if (cell) {
+          cell.classList.add('cell-word-found');
+        }
       });
     });
   };
 
-  renderSvgLines();
+  renderSvgCapsules();
 
   // Selection state
   let isSelecting = false;
   let startCell = null; // [r, c]
   let currentEnd = null; // [r, c]
-  let activePreviewLine = null;
 
-  const clearSelectionHighlight = () => {
+  const clearSelection = () => {
     cells.forEach(c => c.classList.remove('cell-selecting', 'cell-start'));
-    if (activePreviewLine) {
-      activePreviewLine.remove();
-      activePreviewLine = null;
+    if (previewCapsule) {
+      previewCapsule.setAttribute('stroke-opacity', '0');
     }
   };
 
-  const updateSelectionHighlight = (r0, c0, r1, c1) => {
+  const updateSelection = (r0, c0, r1, c1) => {
     cells.forEach(c => c.classList.remove('cell-selecting'));
     const lineCoords = getLineCells(r0, c0, r1, c1);
     lineCoords.forEach(([r, c]) => {
@@ -262,19 +310,16 @@ export function mount(root, data, ctx) {
       if (cell) cell.classList.add('cell-selecting');
     });
 
-    // Draw active SVG line
-    if (!activePreviewLine) {
-      activePreviewLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      activePreviewLine.setAttribute('class', 'ws-active-line');
-      svgOverlay.appendChild(activePreviewLine);
+    if (previewCapsule) {
+      previewCapsule.setAttribute('x1', String(c0 + 0.5));
+      previewCapsule.setAttribute('y1', String(r0 + 0.5));
+      previewCapsule.setAttribute('x2', String(c1 + 0.5));
+      previewCapsule.setAttribute('y2', String(r1 + 0.5));
+      previewCapsule.setAttribute('stroke-opacity', '0.45');
     }
-    activePreviewLine.setAttribute('x1', String(c0 + 0.5));
-    activePreviewLine.setAttribute('y1', String(r0 + 0.5));
-    activePreviewLine.setAttribute('x2', String(c1 + 0.5));
-    activePreviewLine.setAttribute('y2', String(r1 + 0.5));
   };
 
-  // Validate line selection
+  // Check matched word on selection completion
   const testSelection = (r0, c0, r1, c1) => {
     const lineCoords = getLineCells(r0, c0, r1, c1);
     const forwardChars = lineCoords.map(([r, c]) => grid[r][c]).join('');
@@ -293,33 +338,49 @@ export function mount(root, data, ctx) {
     }
 
     if (matchedWord) {
-      // Word Found!
-      foundWords.add(matchedWord);
-      foundLines.push({ word: matchedWord, start: actualStart, end: actualEnd });
+      // Assign color from 6-color palette
+      const colorIndex = foundWords.size % CAPSULE_PALETTE.length;
+      const color = CAPSULE_PALETTE[colorIndex];
 
-      // Update sidebar checklist
+      foundWords.add(matchedWord);
+      foundLines.push({ word: matchedWord, start: actualStart, end: actualEnd, color });
+
+      // Update progress bar scaleX
+      if (progressFill) {
+        progressFill.style.transform = `scaleX(${foundWords.size / targetWords.length})`;
+      }
+
+      // Update checklist item
       const itemEl = moduleRoot.querySelector(`.ws-list-item[data-word="${matchedWord}"]`);
       if (itemEl) {
         itemEl.classList.add('item-found');
+        const dot = itemEl.querySelector('.ws-color-dot');
+        if (dot) dot.style.background = color;
         const box = itemEl.querySelector('.ws-check-box');
         if (box) box.textContent = '✓';
-        const rev = itemEl.querySelector('.ws-revealed-word');
-        if (rev) rev.textContent = matchedWord;
+      }
+
+      // Update clue card (Tile 11)
+      const clueCard = moduleRoot.querySelector(`.ws-clue-card[data-word="${matchedWord}"]`);
+      if (clueCard) {
+        clueCard.classList.add('card-flipped');
+        const cardBack = clueCard.querySelector('.clue-card-back');
+        if (cardBack) cardBack.style.borderLeftColor = color;
       }
 
       // Update count
       const countEl = moduleRoot.querySelector('#ws-count');
-      if (countEl) countEl.textContent = `${foundWords.size}/${targetWords.length}`;
+      if (countEl) countEl.textContent = `${foundWords.size} / ${targetWords.length}`;
 
       // Update poster strip slot
       const slotEl = moduleRoot.querySelector(`.poster-slot[data-word="${matchedWord}"]`);
       if (slotEl) {
-        slotEl.classList.add('slot-filled');
+        slotEl.classList.add('slot-filled', 'slot-stamped');
         const content = slotEl.querySelector('.slot-content');
         if (content) content.textContent = matchedWord;
       }
 
-      renderSvgLines();
+      renderSvgCapsules();
       showRewardPopup(root, matchedWord);
       persist();
 
@@ -332,7 +393,7 @@ export function mount(root, data, ctx) {
     return false;
   };
 
-  // Pointer Events (drag across cells or tap-start then tap-end)
+  // Pointer Events (Drag across cells or tap-start then tap-end)
   cells.forEach(cell => {
     const r = parseInt(cell.dataset.r, 10);
     const c = parseInt(cell.dataset.c, 10);
@@ -341,20 +402,23 @@ export function mount(root, data, ctx) {
       if (isLocked) return;
 
       if (!isSelecting) {
-        // Start selection
+        // First tap / start drag
         isSelecting = true;
         startCell = [r, c];
         currentEnd = [r, c];
         cell.classList.add('cell-start');
-        updateSelectionHighlight(r, c, r, c);
+        updateSelection(r, c, r, c);
       } else {
-        // Second tap (tap-end on mobile / tap mode)
+        // Second tap
         const snap = snapTo8Directions(startCell[0], startCell[1], r, c);
-        testSelection(startCell[0], startCell[1], snap.r1, snap.c1);
+        const didMatch = testSelection(startCell[0], startCell[1], snap.r1, snap.c1);
+        if (!didMatch && (startCell[0] !== r || startCell[1] !== c)) {
+          playWrongFeedback(cell);
+        }
         isSelecting = false;
         startCell = null;
         currentEnd = null;
-        clearSelectionHighlight();
+        clearSelection();
       }
     });
 
@@ -362,7 +426,7 @@ export function mount(root, data, ctx) {
       if (isSelecting && startCell) {
         const snap = snapTo8Directions(startCell[0], startCell[1], r, c);
         currentEnd = [snap.r1, snap.c1];
-        updateSelectionHighlight(startCell[0], startCell[1], snap.r1, snap.c1);
+        updateSelection(startCell[0], startCell[1], snap.r1, snap.c1);
       }
     });
   });
@@ -370,23 +434,19 @@ export function mount(root, data, ctx) {
   const handlePointerUp = () => {
     if (isSelecting && startCell && currentEnd) {
       if (startCell[0] !== currentEnd[0] || startCell[1] !== currentEnd[1]) {
-        // Pointer drag release
+        // Drag release across different cells
         testSelection(startCell[0], startCell[1], currentEnd[0], currentEnd[1]);
         isSelecting = false;
         startCell = null;
         currentEnd = null;
-        clearSelectionHighlight();
+        clearSelection();
       }
-      // If startCell === currentEnd, keep selecting mode open for 2nd tap!
     }
   };
 
   window.addEventListener('pointerup', handlePointerUp);
 
   // Keyboard navigation
-  let kbFocus = [0, 0];
-  let kbAnchor = null;
-
   cells.forEach(cell => {
     cell.addEventListener('keydown', (e) => {
       const r = parseInt(cell.dataset.r, 10);
@@ -399,26 +459,9 @@ export function mount(root, data, ctx) {
       else if (e.key === 'ArrowDown') nr = Math.min(14, r + 1);
       else if (e.key === 'ArrowLeft') nc = Math.max(0, c - 1);
       else if (e.key === 'ArrowRight') nc = Math.min(14, c + 1);
-      else if (e.key === ' ') {
+      else if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
-        // Start or toggle selection anchor
-        if (!kbAnchor) {
-          kbAnchor = [r, c];
-          cell.classList.add('cell-start');
-          updateSelectionHighlight(r, c, r, c);
-        } else {
-          testSelection(kbAnchor[0], kbAnchor[1], r, c);
-          kbAnchor = null;
-          clearSelectionHighlight();
-        }
-        return;
-      } else if (e.key === 'Enter') {
-        e.preventDefault();
-        if (kbAnchor) {
-          testSelection(kbAnchor[0], kbAnchor[1], r, c);
-          kbAnchor = null;
-          clearSelectionHighlight();
-        }
+        cell.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
         return;
       } else {
         return;
@@ -428,13 +471,18 @@ export function mount(root, data, ctx) {
       const nextCell = moduleRoot.querySelector(`#ws-c-${nr}-${nc}`);
       if (nextCell) {
         nextCell.focus();
-        if (kbAnchor) {
-          const snap = snapTo8Directions(kbAnchor[0], kbAnchor[1], nr, nc);
-          updateSelectionHighlight(kbAnchor[0], kbAnchor[1], snap.r1, snap.c1);
+        if (isSelecting && startCell) {
+          const snap = snapTo8Directions(startCell[0], startCell[1], nr, nc);
+          currentEnd = [snap.r1, snap.c1];
+          updateSelection(startCell[0], startCell[1], snap.r1, snap.c1);
         }
       }
     });
   });
+
+  activeModuleInstance = {
+    checkAll: () => {}
+  };
 
   activeCleanup = () => {
     window.removeEventListener('pointerup', handlePointerUp);

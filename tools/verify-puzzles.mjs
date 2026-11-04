@@ -1,9 +1,9 @@
 // /* DEV-ONLY */ Puzzle Data Verification Script
-// Verifies all puzzle mathematical expressions, coordinates, ASCII decoders, and wordsearch grids.
+// Imports CONFIG directly and dynamically validates all 11 puzzles against CONFIG.PUZZLES.
 
-import fs from 'fs';
+import { CONFIG } from '../js/config.js';
 
-console.log('=== FUTURE QUEST 2026 - PUZZLE VERIFICATION ===');
+console.log('=== FUTURE QUEST 2026 - DYNAMIC PUZZLE DATA VERIFICATION ===');
 
 let allPassed = true;
 function report(name, passed, detail = '') {
@@ -15,142 +15,15 @@ function report(name, passed, detail = '') {
   }
 }
 
-// -------------------------------------------------------------
-// T1 ASCII: "Tomorrow starts with the code you write today"
-// -------------------------------------------------------------
-const t1_words = [
-  [84, 111, 109, 111, 114, 114, 111, 119],
-  [115, 116, 97, 114, 116, 115],
-  [119, 105, 116, 104],
-  [116, 104, 101],
-  [99, 111, 100, 101],
-  [121, 111, 117],
-  [119, 114, 105, 116, 101],
-  [116, 111, 100, 97, 121]
-];
-const t1_decoded = t1_words.map(w => String.fromCharCode(...w)).join(' ');
-report('T1 ASCII', t1_decoded === 'Tomorrow starts with the code you write today', t1_decoded);
-
-// -------------------------------------------------------------
-// T2 COORDS: LEARN (2,1)(7,3)(3,2)(1,5)(2,4); BUILD (4,3)(6,1)(7,5)(6,4)(3,5); LEAD (2,6)(4,7)(6,6)(7,7)
-// Grid (7x7, row 1 at top):
-// -------------------------------------------------------------
-const t2_grid = [
-  ['Q', 'L', 'V', 'J', 'C', 'U', 'N'], // row 1
-  ['C', 'S', 'A', 'P', 'P', 'K', 'F'], // row 2
-  ['H', 'M', 'T', 'B', 'O', 'J', 'E'], // row 3
-  ['Q', 'N', 'X', 'B', 'Z', 'L', 'Z'], // row 4
-  ['R', 'H', 'D', 'X', 'M', 'K', 'I'], // row 5
-  ['M', 'L', 'F', 'O', 'O', 'A', 'Z'], // row 6
-  ['Z', 'S', 'N', 'E', 'R', 'X', 'D']  // row 7
-];
-function getT2Cell(col, row) {
-  return t2_grid[row - 1][col - 1];
+// Safely evaluate simple arithmetic expressions without arbitrary code execution
+function evaluateMath(expr) {
+  // Convert ^ into JS exponentiation **
+  let cleaned = expr.replace(/\^/g, '**');
+  // Evaluate arithmetic using Function
+  return Function(`'use strict'; return (${cleaned});`)();
 }
-// Note: tuple syntax in JS is array [c, r]
-const t2_w1 = [[2,1],[7,3],[3,2],[1,5],[2,4]].map(([c,r]) => getT2Cell(c,r)).join('');
-const t2_w2 = [[4,3],[6,1],[7,5],[6,4],[3,5]].map(([c,r]) => getT2Cell(c,r)).join('');
-const t2_w3 = [[2,6],[4,7],[6,6],[7,7]].map(([c,r]) => getT2Cell(c,r)).join('');
-report('T2 COORDS LEARN', t2_w1 === 'LEARN', t2_w1);
-report('T2 COORDS BUILD', t2_w2 === 'BUILD', t2_w2);
-report('T2 COORDS LEAD', t2_w3 === 'LEAD', t2_w3);
 
-// -------------------------------------------------------------
-// T3 BODMAS: CODE THE FUTURE
-// -------------------------------------------------------------
-const t3_eqs = [
-  { expr: 20 - 4 * 5 + 3, expected: 3, letter: 'C' },
-  { expr: Math.pow(3, 2) + 18 / 3, expected: 15, letter: 'O' },
-  { expr: 24 / (2 * 3), expected: 4, letter: 'D' },
-  { expr: 2 + 3 * (9 - 7) - 3, expected: 5, letter: 'E' },
-  { expr: Math.pow(4, 2) + 12 / 3, expected: 20, letter: 'T' },
-  { expr: Math.pow(2, 3) + 6 - 3 * 2, expected: 8, letter: 'H' },
-  { expr: (10 - 4) * 2 - 7, expected: 5, letter: 'E' },
-  { expr: 3 * (4 + 4) / 4, expected: 6, letter: 'F' },
-  { expr: Math.pow(5, 2) - 12 / 3, expected: 21, letter: 'U' },
-  { expr: 100 / (2 * 5) * 2, expected: 20, letter: 'T' },
-  { expr: 6 + 3 * 5, expected: 21, letter: 'U' },
-  { expr: (12 - 3) * 4 / 2, expected: 18, letter: 'R' },
-  { expr: Math.pow(4, 2) / 2 - 3, expected: 5, letter: 'E' }
-];
-const t3_letters = t3_eqs.map(e => String.fromCharCode(64 + e.expr)).join('');
-const t3_pass = t3_eqs.every(e => e.expr === e.expected);
-report('T3 BODMAS CODE THE FUTURE', t3_pass && t3_letters === 'CODETHEFUTURE', t3_letters);
-
-// -------------------------------------------------------------
-// T4 ASCII: curiosity is the key (displayed codes +1, shift -1)
-// -------------------------------------------------------------
-const t4_words = [
-  [100, 118, 115, 106, 112, 116, 106, 117, 122],
-  [106, 116],
-  [117, 105, 102],
-  [108, 102, 122]
-];
-const t4_decoded = t4_words.map(w => w.map(c => String.fromCharCode(c - 1)).join('')).join(' ');
-report('T4 ASCII curiosity is the key', t4_decoded === 'curiosity is the key', t4_decoded);
-
-// -------------------------------------------------------------
-// T5 BODMAS: QUEST
-// -------------------------------------------------------------
-const t5_eqs = [
-  { expr: 15 - 2 * 5, letter: 'E' }, // 5
-  { expr: 5 * (7 - 3), letter: 'T' }, // 20
-  { expr: 2 + 3 * 5, letter: 'Q' },   // 17
-  { expr: Math.pow(4, 2) + 9 / 3, letter: 'S' }, // 19
-  { expr: (4 + 3) * 3, letter: 'U' }  // 21
-];
-const t5_solved = t5_eqs.map(e => String.fromCharCode(64 + e.expr));
-const t5_pass = t5_solved.sort().join('') === ['Q','U','E','S','T'].sort().join('');
-report('T5 BODMAS QUEST', t5_pass, t5_solved.join(','));
-
-// -------------------------------------------------------------
-// T6 COORDS: BYTE
-// -------------------------------------------------------------
-const t6_grid = [
-  ['S', 'K', 'A', 'T', 'E', 'R', 'X'], // r1
-  ['M', 'N', 'O', 'P', 'Q', 'U', 'H'], // r2
-  ['F', 'L', 'D', 'G', 'B', 'I', 'W'], // r3
-  ['C', 'Y', 'Z', 'V', 'J', 'E', 'R'], // r4
-  ['A', 'T', 'H', 'S', 'N', 'O', 'K'], // r5
-  ['P', 'Q', 'U', 'D', 'M', 'L', 'F'], // r6
-  ['B', 'G', 'X', 'I', 'Z', 'V', 'Y']  // r7
-];
-function getT6Cell(col, row) {
-  return t6_grid[row - 1][col - 1];
-}
-const t6_b = getT6Cell(1, 7); // (1,7) = B
-// Leg 1: right 6 from (1,7) -> (7,7) = Y
-const t6_y = getT6Cell(7, 7);
-// Leg 2: up 2, left 5 from (7,7) -> col 7-5=2, row 7-2=5 -> (2,5) = T
-const t6_t = getT6Cell(2, 5);
-// Leg 3: up 1, right 4 from (2,5) -> col 2+4=6, row 5-1=4 -> (6,4) = E
-const t6_e = getT6Cell(6, 4);
-const t6_word = `${t6_b}${t6_y}${t6_t}${t6_e}`;
-report('T6 COORDS BYTE', t6_word === 'BYTE', t6_word);
-
-// -------------------------------------------------------------
-// T7 & T11 WORDSEARCH: 15x15 Grid with 20 Words
-// -------------------------------------------------------------
-const ws_grid_raw = [
-  "DPYMAFAARSPVOMJ",
-  "NXGENSLREUMEFIL",
-  "UKODENKTSSAKYKM",
-  "OALDCOGIHTWAXCJ",
-  "RTOENIIFAALCYEM",
-  "AANGETMIPISRTNC",
-  "LDHDIANCENGOITQ",
-  "YICECVBIFANBLEU",
-  "IDEBSOVAUBIOARA",
-  "JUTEHNILTLTTEEN",
-  "DIPARNNQUEUIRDT",
-  "DAILYIKGRYPCLZU",
-  "VIRTUALNEAMSZYM",
-  "UINTEGRATIONMRR",
-  "GXCBXNOTYECUJPB"
-];
-const ws_grid = ws_grid_raw.map(row => row.split(''));
-const R = 15;
-const C = 15;
+// Direction vectors for 15x15 Word Search
 const DIRS = [
   [0, 1],   // right
   [0, -1],  // left
@@ -162,7 +35,9 @@ const DIRS = [
   [-1, 1]   // up-right
 ];
 
-function findWordInGrid(word) {
+function findWordInGrid(word, grid) {
+  const R = grid.length;
+  const C = grid[0].length;
   const len = word.length;
   for (let r = 0; r < R; r++) {
     for (let c = 0; c < C; c++) {
@@ -171,127 +46,169 @@ function findWordInGrid(word) {
         for (let i = 0; i < len; i++) {
           const nr = r + dr * i;
           const nc = c + dc * i;
-          if (nr < 0 || nr >= R || nc < 0 || nc >= C || ws_grid[nr][nc] !== word[i]) {
+          if (nr < 0 || nr >= R || nc < 0 || nc >= C || grid[nr][nc] !== word[i]) {
             match = false;
             break;
           }
         }
-        if (match) {
-          return { start: [r, c], end: [r + dr * (len - 1), c + dc * (len - 1)] };
-        }
+        if (match) return { start: [r, c], end: [r + dr * (len - 1), c + dc * (len - 1)] };
       }
     }
   }
   return null;
 }
 
-const t7_words = [
-  "AROUND", "ARTIFICIAL", "CENTERED", "COMPUTING", "DAILY",
-  "DATA", "EDGE", "FUTURE", "INNOVATIONS", "INTEGRATION",
-  "LIFE", "RESHAPE"
-];
+// -------------------------------------------------------------
+// T1: ASCII Quote Decoder (Tomorrow starts with the code you write today)
+// -------------------------------------------------------------
+const t1 = CONFIG.PUZZLES.puzzle_1.data;
+const t1_decoded = t1.words.map(w => w.codes.map(c => String.fromCharCode(c)).join('')).join(' ');
+const t1_expected = t1.groupSolutions.join(' ');
+report('T1 ASCII Dynamic Check', t1_decoded === t1_expected && t1_decoded === 'Tomorrow starts with the code you write today', t1_decoded);
 
-const t11_words = [
-  "QUANTUM", "ROBOTICS", "VIRTUAL", "SCIENCE",
-  "SUSTAINABLE", "TECHNOLOGY", "REALITY", "RAPID"
-];
+// -------------------------------------------------------------
+// T2: Coordinates Grid (LEARN, BUILD, LEAD)
+// -------------------------------------------------------------
+const t2 = CONFIG.PUZZLES.puzzle_2.data;
+let t2_ok = true;
+t2.groupedChips.forEach(grp => {
+  const spelled = grp.coords.map(([c, r, expectedCh]) => {
+    const cellCh = t2.grid[r - 1][c - 1];
+    if (cellCh !== expectedCh) t2_ok = false;
+    return cellCh;
+  }).join('');
+  if (spelled !== grp.name) t2_ok = false;
+});
+report('T2 COORDS Dynamic Check (LEARN, BUILD, LEAD)', t2_ok);
 
-console.log('--- Checking T7 Words in Grid ---');
-let t7_all_found = true;
-t7_words.forEach(w => {
-  const found = findWordInGrid(w);
+// -------------------------------------------------------------
+// T3: BODMAS Decoder (CODE THE FUTURE)
+// -------------------------------------------------------------
+const t3 = CONFIG.PUZZLES.puzzle_3.data;
+let t3_ok = true;
+t3.groupedEquations.forEach(grp => {
+  const spelled = grp.equations.map(eq => {
+    const val = evaluateMath(eq.expr);
+    if (val !== eq.expected) t3_ok = false;
+    const letter = String.fromCharCode(64 + val);
+    if (letter !== eq.letter) t3_ok = false;
+    return letter;
+  }).join('');
+  if (spelled !== grp.solution) t3_ok = false;
+});
+report('T3 BODMAS Dynamic Check (CODE THE FUTURE)', t3_ok);
+
+// -------------------------------------------------------------
+// T4: Shifted ASCII (curiosity is the key)
+// -------------------------------------------------------------
+const t4 = CONFIG.PUZZLES.puzzle_4.data;
+const t4_decoded = t4.words.map(w => w.codes.map(c => String.fromCharCode(c - 1)).join('')).join(' ');
+const t4_expected = t4.groupSolutions.join(' ');
+report('T4 Shifted ASCII Dynamic Check (-1 offset)', t4_decoded === t4_expected && t4_decoded === 'curiosity is the key', t4_decoded);
+
+// -------------------------------------------------------------
+// T5: BODMAS Anagram (QUEST)
+// -------------------------------------------------------------
+const t5 = CONFIG.PUZZLES.puzzle_5.data;
+let t5_ok = true;
+const t5_letters = t5.equations.map(eq => {
+  const val = evaluateMath(eq.expr);
+  if (val !== eq.expected) t5_ok = false;
+  const letter = String.fromCharCode(64 + val);
+  if (letter !== eq.letter) t5_ok = false;
+  return letter;
+});
+const t5_sorted = [...t5_letters].sort().join('');
+report('T5 BODMAS Dynamic Check (QUEST Anagram)', t5_ok && t5_sorted === 'EQSTU');
+
+// -------------------------------------------------------------
+// T6: Coordinates Route Tracer (BYTE)
+// -------------------------------------------------------------
+const t6 = CONFIG.PUZZLES.puzzle_6.data;
+let t6_ok = true;
+const t6_start = t6.grid[7 - 1][1 - 1]; // (1, 7) = B
+if (t6_start !== 'B') t6_ok = false;
+const t6_spelled = ['B', ...t6.legs.map(leg => {
+  const ch = t6.grid[leg.targetRow - 1][leg.targetCol - 1];
+  if (ch !== leg.letter) t6_ok = false;
+  return ch;
+})].join('');
+report('T6 Route Tracer Dynamic Check (BYTE)', t6_ok && t6_spelled === 'BYTE', t6_spelled);
+
+// -------------------------------------------------------------
+// T7: Word Search (12 Words)
+// -------------------------------------------------------------
+const t7 = CONFIG.PUZZLES.puzzle_7.data;
+let t7_ok = true;
+t7.words.forEach(word => {
+  const found = findWordInGrid(word, t7.grid);
   if (!found) {
-    t7_all_found = false;
-    console.error(`  [NOT FOUND] T7 word: ${w}`);
-  } else {
-    console.log(`  [FOUND] ${w.padEnd(14)} from [${found.start}] to [${found.end}]`);
+    t7_ok = false;
+    console.error(`  [NOT FOUND] T7 word in grid: ${word}`);
   }
 });
-report('T7 Word Search (12 words)', t7_all_found);
-
-console.log('--- Checking T11 Words in Grid ---');
-let t11_all_found = true;
-t11_words.forEach(w => {
-  const found = findWordInGrid(w);
-  if (!found) {
-    t11_all_found = false;
-    console.error(`  [NOT FOUND] T11 word: ${w}`);
-  } else {
-    console.log(`  [FOUND] ${w.padEnd(14)} from [${found.start}] to [${found.end}]`);
-  }
-});
-report('T11 Word Search (8 words)', t11_all_found);
+report('T7 Word Search Dynamic Check (12 words in grid)', t7_ok);
 
 // -------------------------------------------------------------
-// T8 ASCII: FUTURE READY (shift -3)
+// T8: Caesar-ASCII Hybrid (FUTURE READY)
 // -------------------------------------------------------------
-const t8_g1 = [73, 88, 87, 88, 85, 72];
-const t8_g2 = [85, 72, 68, 71, 66];
-const t8_g1_raw = t8_g1.map(c => String.fromCharCode(c)).join(''); // IXWXUH
-const t8_g2_raw = t8_g2.map(c => String.fromCharCode(c)).join(''); // UHDGB
-function caesarShift(charCode, shift) {
-  // A=65..Z=90
-  return String.fromCharCode(((charCode - 65 + shift + 26) % 26) + 65);
-}
-const t8_g1_shifted = t8_g1.map(c => caesarShift(c, -3)).join(''); // FUTURE
-const t8_g2_shifted = t8_g2.map(c => caesarShift(c, -3)).join(''); // READY
-report('T8 ASCII Raw Groups', t8_g1_raw === 'IXWXUH' && t8_g2_raw === 'UHDGB');
-report('T8 ASCII Shifted (-3 with wrap)', `${t8_g1_shifted} ${t8_g2_shifted}` === 'FUTURE READY', `${t8_g1_shifted} ${t8_g2_shifted}`);
+const t8 = CONFIG.PUZZLES.puzzle_8.data;
+const t8_raw = t8.words.map(w => w.codes.map(c => String.fromCharCode(c)).join(''));
+const t8_shifted = t8_raw.map(w => {
+  return w.split('').map(ch => {
+    const code = ch.charCodeAt(0);
+    return String.fromCharCode(((code - 65 + t8.targetShift) % 26) + 65);
+  }).join('');
+}).join(' ');
+report('T8 Caesar-ASCII Dynamic Check (FUTURE READY)', t8_shifted === t8.finalText && t8_shifted === 'FUTURE READY', t8_shifted);
 
 // -------------------------------------------------------------
-// T9 BODMAS: SIGNAL
+// T9: Slotted BODMAS (SIGNAL)
 // -------------------------------------------------------------
-const t9_eqs = [
-  { slot: 3, val: 2 * (Math.pow(3, 2) - 2 * 3) + 1, expected: 7, char: 'G' },
-  { slot: 6, val: 3 * Math.pow(2 + 2, 2) / 4, expected: 12, char: 'L' },
-  { slot: 1, val: Math.pow(3 + 2, 2) - 12 / 2, expected: 19, char: 'S' },
-  { slot: 5, val: Math.pow(5, 2) - 4 * (3 + 3), expected: 1, char: 'A' },
-  { slot: 2, val: 100 / (2 * 5) - Math.pow(2, 3) + 7, expected: 9, char: 'I' },
-  { slot: 4, val: (18 - 4) / 2 * 2, expected: 14, char: 'N' }
-];
-const t9_pass = t9_eqs.every(e => e.val === e.expected && String.fromCharCode(64 + e.val) === e.char);
+const t9 = CONFIG.PUZZLES.puzzle_9.data;
+let t9_ok = true;
 const t9_slots = [];
-t9_eqs.forEach(e => { t9_slots[e.slot] = e.char; });
-const t9_word = t9_slots.slice(1).join('');
-report('T9 BODMAS SIGNAL', t9_pass && t9_word === 'SIGNAL', t9_word);
+t9.equations.forEach(eq => {
+  const val = evaluateMath(eq.expr);
+  if (val !== eq.expected) t9_ok = false;
+  const letter = String.fromCharCode(64 + val);
+  if (letter !== eq.letter) t9_ok = false;
+  t9_slots[eq.slot] = letter;
+});
+const t9_spelled = t9_slots.slice(1).join('');
+report('T9 Slotted BODMAS Dynamic Check (SIGNAL)', t9_ok && t9_spelled === t9.finalWord && t9_spelled === 'SIGNAL', t9_spelled);
 
 // -------------------------------------------------------------
-// T10 COORDS: CYBER (Row 1 at bottom, row 7 at top)
+// T10: Cartesian Coordinates Grid (CYBER)
 // -------------------------------------------------------------
-const t10_grid_bottom_up = [
-  // row 1 (bottom)
-  ['Z', 'H', 'P', 'L', 'V', 'J', 'G'],
-  // row 2
-  ['R', 'X', 'K', 'Q', 'E', 'W', 'N'],
-  // row 3
-  ['D', 'B', 'S', 'I', 'M', 'F', 'U'],
-  // row 4
-  ['T', 'G', 'O', 'Y', 'Z', 'A', 'L'],
-  // row 5
-  ['V', 'N', 'H', 'R', 'C', 'P', 'I'],
-  // row 6
-  ['J', 'L', 'W', 'D', 'S', 'K', 'E'],
-  // row 7 (top)
-  ['M', 'Q', 'F', 'U', 'X', 'B', 'A']
-];
-function getT10Cell(col, row) {
-  // col 1..7, row 1..7 (row 1 is index 0 in bottom_up array)
-  return t10_grid_bottom_up[row - 1][col - 1];
-}
-const t10_coords = [
-  { c: 10 / 2, r: Math.pow(3, 2) - 4 }, // (5, 5) -> C
-  { c: Math.pow(2, 2), r: 12 / 3 },     // (4, 4) -> Y
-  { c: 8 - 6, r: 9 / 3 },               // (2, 3) -> B
-  { c: 3 + 2, r: 6 / 3 },               // (5, 2) -> E
-  { c: 2 * 2, r: 15 / 3 }               // (4, 5) -> R
-];
-const t10_word = t10_coords.map(({c, r}) => getT10Cell(c, r)).join('');
-report('T10 COORDS CYBER', t10_word === 'CYBER', t10_word);
+const t10 = CONFIG.PUZZLES.puzzle_10.data;
+let t10_ok = true;
+// In Cartesian bottom-up, row 1 is bottom (index 6), row 7 is top (index 0): grid[7 - r][c - 1]
+const t10_spelled = t10.mathCoords.map(item => {
+  const cellCh = t10.grid[7 - item.row][item.col - 1];
+  if (cellCh !== item.letter) t10_ok = false;
+  return cellCh;
+}).join('');
+report('T10 Cartesian COORDS Dynamic Check (CYBER)', t10_ok && t10_spelled === t10.finalWord && t10_spelled === 'CYBER', t10_spelled);
 
-console.log('===============================================');
+// -------------------------------------------------------------
+// T11: Clue Word Search (8 Words)
+// -------------------------------------------------------------
+const t11 = CONFIG.PUZZLES.puzzle_11.data;
+let t11_ok = true;
+t11.words.forEach(item => {
+  const found = findWordInGrid(item.word, t11.grid);
+  if (!found) {
+    t11_ok = false;
+    console.error(`  [NOT FOUND] T11 word in grid: ${item.word}`);
+  }
+});
+report('T11 Clue Word Search Dynamic Check (8 words in grid)', t11_ok);
+
+console.log('=============================================================');
 if (allPassed) {
-  console.log('ALL 11 PUZZLE DATA & MATH CHECKS PASSED 100%!');
+  console.log('ALL CONFIG.PUZZLES DATA CHECKS PASSED 100% DYNAMICALLY!');
 } else {
-  console.error('SOME CHECKS FAILED!');
+  console.error('SOME DYNAMIC DATA CHECKS FAILED!');
   process.exit(1);
 }

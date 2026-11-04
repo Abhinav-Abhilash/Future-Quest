@@ -35,6 +35,16 @@ class App {
 
     document.body.classList.toggle('dev-mode', !!CONFIG.DEV_MODE);
 
+    // Apply lite-mode on game screens if reduced effects was toggled
+    try {
+      const reduceEffects = localStorage.getItem('future_quest_reduce_effects');
+      if (reduceEffects === 'true' || reduceEffects === '1') {
+        document.body.classList.add('lite-mode');
+      }
+    } catch (e) {
+      console.warn('Could not read future_quest_reduce_effects from localStorage:', e);
+    }
+
     this.router = new Router({}, (route, params) => {
       this.closeMobileMenu();
       this.updateNavbar(navContainer, route);

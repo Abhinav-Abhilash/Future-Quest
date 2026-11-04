@@ -1,13 +1,20 @@
 /**
  * Future Quest 2026 - ASCII Decoder Puzzle Module
  * 
- * Handles Tile 1 (Quote Decoder), Tile 4 (Shifted ASCII with Stepper),
- * and Tile 8 (Caesar-ASCII Hybrid with Shift Dial).
+ * Upgraded UX:
+ * - Physical code cards with mono code, arrow, and flipping letter slots.
+ * - Locked words slide together into solid bars (gap closes to 2px).
+ * - Desktop side panel / Mobile bottom sheet ASCII reference chart with active row auto-scroll.
+ * - T4: Smooth vertical rolling counter for code stepper.
+ * - T8: Interactive SVG Cipher Dial with pointer angle drag and arrow key rotation.
+ * - Group lock FLIP animation and per-group Clear buttons.
  */
 
-import { showRewardPopup } from './popup.js';
+import { PUZZLE_ART } from './art.js';
+import { animateGroupLock, playWrongFeedback, isReducedMotion } from './popup.js';
 
 let activeCleanup = null;
+let activeModuleInstance = null;
 
 export function unmount() {
   if (activeCleanup) {
@@ -18,14 +25,15 @@ export function unmount() {
     }
     activeCleanup = null;
   }
+  activeModuleInstance = null;
 }
 
-/**
- * Mount ASCII decoder interface.
- * @param {HTMLElement} root - Container to mount into
- * @param {Object} data - Puzzle configuration data
- * @param {Object} ctx - Controller context { getProgress, saveProgress, isLocked, onSolved, onWrongCheck }
- */
+export function checkAnswer() {
+  if (activeModuleInstance && typeof activeModuleInstance.checkAll === 'function') {
+    activeModuleInstance.checkAll();
+  }
+}
+
 export function mount(root, data, ctx) {
   unmount();
 
@@ -37,173 +45,222 @@ export function mount(root, data, ctx) {
   let caesarShift = typeof saved.caesarShift === 'number' ? saved.caesarShift : 0;
   let phase2Unlocked = !!saved.phase2Unlocked;
 
-  // Build the poster strip slots
+  // Render Poster Strip Slots
   const posterGroups = data.groups || [];
   const posterSlotsHtml = posterGroups.map((grpName, idx) => {
     const isGrpSolved = solvedGroups.has(idx);
     const displayText = isGrpSolved ? (data.groupSolutions ? data.groupSolutions[idx] : grpName) : '';
     return `
-      <div class="poster-slot ${isGrpSolved ? 'slot-filled' : ''}" id="poster-slot-${idx}" data-index="${idx}">
+      <div class="poster-slot ${isGrpSolved ? 'slot-filled slot-stamped' : ''}" id="poster-slot-${idx}" data-index="${idx}">
         <span class="slot-label">${grpName}</span>
         <span class="slot-content mono">${displayText}</span>
       </div>
     `;
   }).join('');
 
-  // ASCII Reference Chart (from PDF)
+  // ASCII Reference Chart (A-Z: 65-90, a-z: 97-122, common symbols)
+  const chartRowsA = Array.from({ length: 26 }, (_, i) => {
+    const code = 65 + i;
+    const ch = String.fromCharCode(code);
+    return `<div class="chart-row" id="chart-row-${code}" data-code="${code}"><span class="chart-ch mono"><strong>${ch}</strong></span><span class="chart-val mono">${code}</span></div>`;
+  }).join('');
+
+  const chartRowsB = Array.from({ length: 26 }, (_, i) => {
+    const code = 97 + i;
+    const ch = String.fromCharCode(code);
+    return `<div class="chart-row" id="chart-row-${code}" data-code="${code}"><span class="chart-ch mono"><strong>${ch}</strong></span><span class="chart-val mono">${code}</span></div>`;
+  }).join('');
+
+  const chartSpecial = [
+    [32, 'Space'], [33, '!'], [63, '?'], [46, '.'], [44, ','], [58, ':'], [45, '-'], [95, '_']
+  ].map(([code, label]) => `
+    <div class="chart-row" id="chart-row-${code}" data-code="${code}"><span class="chart-ch mono"><strong>${label}</strong></span><span class="chart-val mono">${code}</span></div>
+  `).join('');
+
   const asciiChartHtml = `
-    <details class="ascii-chart-collapsible">
-      <summary class="btn btn-secondary btn-sm ascii-toggle-btn">
-        ASCII Reference Chart
-      </summary>
-      <div class="ascii-chart-drawer">
-        <div class="ascii-chart-grid">
-          <div class="ascii-chart-col">
-            <h4 class="ascii-col-title">Uppercase (A-Z)</h4>
-            <div class="ascii-rows">
-              <span><strong>A</strong> 65</span><span><strong>B</strong> 66</span><span><strong>C</strong> 67</span><span><strong>D</strong> 68</span>
-              <span><strong>E</strong> 69</span><span><strong>F</strong> 70</span><span><strong>G</strong> 71</span><span><strong>H</strong> 72</span>
-              <span><strong>I</strong> 73</span><span><strong>J</strong> 74</span><span><strong>K</strong> 75</span><span><strong>L</strong> 76</span>
-              <span><strong>M</strong> 77</span><span><strong>N</strong> 78</span><span><strong>O</strong> 79</span><span><strong>P</strong> 80</span>
-              <span><strong>Q</strong> 81</span><span><strong>R</strong> 82</span><span><strong>S</strong> 83</span><span><strong>T</strong> 84</span>
-              <span><strong>U</strong> 85</span><span><strong>V</strong> 86</span><span><strong>W</strong> 87</span><span><strong>X</strong> 88</span>
-              <span><strong>Y</strong> 89</span><span><strong>Z</strong> 90</span>
-            </div>
-          </div>
-          <div class="ascii-chart-col">
-            <h4 class="ascii-col-title">Lowercase (a-z)</h4>
-            <div class="ascii-rows">
-              <span><strong>a</strong> 97</span><span><strong>b</strong> 98</span><span><strong>c</strong> 99</span><span><strong>d</strong> 100</span>
-              <span><strong>e</strong> 101</span><span><strong>f</strong> 102</span><span><strong>g</strong> 103</span><span><strong>h</strong> 104</span>
-              <span><strong>i</strong> 105</span><span><strong>j</strong> 106</span><span><strong>k</strong> 107</span><span><strong>l</strong> 108</span>
-              <span><strong>m</strong> 109</span><span><strong>n</strong> 110</span><span><strong>o</strong> 111</span><span><strong>p</strong> 112</span>
-              <span><strong>q</strong> 113</span><span><strong>r</strong> 114</span><span><strong>s</strong> 115</span><span><strong>t</strong> 116</span>
-              <span><strong>u</strong> 117</span><span><strong>v</strong> 118</span><span><strong>w</strong> 119</span><span><strong>x</strong> 120</span>
-              <span><strong>y</strong> 121</span><span><strong>z</strong> 122</span>
-            </div>
-          </div>
-          <div class="ascii-chart-col">
-            <h4 class="ascii-col-title">Special & Symbols</h4>
-            <div class="ascii-rows">
-              <span><strong>[Space]</strong> 32</span><span><strong>!</strong> 33</span><span><strong>?</strong> 63</span>
-              <span><strong>.</strong> 46</span><span><strong>,</strong> 44</span><span><strong>:</strong> 58</span>
-              <span><strong>-</strong> 45</span><span><strong>_</strong> 95</span>
-            </div>
-          </div>
+    <aside class="ascii-chart-sidebar" id="ascii-chart-sidebar" role="region" aria-label="ASCII Decimal Table">
+      <div class="chart-sidebar-header">
+        <span class="chart-header-title">ASCII Table</span>
+        <button type="button" class="chart-close-btn" id="btn-chart-close" aria-label="Close table">✕</button>
+      </div>
+      <div class="chart-sidebar-body">
+        <div class="chart-col">
+          <div class="chart-col-head">A-Z (65-90)</div>
+          ${chartRowsA}
+        </div>
+        <div class="chart-col">
+          <div class="chart-col-head">a-z (97-122)</div>
+          ${chartRowsB}
+        </div>
+        <div class="chart-col">
+          <div class="chart-col-head">Symbols</div>
+          ${chartSpecial}
         </div>
       </div>
-    </details>
+    </aside>
   `;
 
-  // Render Words & Chips
+  // Render Words as Physical Card Groups
   const words = data.words || [];
   const wordsHtml = words.map((wordObj, wIdx) => {
     const isGrpSolved = solvedGroups.has(wIdx);
-    const chipsHtml = wordObj.codes.map((code, cIdx) => {
+    const cardsHtml = wordObj.codes.map((code, cIdx) => {
       const key = `w${wIdx}_c${cIdx}`;
       const val = entries[key] || '';
       const displayCode = code + (data.hasStepper ? stepperOffset : 0);
       return `
-        <div class="ascii-chip-pair" data-key="${key}">
-          <div class="ascii-chip-num mono" data-base-code="${code}">${displayCode}</div>
-          <input 
-            type="text" 
-            class="ascii-input mono" 
-            maxlength="1" 
-            data-word="${wIdx}" 
-            data-char="${cIdx}" 
-            data-key="${key}"
-            value="${val}"
-            ${isGrpSolved || isLocked ? 'disabled' : ''}
-            autocomplete="off"
-            spellcheck="false"
-            aria-label="Character for ASCII code ${displayCode}"
-          />
+        <div class="ascii-physical-card ${val ? 'has-letter' : ''}" data-key="${key}">
+          <div class="card-mono-code mono" data-base-code="${code}">${displayCode}</div>
+          <div class="card-arrow" aria-hidden="true">${PUZZLE_ART.arrowDown}</div>
+          <div class="card-slot-wrap">
+            <div class="card-slot-flipper ${val ? 'flipped' : ''}">
+              <input 
+                type="text" 
+                class="ascii-keycap-input mono" 
+                maxlength="1" 
+                autocapitalize="characters"
+                autocomplete="off"
+                spellcheck="false"
+                data-word="${wIdx}" 
+                data-char="${cIdx}" 
+                data-key="${key}"
+                data-code="${displayCode}"
+                value="${val}"
+                ${isGrpSolved || isLocked ? 'disabled' : ''}
+                aria-label="Character for ASCII code ${displayCode}"
+              />
+            </div>
+          </div>
         </div>
       `;
     }).join('');
 
     return `
-      <div class="ascii-word-group ${isGrpSolved ? 'word-locked' : ''}" id="ascii-word-${wIdx}">
-        <div class="ascii-word-chips">${chipsHtml}</div>
+      <div class="ascii-word-group ${isGrpSolved ? 'word-bar-locked' : ''}" id="ascii-word-${wIdx}">
+        <div class="word-group-header">
+          <span class="word-group-label mono">Word ${wIdx + 1} (${wordObj.codes.length} chars)</span>
+          ${!isGrpSolved && !isLocked ? `
+            <button type="button" class="btn-group-clear keycap-btn" data-word="${wIdx}" title="Clear this word's letters">Clear</button>
+          ` : ''}
+        </div>
+        <div class="ascii-cards-track">${cardsHtml}</div>
       </div>
     `;
   }).join('');
 
-  // Stepper UI for Tile 4
+  // T4 Stepper with Rolling Counter
   const stepperHtml = data.hasStepper ? `
-    <div class="ascii-stepper-control" role="region" aria-label="ASCII Code Stepper Offset">
-      <span class="stepper-label">Adjust all codes by:</span>
-      <div class="stepper-actions">
-        <button type="button" class="btn btn-secondary btn-sm" id="btn-stepper-minus" ${isLocked ? 'disabled' : ''}>-</button>
-        <span class="stepper-value mono" id="stepper-val">${stepperOffset > 0 ? '+' : ''}${stepperOffset}</span>
-        <button type="button" class="btn btn-secondary btn-sm" id="btn-stepper-plus" ${isLocked ? 'disabled' : ''}>+</button>
+    <div class="ascii-rolling-stepper" role="region" aria-label="ASCII Offset Stepper">
+      <span class="stepper-title">Adjust all decimal codes by:</span>
+      <div class="rolling-stepper-box">
+        <button type="button" class="stepper-btn keycap-btn" id="btn-stepper-minus" aria-label="Decrease offset" ${isLocked ? 'disabled' : ''}>-</button>
+        <div class="rolling-window mono" aria-live="polite">
+          <div class="rolling-strip" id="stepper-rolling-strip" style="transform: translateY(-${(stepperOffset + 5) * 36}px);">
+            ${[-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5].map(n => `
+              <div class="rolling-num mono">${n > 0 ? '+' : ''}${n}</div>
+            `).join('')}
+          </div>
+        </div>
+        <button type="button" class="stepper-btn keycap-btn" id="btn-stepper-plus" aria-label="Increase offset" ${isLocked ? 'disabled' : ''}>+</button>
       </div>
-      <span class="stepper-hint text-muted">Step the offset to match standard ASCII values</span>
+      <span class="stepper-caption text-muted">Roll the offset to align cards with standard ASCII</span>
     </div>
   ` : '';
 
-  // Caesar UI for Tile 8 Phase 2
+  // T8 Interactive SVG Cipher Dial
   const caesarHtml = data.isCaesarHybrid ? `
-    <div class="caesar-phase2-box ${phase2Unlocked ? 'unlocked' : 'locked'}" id="caesar-phase2">
-      <div class="caesar-phase2-header">
-        <h3 class="caesar-title">Phase 2: Caesar Shift Decoder</h3>
-        <span class="caesar-badge mono">${phase2Unlocked ? 'UNLOCKED' : 'LOCKED (Solve Phase 1 first)'}</span>
-      </div>
-      <p class="caesar-desc">Decoded ciphertext: <strong class="mono" id="caesar-source-text">${data.cipherWords ? data.cipherWords.join(' ') : 'IXWXUH UHDGB'}</strong></p>
-      
-      <div class="caesar-dial-row">
-        <label for="caesar-shift-slider" class="caesar-dial-label">Shift Offset (A-Z):</label>
-        <div class="caesar-controls">
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-caesar-minus" ${!phase2Unlocked || isLocked ? 'disabled' : ''}>-</button>
-          <input 
-            type="range" 
-            id="caesar-shift-slider" 
-            min="0" 
-            max="25" 
-            value="${caesarShift}" 
-            class="caesar-slider" 
-            ${!phase2Unlocked || isLocked ? 'disabled' : ''}
-          />
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-caesar-plus" ${!phase2Unlocked || isLocked ? 'disabled' : ''}>+</button>
-          <span class="caesar-shift-num mono" id="caesar-shift-display">${caesarShift}</span>
+    <div class="caesar-dial-section ${phase2Unlocked ? 'dial-active' : 'dial-disabled'}" id="caesar-dial-section">
+      <div class="caesar-section-header">
+        <div class="caesar-tag-row">
+          <span class="caesar-step-badge mono">PHASE 2</span>
+          <span class="caesar-status-badge mono">${phase2Unlocked ? 'UNLOCKED' : 'LOCKED (Solve Phase 1 first)'}</span>
         </div>
+        <h3 class="caesar-title">Rotational Caesar Cipher Dial</h3>
+        <p class="caesar-prompt">Shift the decoded ciphertext backward by 3 positions to reveal the secret motto.</p>
       </div>
 
-      <div class="caesar-preview-box">
-        <span class="preview-label">Live Decoded Result:</span>
-        <div class="caesar-preview-text mono" id="caesar-preview"></div>
-      </div>
+      <div class="caesar-dial-container" id="caesar-dial-container">
+        <!-- SVG Interactive Dial -->
+        <div class="caesar-dial-svg-wrap">
+          <svg class="caesar-svg-dial" id="caesar-svg-dial" viewBox="0 0 260 260" width="240" height="240">
+            <!-- Outer Fixed Ring (A-Z) -->
+            <circle cx="130" cy="130" r="120" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+            <circle cx="130" cy="130" r="92" fill="#0d1117" stroke="#30363d" stroke-width="1.5"/>
+            <!-- Outer Letters -->
+            <g class="outer-ring-letters mono" fill="#8b949e" font-size="11" font-weight="600" text-anchor="middle" dominant-baseline="central">
+              ${Array.from({ length: 26 }, (_, i) => {
+                const angle = (i * (360 / 26) - 90) * (Math.PI / 180);
+                const x = 130 + 106 * Math.cos(angle);
+                const y = 130 + 106 * Math.sin(angle);
+                return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}">${String.fromCharCode(65 + i)}</text>`;
+              }).join('')}
+            </g>
 
-      <div class="caesar-action-row">
-        <button type="button" class="btn btn-primary" id="btn-caesar-apply" ${!phase2Unlocked || isLocked ? 'disabled' : ''}>
-          Confirm Caesar Solution
-        </button>
+            <!-- Inner Rotating Ring -->
+            <g id="dial-rotatable-inner" style="transform-origin: 130px 130px; transform: rotate(${caesarShift * (360 / 26)}deg); transition: transform ${isReducedMotion() ? '0ms' : '120ms ease-out'};">
+              <circle cx="130" cy="130" r="90" fill="#1c2128" stroke="#388bfd" stroke-width="2"/>
+              <circle cx="130" cy="130" r="54" fill="#0d1117" stroke="#30363d" stroke-width="1.5"/>
+              <g class="inner-ring-letters mono" fill="#58a6ff" font-size="11" font-weight="700" text-anchor="middle" dominant-baseline="central">
+                ${Array.from({ length: 26 }, (_, i) => {
+                  const angle = (i * (360 / 26) - 90) * (Math.PI / 180);
+                  const x = 130 + 72 * Math.cos(angle);
+                  const y = 130 + 72 * Math.sin(angle);
+                  return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}">${String.fromCharCode(65 + i)}</text>`;
+                }).join('')}
+              </g>
+              <!-- Center Hub -->
+              <circle cx="130" cy="130" r="22" fill="#21262d" stroke="#388bfd" stroke-width="1.5"/>
+              <text x="130" y="131" fill="#e6edf3" font-size="10" font-family="'IBM Plex Mono', monospace" font-weight="700" text-anchor="middle" dominant-baseline="central">DIAL</text>
+            </g>
+
+            <!-- Alignment Pointer Arrow -->
+            <polygon points="130,3 124,14 136,14" fill="#388bfd"/>
+          </svg>
+        </div>
+
+        <!-- Controls & Shift Readout -->
+        <div class="caesar-readout-col">
+          <div class="caesar-shift-stepper">
+            <button type="button" class="btn btn-secondary btn-sm keycap-btn" id="btn-dial-minus" aria-label="Rotate dial backward" ${!phase2Unlocked || isLocked ? 'disabled' : ''}>-</button>
+            <div class="shift-display-pill mono">
+              <span class="shift-label">ROTATION:</span>
+              <span class="shift-deg mono" id="caesar-shift-degrees">${caesarShift}</span>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm keycap-btn" id="btn-dial-plus" aria-label="Rotate dial forward" ${!phase2Unlocked || isLocked ? 'disabled' : ''}>+</button>
+          </div>
+
+          <div class="caesar-live-preview-box">
+            <span class="preview-tag mono">Live Decrypted Motto:</span>
+            <div class="preview-text mono" id="caesar-preview-text">------ -----</div>
+          </div>
+
+          <button type="button" class="btn btn-primary keycap-btn" id="btn-caesar-confirm" ${!phase2Unlocked || isLocked ? 'disabled' : ''}>
+            Confirm Motto
+          </button>
+        </div>
       </div>
     </div>
   ` : '';
 
   root.innerHTML = `
-    <div class="puzzle-interactive-module puzzle-ascii" id="ascii-module-root">
-      <!-- Poster Slot Strip -->
+    <div class="puzzle-ascii-wrap" id="ascii-wrap">
+      <!-- Top Poster Strip Anchor -->
       <div class="poster-strip-container" role="region" aria-label="Decoded Poster Fragments">
         <div class="poster-strip-title">Decoded Poster Fragments:</div>
         <div class="poster-strip-slots">${posterSlotsHtml}</div>
       </div>
 
-      ${stepperHtml}
-
-      <!-- Interactive ASCII Words Input Area -->
-      <div class="ascii-words-container" role="region" aria-label="ASCII Code Inputs">
-        ${wordsHtml}
+      <!-- Action Bar Row for ASCII Chart Drawer Toggle -->
+      <div class="ascii-toolbar-row">
+        ${stepperHtml}
+        <button type="button" class="btn btn-secondary btn-sm keycap-btn btn-chart-toggle" id="btn-chart-toggle">
+          <span>Table (ASCII)</span>
+        </button>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="puzzle-action-bar">
-        <button type="button" class="btn btn-primary" id="btn-ascii-check" ${isLocked ? 'disabled' : ''}>
-          Check Answer
-        </button>
-        <span class="action-note text-muted">Filled letters will be verified against ASCII standard</span>
+      <!-- Stage Physical Cards -->
+      <div class="ascii-words-stage" role="region" aria-label="ASCII Input Cards">
+        ${wordsHtml}
       </div>
 
       ${caesarHtml}
@@ -212,11 +269,10 @@ export function mount(root, data, ctx) {
     </div>
   `;
 
-  // Bind Listeners
-  const moduleRoot = root.querySelector('#ascii-module-root');
-  const allInputs = Array.from(moduleRoot.querySelectorAll('.ascii-input'));
+  const wrap = root.querySelector('#ascii-wrap');
+  const allInputs = Array.from(wrap.querySelectorAll('.ascii-keycap-input'));
+  const chartSidebar = wrap.querySelector('#ascii-chart-sidebar');
 
-  // Save current progress helper
   const persist = () => {
     ctx.saveProgress({
       entries,
@@ -227,107 +283,159 @@ export function mount(root, data, ctx) {
     });
   };
 
-  // Auto-advance & Backspace Navigation
-  const handleInputNav = (e, index) => {
-    const input = e.target;
-    const char = input.value;
-    const key = input.dataset.key;
+  // Mobile Bottom Sheet / Sidebar Chart Toggle
+  const chartToggleBtn = wrap.querySelector('#btn-chart-toggle');
+  const chartCloseBtn = wrap.querySelector('#btn-chart-close');
 
-    if (char) {
-      entries[key] = char.toUpperCase();
-      input.value = char.toUpperCase();
-      persist();
+  if (chartToggleBtn && chartSidebar) {
+    chartToggleBtn.addEventListener('click', () => {
+      chartSidebar.classList.toggle('open');
+    });
+  }
+  if (chartCloseBtn && chartSidebar) {
+    chartCloseBtn.addEventListener('click', () => {
+      chartSidebar.classList.remove('open');
+    });
+  }
 
-      // Advance to next enabled input
-      for (let i = index + 1; i < allInputs.length; i++) {
-        if (!allInputs[i].disabled) {
-          allInputs[i].focus();
-          allInputs[i].select();
-          break;
-        }
-      }
-    } else {
-      delete entries[key];
-      persist();
+  // Highlight ASCII table row on input focus
+  const highlightChartCode = (code) => {
+    wrap.querySelectorAll('.chart-row').forEach(r => r.classList.remove('chart-row-active'));
+    const row = wrap.querySelector(`#chart-row-${code}`);
+    if (row) {
+      row.classList.add('chart-row-active');
+      row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
   };
 
-  const handleKeyDown = (e, index) => {
-    if (e.key === 'Backspace' && !e.target.value) {
-      // Move to previous enabled input
-      for (let i = index - 1; i >= 0; i--) {
-        if (!allInputs[i].disabled) {
-          allInputs[i].focus();
-          break;
-        }
-      }
-    } else if (e.key === 'ArrowLeft') {
-      for (let i = index - 1; i >= 0; i--) {
-        if (!allInputs[i].disabled) {
-          allInputs[i].focus();
-          break;
-        }
-      }
-    } else if (e.key === 'ArrowRight') {
-      for (let i = index + 1; i < allInputs.length; i++) {
-        if (!allInputs[i].disabled) {
-          allInputs[i].focus();
-          break;
-        }
-      }
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      checkAll();
-    }
-  };
-
+  // Input events: Auto-advance, backspace navigation, card flipping, mobile scroll
   allInputs.forEach((inp, idx) => {
-    inp.addEventListener('input', (e) => handleInputNav(e, idx));
-    inp.addEventListener('keydown', (e) => handleKeyDown(e, idx));
+    inp.addEventListener('focus', () => {
+      const code = inp.dataset.code;
+      if (code) highlightChartCode(code);
+      inp.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
+
+    inp.addEventListener('input', (e) => {
+      const char = e.target.value.trim().toUpperCase();
+      const key = inp.dataset.key;
+      const flipper = inp.closest('.card-slot-flipper');
+
+      if (char) {
+        entries[key] = char;
+        inp.value = char;
+        if (flipper) flipper.classList.add('flipped');
+        persist();
+
+        // Advance to next available input
+        for (let i = idx + 1; i < allInputs.length; i++) {
+          if (!allInputs[i].disabled) {
+            allInputs[i].focus();
+            allInputs[i].select();
+            break;
+          }
+        }
+      } else {
+        delete entries[key];
+        if (flipper) flipper.classList.remove('flipped');
+        persist();
+      }
+    });
+
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !inp.value) {
+        for (let i = idx - 1; i >= 0; i--) {
+          if (!allInputs[i].disabled) {
+            allInputs[i].focus();
+            break;
+          }
+        }
+      } else if (e.key === 'ArrowLeft') {
+        for (let i = idx - 1; i >= 0; i--) {
+          if (!allInputs[i].disabled) {
+            allInputs[i].focus();
+            break;
+          }
+        }
+      } else if (e.key === 'ArrowRight') {
+        for (let i = idx + 1; i < allInputs.length; i++) {
+          if (!allInputs[i].disabled) {
+            allInputs[i].focus();
+            break;
+          }
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        checkAll();
+      }
+    });
   });
 
-  // Stepper handlers
-  if (data.hasStepper) {
-    const updateChips = () => {
-      const chipNums = moduleRoot.querySelectorAll('.ascii-chip-num');
-      chipNums.forEach(el => {
-        const base = parseInt(el.dataset.baseCode, 10);
-        el.textContent = base + stepperOffset;
+  // Per-group Clear button
+  wrap.querySelectorAll('.btn-group-clear').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const wIdx = parseInt(btn.dataset.word, 10);
+      const groupEl = wrap.querySelector(`#ascii-word-${wIdx}`);
+      if (!groupEl) return;
+      const groupInputs = groupEl.querySelectorAll('.ascii-keycap-input:not(:disabled)');
+      groupInputs.forEach(inp => {
+        inp.value = '';
+        delete entries[inp.dataset.key];
+        const flipper = inp.closest('.card-slot-flipper');
+        if (flipper) flipper.classList.remove('flipped');
       });
-      const valEl = moduleRoot.querySelector('#stepper-val');
-      if (valEl) valEl.textContent = `${stepperOffset > 0 ? '+' : ''}${stepperOffset}`;
+      persist();
+      if (groupInputs[0]) groupInputs[0].focus();
+    });
+  });
+
+  // T4 Stepper Rolling Counter Logic
+  if (data.hasStepper) {
+    const rollingStrip = wrap.querySelector('#stepper-rolling-strip');
+    const updateStepper = () => {
+      if (rollingStrip) {
+        rollingStrip.style.transform = `translateY(-${(stepperOffset + 5) * 36}px)`;
+      }
+      wrap.querySelectorAll('.card-mono-code').forEach(el => {
+        const base = parseInt(el.dataset.baseCode, 10);
+        const newCode = base + stepperOffset;
+        el.textContent = newCode;
+        const input = el.closest('.ascii-physical-card')?.querySelector('.ascii-keycap-input');
+        if (input) input.dataset.code = String(newCode);
+      });
       persist();
     };
 
-    const minusBtn = moduleRoot.querySelector('#btn-stepper-minus');
-    const plusBtn = moduleRoot.querySelector('#btn-stepper-plus');
+    const minusBtn = wrap.querySelector('#btn-stepper-minus');
+    const plusBtn = wrap.querySelector('#btn-stepper-plus');
 
     if (minusBtn) minusBtn.addEventListener('click', () => {
       if (stepperOffset > -5) {
         stepperOffset--;
-        updateChips();
+        updateStepper();
       }
     });
-
     if (plusBtn) plusBtn.addEventListener('click', () => {
       if (stepperOffset < 5) {
         stepperOffset++;
-        updateChips();
+        updateStepper();
       }
     });
   }
 
-  // Caesar Phase 2 handlers
+  // T8 Cipher Dial Interaction Logic
   const updateCaesarPreview = () => {
     if (!data.isCaesarHybrid) return;
-    const previewEl = moduleRoot.querySelector('#caesar-preview');
-    const dispEl = moduleRoot.querySelector('#caesar-shift-display');
-    const slider = moduleRoot.querySelector('#caesar-shift-slider');
-    if (dispEl) dispEl.textContent = String(caesarShift);
-    if (slider) slider.value = String(caesarShift);
+    const previewEl = wrap.querySelector('#caesar-preview-text');
+    const degEl = wrap.querySelector('#caesar-shift-degrees');
+    const rotatable = wrap.querySelector('#dial-rotatable-inner');
+
+    if (degEl) degEl.textContent = String(caesarShift);
+    if (rotatable) {
+      rotatable.style.transform = `rotate(${caesarShift * (360 / 26)}deg)`;
+    }
 
     const source = (data.cipherWords || ['IXWXUH', 'UHDGB']).join(' ');
-    // A=65..Z=90
     const shifted = source.split('').map(ch => {
       const code = ch.charCodeAt(0);
       if (code >= 65 && code <= 90) {
@@ -343,68 +451,100 @@ export function mount(root, data, ctx) {
   if (data.isCaesarHybrid) {
     updateCaesarPreview();
 
-    const slider = moduleRoot.querySelector('#caesar-shift-slider');
-    const minus = moduleRoot.querySelector('#btn-caesar-minus');
-    const plus = moduleRoot.querySelector('#btn-caesar-plus');
-    const applyBtn = moduleRoot.querySelector('#btn-caesar-apply');
+    const svgDial = wrap.querySelector('#caesar-svg-dial');
+    const dialMinus = wrap.querySelector('#btn-dial-minus');
+    const dialPlus = wrap.querySelector('#btn-dial-plus');
+    const confirmBtn = wrap.querySelector('#btn-caesar-confirm');
 
-    if (slider) slider.addEventListener('input', (e) => {
-      caesarShift = parseInt(e.target.value, 10);
-      updateCaesarPreview();
-    });
+    // Pointer Drag Rotation
+    let isDraggingDial = false;
+    let startPointerAngle = 0;
+    let startShift = 0;
 
-    if (minus) minus.addEventListener('click', () => {
+    const getDialAngle = (e) => {
+      const rect = svgDial.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const angleRad = Math.atan2(e.clientY - cy, e.clientX - cx);
+      let deg = angleRad * (180 / Math.PI);
+      if (deg < 0) deg += 360;
+      return deg;
+    };
+
+    if (svgDial && phase2Unlocked && !isLocked) {
+      svgDial.addEventListener('pointerdown', (e) => {
+        isDraggingDial = true;
+        svgDial.setPointerCapture(e.pointerId);
+        startPointerAngle = getDialAngle(e);
+        startShift = caesarShift;
+      });
+
+      svgDial.addEventListener('pointermove', (e) => {
+        if (!isDraggingDial) return;
+        requestAnimationFrame(() => {
+          const currentAngle = getDialAngle(e);
+          let delta = currentAngle - startPointerAngle;
+          if (delta < -180) delta += 360;
+          if (delta > 180) delta -= 360;
+
+          const steps = Math.round(delta / (360 / 26));
+          const newShift = (((startShift + steps) % 26) + 26) % 26;
+          if (newShift !== caesarShift) {
+            caesarShift = newShift;
+            updateCaesarPreview();
+          }
+        });
+      });
+
+      const stopDrag = () => { isDraggingDial = false; };
+      svgDial.addEventListener('pointerup', stopDrag);
+      svgDial.addEventListener('pointercancel', stopDrag);
+    }
+
+    if (dialMinus) dialMinus.addEventListener('click', () => {
       caesarShift = (caesarShift - 1 + 26) % 26;
       updateCaesarPreview();
     });
 
-    if (plus) plus.addEventListener('click', () => {
+    if (dialPlus) dialPlus.addEventListener('click', () => {
       caesarShift = (caesarShift + 1) % 26;
       updateCaesarPreview();
     });
 
-    if (applyBtn) applyBtn.addEventListener('click', () => {
-      // Check if caesar preview matches target
-      const previewEl = moduleRoot.querySelector('#caesar-preview');
-      const text = previewEl ? previewEl.textContent.trim() : '';
-      if (text === data.finalText) {
-        // Solved final phase!
-        solvedGroups.add(2); // Group 3 is slot index 2
-        const slotEl = moduleRoot.querySelector('#poster-slot-2');
-        if (slotEl) {
-          slotEl.classList.add('slot-filled');
-          const content = slotEl.querySelector('.slot-content');
-          if (content) content.textContent = data.finalText;
-        }
-        showRewardPopup(root, data.finalText);
-        persist();
-        ctx.onSolved();
+    if (confirmBtn) confirmBtn.addEventListener('click', () => {
+      const previewText = wrap.querySelector('#caesar-preview-text')?.textContent.trim();
+      if (previewText === data.finalText) {
+        solvedGroups.add(2);
+        const slotEl = wrap.querySelector('#poster-slot-2');
+        const dialSection = wrap.querySelector('#caesar-dial-section');
+        animateGroupLock(dialSection, slotEl, data.finalText, root, () => {
+          persist();
+          ctx.onSolved();
+        });
       } else {
-        // Wrong shift check
-        applyBtn.classList.add('btn-wrong-shake');
-        setTimeout(() => applyBtn.classList.remove('btn-wrong-shake'), 400);
+        const errorBar = document.querySelector('#bar-error-text');
+        playWrongFeedback(confirmBtn, errorBar);
         ctx.onWrongCheck();
       }
     });
   }
 
-  // Check verification logic
+  // Answer Check Verification
   const checkAll = () => {
     let anyWrong = false;
-    let newlySolved = false;
-    let firstWrongInput = null;
+    let wrongCards = [];
 
     words.forEach((wordObj, wIdx) => {
       if (solvedGroups.has(wIdx)) return;
 
       let wordFilled = true;
       let wordMatches = true;
-      const wordInputs = [];
+      const groupInputs = [];
 
       wordObj.codes.forEach((code, cIdx) => {
         const key = `w${wIdx}_c${cIdx}`;
-        const input = moduleRoot.querySelector(`.ascii-input[data-key="${key}"]`);
-        wordInputs.push(input);
+        const input = wrap.querySelector(`.ascii-keycap-input[data-key="${key}"]`);
+        groupInputs.push(input);
         const entered = (entries[key] || '').toUpperCase();
         const expected = wordObj.expectedChars[cIdx].toUpperCase();
 
@@ -416,24 +556,20 @@ export function mount(root, data, ctx) {
       });
 
       if (wordFilled && wordMatches) {
-        // Solved this word!
         solvedGroups.add(wIdx);
-        newlySolved = true;
-        wordInputs.forEach(inp => { if (inp) inp.disabled = true; });
+        groupInputs.forEach(inp => { if (inp) inp.disabled = true; });
 
-        const slotEl = moduleRoot.querySelector(`#poster-slot-${wIdx}`);
-        if (slotEl) {
-          slotEl.classList.add('slot-filled');
-          const content = slotEl.querySelector('.slot-content');
-          if (content) content.textContent = wordObj.expectedText || wordObj.expectedChars.join('');
-        }
-        showRewardPopup(root, wordObj.expectedText || wordObj.expectedChars.join(''));
+        const wordGroupEl = wrap.querySelector(`#ascii-word-${wIdx}`);
+        if (wordGroupEl) wordGroupEl.classList.add('word-bar-locked');
+
+        const slotEl = wrap.querySelector(`#poster-slot-${wIdx}`);
+        const solvedText = wordObj.expectedText || wordObj.expectedChars.join('');
+        animateGroupLock(groupInputs, slotEl, solvedText, root);
       } else if (wordFilled && !wordMatches) {
         anyWrong = true;
-        wordInputs.forEach(inp => {
+        groupInputs.forEach(inp => {
           if (inp && (entries[inp.dataset.key] || '').toUpperCase() !== wordObj.expectedChars[parseInt(inp.dataset.char, 10)].toUpperCase()) {
-            inp.classList.add('input-wrong');
-            if (!firstWrongInput) firstWrongInput = inp;
+            wrongCards.push(inp);
           }
         });
       }
@@ -441,65 +577,48 @@ export function mount(root, data, ctx) {
 
     persist();
 
-    // Handle phase 2 unlock for Tile 8
+    // Check Phase 2 unlock for T8
     if (data.isCaesarHybrid && !phase2Unlocked) {
       if (solvedGroups.has(0) && solvedGroups.has(1)) {
         phase2Unlocked = true;
-        const p2Box = moduleRoot.querySelector('#caesar-phase2');
-        if (p2Box) {
-          p2Box.classList.remove('locked');
-          p2Box.classList.add('unlocked');
-          p2Box.querySelector('.caesar-badge').textContent = 'UNLOCKED';
-          const slider = p2Box.querySelector('#caesar-shift-slider');
-          const minus = p2Box.querySelector('#btn-caesar-minus');
-          const plus = p2Box.querySelector('#btn-caesar-plus');
-          const apply = p2Box.querySelector('#btn-caesar-apply');
-          if (slider) slider.disabled = false;
-          if (minus) minus.disabled = false;
-          if (plus) plus.disabled = false;
-          if (apply) apply.disabled = false;
+        const dialSec = wrap.querySelector('#caesar-dial-section');
+        if (dialSec) {
+          dialSec.classList.remove('dial-disabled');
+          dialSec.classList.add('dial-active');
+          const badge = dialSec.querySelector('.caesar-status-badge');
+          if (badge) badge.textContent = 'UNLOCKED';
+          wrap.querySelectorAll('#btn-dial-minus, #btn-dial-plus, #btn-caesar-confirm').forEach(b => b.disabled = false);
         }
         persist();
       }
     }
 
     if (anyWrong) {
-      const wrongInputs = moduleRoot.querySelectorAll('.input-wrong');
-      wrongInputs.forEach(inp => {
-        inp.classList.add('input-shake');
-      });
-
+      const errorBar = document.querySelector('#bar-error-text');
+      playWrongFeedback(wrongCards, errorBar);
       setTimeout(() => {
-        wrongInputs.forEach(inp => {
-          inp.classList.remove('input-shake');
-          inp.classList.remove('input-wrong');
+        wrongCards.forEach(inp => {
           inp.value = '';
           delete entries[inp.dataset.key];
+          const flipper = inp.closest('.card-slot-flipper');
+          if (flipper) flipper.classList.remove('flipped');
         });
-        if (firstWrongInput) firstWrongInput.focus();
+        if (wrongCards[0]) wrongCards[0].focus();
         persist();
       }, 450);
 
       ctx.onWrongCheck();
     }
 
-    // Check if entire puzzle is solved
-    if (!data.isCaesarHybrid) {
-      if (solvedGroups.size === words.length) {
-        ctx.onSolved();
-      }
+    // Solve overall if non-hybrid
+    if (!data.isCaesarHybrid && solvedGroups.size === words.length) {
+      ctx.onSolved();
     }
   };
 
-  const checkBtn = moduleRoot.querySelector('#btn-ascii-check');
-  if (checkBtn) {
-    checkBtn.addEventListener('click', checkAll);
-  }
+  activeModuleInstance = { checkAll };
 
   activeCleanup = () => {
-    // Unbind listeners, clear references
-    allInputs.forEach(inp => {
-      inp.replaceWith(inp.cloneNode(true));
-    });
+    allInputs.forEach(inp => inp.replaceWith(inp.cloneNode(true)));
   };
 }

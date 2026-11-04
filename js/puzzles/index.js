@@ -16,3 +16,4 @@ export const PUZZLE_REGISTRY = {
   coords,
   wordsearch
 };
+

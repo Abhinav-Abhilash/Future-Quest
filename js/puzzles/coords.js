@@ -1,13 +1,23 @@
 /**
  * Future Quest 2026 - Coordinates Grid Puzzle Module
  * 
- * Handles Tile 2 (LEARN, BUILD, LEAD), Tile 6 (Route Tracer BYTE),
- * and Tile 10 (Cartesian BODMAS Hybrid CYBER).
+ * Upgraded UX:
+ * - Touch targets >= 40-44px (min(44px, calc((100vw - 48px) / 8))).
+ * - Sweeping crosshair bars on hover/focus (thin horizontal and vertical bars moving via transform, 120ms).
+ * - Axis headers turning blue when hovered/focused.
+ * - Reticle mark (SVG from art.js) on selected cell; FLIP animation from cell to active chip slot.
+ * - T6 (Route Tracer): start cell (1, 7) renders pawn SVG. Dashed route segments drawn on SVG overlay.
+ *   On solve, pawn animates along route (350ms per leg) and spells BYTE.
+ * - T10 (CYBER): Cartesian row label "Row 1 is the BOTTOM ↑". For active coordinate chip,
+ *   live X/Y input coordinate tracking.
+ * - Per-group Clear buttons and export checkAnswer().
  */
 
-import { showRewardPopup } from './popup.js';
+import { PUZZLE_ART } from './art.js';
+import { showRewardPopup, animateGroupLock, playWrongFeedback, isReducedMotion } from './popup.js';
 
 let activeCleanup = null;
+let activeModuleInstance = null;
 
 export function unmount() {
   if (activeCleanup) {
@@ -17,6 +27,13 @@ export function unmount() {
       console.warn('Error during coords unmount:', e);
     }
     activeCleanup = null;
+  }
+  activeModuleInstance = null;
+}
+
+export function checkAnswer() {
+  if (activeModuleInstance && typeof activeModuleInstance.checkAll === 'function') {
+    activeModuleInstance.checkAll();
   }
 }
 
@@ -28,15 +45,15 @@ export function mount(root, data, ctx) {
   const entries = saved.entries || {}; // chip key -> letter
   const solvedGroups = new Set(saved.solvedGroups || []);
   let activeChipKey = saved.activeChipKey || null;
-  let routeLegsCompleted = saved.routeLegsCompleted || 0; // for Tile 6
+  let routeLegsCompleted = typeof saved.routeLegsCompleted === 'number' ? saved.routeLegsCompleted : 0;
 
-  // Poster strip
+  // Poster strip slots
   const posterGroups = data.groups || [];
   const posterSlotsHtml = posterGroups.map((grpName, idx) => {
     const isGrpSolved = solvedGroups.has(idx);
     const displayText = isGrpSolved ? (data.groupSolutions ? data.groupSolutions[idx] : grpName) : '';
     return `
-      <div class="poster-slot ${isGrpSolved ? 'slot-filled' : ''}" id="poster-slot-${idx}" data-index="${idx}">
+      <div class="poster-slot ${isGrpSolved ? 'slot-filled slot-stamped' : ''}" id="poster-slot-${idx}" data-index="${idx}">
         <span class="slot-label">${grpName}</span>
         <span class="slot-content mono">${displayText}</span>
       </div>
@@ -44,13 +61,10 @@ export function mount(root, data, ctx) {
   }).join('');
 
   // Determine row numbering:
-  // Tile 10 uses bottom-to-top rows 1..7 (Cartesian), Tile 2 & 6 use top-to-bottom 1..7
+  // Tile 10 uses Cartesian bottom-to-top 1..7, Tile 2 & 6 use top-to-bottom 1..7
   const isBottomUp = !!data.isBottomUp;
   const rowLabels = isBottomUp ? [7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7];
   const colLabels = [1, 2, 3, 4, 5, 6, 7];
-
-  // Grid letters matrix: 7x7
-  // data.grid is array of 7 rows (top to bottom as displayed on screen)
   const gridMatrix = data.grid;
 
   let gridCellsHtml = '';
@@ -59,18 +73,22 @@ export function mount(root, data, ctx) {
     for (let cIdx = 0; cIdx < 7; cIdx++) {
       const colNum = colLabels[cIdx];
       const char = gridMatrix[rIdx][cIdx];
+      const isStartCell = data.isRouteTracer && colNum === 1 && rowNum === 7;
       gridCellsHtml += `
         <button 
           type="button" 
-          class="coord-cell mono" 
+          class="coord-cell keycap mono ${isStartCell ? 'cell-route-start' : ''}" 
           data-col="${colNum}" 
           data-row="${rowNum}" 
           data-r-idx="${rIdx}" 
           data-c-idx="${cIdx}"
           data-char="${char}"
+          id="coord-cell-${colNum}-${rowNum}"
           aria-label="Col ${colNum}, Row ${rowNum}: ${char}"
         >
-          ${char}
+          <span class="coord-cell-char">${char}</span>
+          ${isStartCell ? `<span class="cell-pawn-token" id="route-pawn-token">${PUZZLE_ART.pawn}</span>` : ''}
+          <span class="cell-reticle" aria-hidden="true">${PUZZLE_ART.reticle}</span>
         </button>
       `;
     }
@@ -85,21 +103,29 @@ export function mount(root, data, ctx) {
     <div class="coord-header-row mono" data-row="${r}">${r}</div>
   `).join('');
 
-  // Words/Chips Area
+  // Controls/Chips HTML
   let chipsAreaHtml = '';
 
   if (data.isRouteTracer) {
-    // Tile 6: Route instructions & Legs list
+    // Tile 6: Route instructions & legs list
     chipsAreaHtml = `
       <div class="route-tracer-panel" role="region" aria-label="Route Legs">
-        <h3 class="route-panel-title">Trace the Secret Path:</h3>
-        <p class="route-hint-text">Start at <strong>(1, 7) [B]</strong> and click each destination point in order.</p>
+        <div class="route-panel-header">
+          <h3 class="route-panel-title">Trace the Secret Path</h3>
+          <span class="route-panel-badge mono">${routeLegsCompleted} of ${(data.legs || []).length} legs</span>
+        </div>
+        <p class="route-hint-text">
+          Start at <strong>(1, 7) [B]</strong> and click each destination point in order.
+        </p>
         <ol class="route-legs-list">
           ${(data.legs || []).map((leg, idx) => `
             <li class="route-leg-item ${routeLegsCompleted > idx ? 'leg-done' : (routeLegsCompleted === idx ? 'leg-active' : '')}" id="route-leg-${idx}">
-              <span class="leg-step mono">Step ${idx + 1}</span>
-              <span class="leg-desc">${leg.desc}</span>
-              <span class="leg-status mono">${routeLegsCompleted > idx ? 'REACHED' : 'PENDING'}</span>
+              <div class="leg-step-badge mono">Step ${idx + 1}</div>
+              <div class="leg-desc-block">
+                <span class="leg-desc">${leg.desc}</span>
+                <span class="leg-target-hint mono">Target letter: [${leg.letter}]</span>
+              </div>
+              <span class="leg-status mono">${routeLegsCompleted > idx ? 'REACHED' : (routeLegsCompleted === idx ? 'NEXT' : 'LOCKED')}</span>
             </li>
           `).join('')}
         </ol>
@@ -116,12 +142,14 @@ export function mount(root, data, ctx) {
         return `
           <button 
             type="button" 
-            class="coord-chip-btn ${isPairActive ? 'chip-active' : ''} ${letter ? 'chip-filled' : ''}" 
+            class="coord-chip-btn keycap ${isPairActive ? 'chip-active' : ''} ${letter ? 'chip-filled' : ''}" 
             data-key="${key}"
             data-col="${pair[0]}"
             data-row="${pair[1]}"
             data-expected-char="${pair[2]}"
+            id="coord-chip-${key}"
             ${isGrpSolved || isLocked ? 'disabled' : ''}
+            aria-label="Word ${gIdx + 1} letter ${cIdx + 1}, coordinate (${pair[0]}, ${pair[1]})"
           >
             <span class="chip-coords mono">(${pair[0]},${pair[1]})</span>
             <span class="chip-letter mono">${letter || '&bull;'}</span>
@@ -132,15 +160,20 @@ export function mount(root, data, ctx) {
       return `
         <div class="coord-word-group ${isGrpSolved ? 'group-solved' : ''}" id="coord-group-${gIdx}">
           <div class="coord-group-header">
-            <span class="coord-group-name">Word ${gIdx + 1}: ${grp.name}</span>
-            <span class="coord-group-status mono">${isGrpSolved ? 'SOLVED' : `${grp.coords.length} letters`}</span>
+            <div class="coord-group-title">
+              <span class="coord-group-name">Word ${gIdx + 1}: ${grp.name}</span>
+              <span class="coord-group-status mono">${isGrpSolved ? 'SOLVED' : `${grp.coords.length} letters`}</span>
+            </div>
+            ${!isGrpSolved && !isLocked ? `
+              <button type="button" class="btn-group-clear" data-group="${gIdx}" aria-label="Clear Word ${gIdx + 1}">Clear</button>
+            ` : ''}
           </div>
           <div class="coord-chips-row">${chips}</div>
         </div>
       `;
     }).join('');
   } else if (data.mathCoords) {
-    // Tile 10: Math expression coordinates (CYBER)
+    // Tile 10: Cartesian BODMAS Hybrid (CYBER)
     const isGrpSolved = solvedGroups.has(0);
     const chips = data.mathCoords.map((item, idx) => {
       const key = `c${idx}`;
@@ -149,12 +182,14 @@ export function mount(root, data, ctx) {
       return `
         <button 
           type="button" 
-          class="coord-chip-btn ${isPairActive ? 'chip-active' : ''} ${letter ? 'chip-filled' : ''}" 
+          class="coord-chip-btn keycap ${isPairActive ? 'chip-active' : ''} ${letter ? 'chip-filled' : ''}" 
           data-key="${key}"
           data-col="${item.col}"
           data-row="${item.row}"
           data-expected-char="${item.letter}"
+          id="coord-chip-${key}"
           ${isGrpSolved || isLocked ? 'disabled' : ''}
+          aria-label="Coordinate ${item.expr}, target (${item.col}, ${item.row})"
         >
           <span class="chip-math mono">${item.expr}</span>
           <span class="chip-coords mono">(${item.col},${item.row})</span>
@@ -164,19 +199,38 @@ export function mount(root, data, ctx) {
     }).join('');
 
     chipsAreaHtml = `
-      <div class="coord-word-group ${isGrpSolved ? 'group-solved' : ''}">
+      <div class="coord-word-group ${isGrpSolved ? 'group-solved' : ''}" id="coord-group-0">
         <div class="coord-group-header">
-          <span class="coord-group-name">Target Word (${data.mathCoords.length} letters)</span>
-          <span class="coord-group-status mono">${isGrpSolved ? 'SOLVED' : 'IN PROGRESS'}</span>
+          <div class="coord-group-title">
+            <span class="coord-group-name">Target Word (${data.mathCoords.length} letters)</span>
+            <span class="coord-group-status mono">${isGrpSolved ? 'SOLVED' : 'IN PROGRESS'}</span>
+          </div>
+          ${!isGrpSolved && !isLocked ? `
+            <button type="button" class="btn-group-clear" data-group="0" aria-label="Clear Target Word">Clear</button>
+          ` : ''}
         </div>
         <div class="coord-chips-row">${chips}</div>
+        <div class="coord-cartesian-helper">
+          <span class="helper-label mono">Live Coordinate Selector:</span>
+          <div class="helper-inputs">
+            <label class="helper-field">
+              <span class="mono">Col (X):</span>
+              <input type="number" min="1" max="7" id="cartesian-input-x" class="keycap mono helper-input" value="1" />
+            </label>
+            <label class="helper-field">
+              <span class="mono">Row (Y):</span>
+              <input type="number" min="1" max="7" id="cartesian-input-y" class="keycap mono helper-input" value="1" />
+            </label>
+            <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-helper-jump">Select Cell</button>
+          </div>
+        </div>
       </div>
     `;
   }
 
   root.innerHTML = `
     <div class="puzzle-interactive-module puzzle-coords ${isBottomUp ? 'coords-cartesian' : ''}" id="coords-module-root">
-      <!-- Poster Slot Strip -->
+      <!-- Poster Strip Slots -->
       <div class="poster-strip-container" role="region" aria-label="Decoded Poster Fragments">
         <div class="poster-strip-title">Decoded Poster Fragments:</div>
         <div class="poster-strip-slots">${posterSlotsHtml}</div>
@@ -184,31 +238,48 @@ export function mount(root, data, ctx) {
 
       <!-- Main Coordinates Interactive Area -->
       <div class="coords-layout">
-        <div class="coords-grid-wrapper" role="region" aria-label="7 by 7 Coordinates Grid">
-          <div class="coord-axis-note text-muted">
-            ${isBottomUp ? 'Cartesian Grid: Row 1 is at the bottom, Row 7 is at the top.' : 'Grid Coordinates: (Column, Row) from top-left.'}
+        <div class="coords-grid-wrapper" role="region" aria-label="7 by 7 Coordinates Grid" id="coords-grid-wrapper">
+          <div class="coord-axis-banner ${isBottomUp ? 'axis-banner-cartesian' : ''}">
+            ${isBottomUp ? '<strong>CARTESIAN SYSTEM:</strong> Row 1 is the BOTTOM ↑ (Row 7 is top)' : '<strong>GRID SYSTEM:</strong> (Col, Row) starting from top-left'}
           </div>
 
           <div class="coords-table-container">
             <!-- Top Column Headers -->
-            <div class="coords-col-headers">${colHeadersHtml}</div>
+            <div class="coords-col-headers" id="coords-col-headers">${colHeadersHtml}</div>
             
             <div class="coords-row-and-cells">
               <!-- Left Row Headers -->
-              <div class="coords-row-headers">${rowHeadersHtml}</div>
-              <!-- 7x7 Cells -->
-              <div class="coords-grid" id="coords-cells-grid" role="grid">${gridCellsHtml}</div>
+              <div class="coords-row-headers" id="coords-row-headers">${rowHeadersHtml}</div>
+              
+              <!-- 7x7 Grid with sweeping crosshairs and route overlay -->
+              <div class="coords-grid-stage" id="coords-grid-stage">
+                <div class="coords-crosshair-h" id="crosshair-h" aria-hidden="true"></div>
+                <div class="coords-crosshair-v" id="crosshair-v" aria-hidden="true"></div>
+                
+                ${data.isRouteTracer ? `
+                  <svg class="coords-route-svg-overlay" id="coords-route-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                    <defs>
+                      <marker id="route-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--accent, #388bfd)"/>
+                      </marker>
+                    </defs>
+                    <g id="route-segments-group"></g>
+                  </svg>
+                ` : ''}
+
+                <div class="coords-grid" id="coords-cells-grid" role="grid">${gridCellsHtml}</div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Chips / Clues Section -->
+        <!-- Chips & Controls Column -->
         <div class="coords-controls-column">
           ${chipsAreaHtml}
 
           ${!data.isRouteTracer ? `
-            <div class="puzzle-action-bar">
-              <button type="button" class="btn btn-primary" id="btn-coords-check" ${isLocked ? 'disabled' : ''}>
+            <div class="puzzle-action-bar-embedded">
+              <button type="button" class="btn btn-primary keycap" id="btn-coords-check" ${isLocked ? 'disabled' : ''}>
                 Check Coordinates
               </button>
             </div>
@@ -219,10 +290,14 @@ export function mount(root, data, ctx) {
   `;
 
   const moduleRoot = root.querySelector('#coords-module-root');
+  const gridStage = moduleRoot.querySelector('#coords-grid-stage');
   const cells = Array.from(moduleRoot.querySelectorAll('.coord-cell'));
   const colHeaders = Array.from(moduleRoot.querySelectorAll('.coord-header-col'));
   const rowHeaders = Array.from(moduleRoot.querySelectorAll('.coord-header-row'));
   const allChipBtns = Array.from(moduleRoot.querySelectorAll('.coord-chip-btn'));
+  const crosshairH = moduleRoot.querySelector('#crosshair-h');
+  const crosshairV = moduleRoot.querySelector('#crosshair-v');
+  const routeSvgGroup = moduleRoot.querySelector('#route-segments-group');
 
   const persist = () => {
     ctx.saveProgress({
@@ -233,56 +308,175 @@ export function mount(root, data, ctx) {
     });
   };
 
-  // Crosshair Highlight logic
-  const highlightCrosshair = (col, row) => {
-    colHeaders.forEach(ch => ch.classList.toggle('header-active', ch.dataset.col === String(col)));
-    rowHeaders.forEach(rh => rh.classList.toggle('header-active', rh.dataset.row === String(row)));
-    cells.forEach(cell => {
-      const isCross = cell.dataset.col === String(col) || cell.dataset.row === String(row);
-      const isTarget = cell.dataset.col === String(col) && cell.dataset.row === String(row);
-      cell.classList.toggle('cell-crosshair', isCross);
-      cell.classList.toggle('cell-focused', isTarget);
-    });
+  // Crosshair sweeping animation
+  const positionCrosshairs = (cell) => {
+    if (!cell || !gridStage) return;
+    const stageRect = gridStage.getBoundingClientRect();
+    const cellRect = cell.getBoundingClientRect();
+
+    const topOffset = cellRect.top - stageRect.top;
+    const leftOffset = cellRect.left - stageRect.left;
+    const cellHeight = cellRect.height;
+    const cellWidth = cellRect.width;
+
+    if (crosshairH) {
+      crosshairH.style.opacity = '1';
+      crosshairH.style.height = `${cellHeight}px`;
+      crosshairH.style.transform = `translateY(${topOffset}px)`;
+    }
+    if (crosshairV) {
+      crosshairV.style.opacity = '1';
+      crosshairV.style.width = `${cellWidth}px`;
+      crosshairV.style.transform = `translateX(${leftOffset}px)`;
+    }
+
+    const col = cell.dataset.col;
+    const row = cell.dataset.row;
+    colHeaders.forEach(ch => ch.classList.toggle('header-active', ch.dataset.col === col));
+    rowHeaders.forEach(rh => rh.classList.toggle('header-active', rh.dataset.row === row));
+
+    // Update helper inputs for Tile 10
+    const inputX = moduleRoot.querySelector('#cartesian-input-x');
+    const inputY = moduleRoot.querySelector('#cartesian-input-y');
+    if (inputX && inputY && document.activeElement !== inputX && document.activeElement !== inputY) {
+      inputX.value = col;
+      inputY.value = row;
+    }
   };
 
-  const clearCrosshair = () => {
+  const clearCrosshairs = () => {
+    if (crosshairH) crosshairH.style.opacity = '0';
+    if (crosshairV) crosshairV.style.opacity = '0';
     colHeaders.forEach(ch => ch.classList.remove('header-active'));
     rowHeaders.forEach(rh => rh.classList.remove('header-active'));
-    cells.forEach(cell => {
-      cell.classList.remove('cell-crosshair');
-      cell.classList.remove('cell-focused');
+  };
+
+  const highlightCell = (col, row) => {
+    const target = cells.find(c => c.dataset.col === String(col) && c.dataset.row === String(row));
+    if (target) {
+      cells.forEach(c => c.classList.remove('cell-targeted'));
+      target.classList.add('cell-targeted');
+      positionCrosshairs(target);
+    }
+  };
+
+  // FLIP animation of letter from cell into chip
+  const animateFlyLetter = (fromCell, toChip, letter, onComplete) => {
+    if (isReducedMotion()) {
+      onComplete();
+      return;
+    }
+
+    const fromRect = fromCell.getBoundingClientRect();
+    const toLetterBay = toChip.querySelector('.chip-letter');
+    const toRect = (toLetterBay || toChip).getBoundingClientRect();
+
+    const flyingGhost = document.createElement('div');
+    flyingGhost.className = 'flying-coord-letter mono';
+    flyingGhost.textContent = letter;
+    flyingGhost.style.cssText = `
+      position: fixed;
+      top: ${fromRect.top}px;
+      left: ${fromRect.left}px;
+      width: ${fromRect.width}px;
+      height: ${fromRect.height}px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      background: var(--accent, #388bfd);
+      border: 1px solid #60a5fa;
+      border-radius: 4px;
+      z-index: 1000;
+      pointer-events: none;
+      transition: transform 240ms cubic-bezier(0.2, 0, 0, 1), opacity 240ms ease;
+    `;
+    document.body.appendChild(flyingGhost);
+
+    requestAnimationFrame(() => {
+      const deltaX = toRect.left + (toRect.width - fromRect.width) / 2 - fromRect.left;
+      const deltaY = toRect.top + (toRect.height - fromRect.height) / 2 - fromRect.top;
+      const scale = Math.max(0.7, toRect.width / fromRect.width);
+
+      flyingGhost.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scale})`;
+      flyingGhost.style.opacity = '0.9';
+
+      setTimeout(() => {
+        flyingGhost.remove();
+        onComplete();
+      }, 250);
     });
   };
 
+  // Route tracer line rendering
+  const renderRouteSegments = () => {
+    if (!data.isRouteTracer || !routeSvgGroup) return;
+    routeSvgGroup.innerHTML = '';
+
+    const waypoints = [
+      { col: 1, row: 7 } // start
+    ];
+
+    for (let i = 0; i < routeLegsCompleted; i++) {
+      const leg = data.legs[i];
+      waypoints.push({ col: leg.targetCol, row: leg.targetRow });
+    }
+
+    // Helper: convert (col 1..7, row 1..7) to SVG % (0..100)
+    const toSvgCoords = (col, row) => {
+      // 7 columns: centers are at (col - 0.5) / 7 * 100%
+      // In top-to-bottom grid (Tile 6): row 1 is top, row 7 is bottom
+      const x = ((col - 0.5) / 7) * 100;
+      const y = ((row - 0.5) / 7) * 100;
+      return { x, y };
+    };
+
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      const p1 = toSvgCoords(waypoints[i].col, waypoints[i].row);
+      const p2 = toSvgCoords(waypoints[i + 1].col, waypoints[i + 1].row);
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', p1.x);
+      line.setAttribute('y1', p1.y);
+      line.setAttribute('x2', p2.x);
+      line.setAttribute('y2', p2.y);
+      line.setAttribute('stroke', 'var(--accent, #388bfd)');
+      line.setAttribute('stroke-width', '2.5');
+      line.setAttribute('stroke-dasharray', '4 2');
+      line.setAttribute('marker-end', 'url(#route-arrow)');
+      routeSvgGroup.appendChild(line);
+    }
+  };
+
+  // Attach cell interactions
   cells.forEach((cell, idx) => {
     cell.addEventListener('mouseenter', () => {
-      highlightCrosshair(cell.dataset.col, cell.dataset.row);
+      positionCrosshairs(cell);
     });
 
     cell.addEventListener('mouseleave', () => {
       if (activeChipKey) {
         const activeChip = moduleRoot.querySelector(`.coord-chip-btn[data-key="${activeChipKey}"]`);
         if (activeChip) {
-          highlightCrosshair(activeChip.dataset.col, activeChip.dataset.row);
+          highlightCell(activeChip.dataset.col, activeChip.dataset.row);
           return;
         }
       }
-      clearCrosshair();
+      clearCrosshairs();
     });
 
     cell.addEventListener('focus', () => {
-      highlightCrosshair(cell.dataset.col, cell.dataset.row);
+      positionCrosshairs(cell);
     });
 
-    // Cell Click
     cell.addEventListener('click', () => {
       if (isLocked) return;
 
       if (data.isRouteTracer) {
-        // Tile 6 Route tracer click logic
         handleRouteCellClick(cell);
       } else {
-        // Tile 2 or Tile 10: Fill into active chip or matching chip
         handleCoordCellClick(cell);
       }
     });
@@ -302,7 +496,7 @@ export function mount(root, data, ctx) {
     });
   });
 
-  // Tile 6 Route Tracer handling
+  // Tile 6: Route Tracer logic
   const handleRouteCellClick = (cell) => {
     const targetLeg = data.legs[routeLegsCompleted];
     if (!targetLeg) return;
@@ -315,7 +509,7 @@ export function mount(root, data, ctx) {
       routeLegsCompleted++;
       cell.classList.add('cell-path-hit');
 
-      // Update leg item
+      // Update leg item in list
       const legEl = moduleRoot.querySelector(`#route-leg-${routeLegsCompleted - 1}`);
       if (legEl) {
         legEl.classList.remove('leg-active');
@@ -325,52 +519,108 @@ export function mount(root, data, ctx) {
 
       if (routeLegsCompleted < data.legs.length) {
         const nextLegEl = moduleRoot.querySelector(`#route-leg-${routeLegsCompleted}`);
-        if (nextLegEl) nextLegEl.classList.add('leg-active');
+        if (nextLegEl) {
+          nextLegEl.classList.add('leg-active');
+          nextLegEl.querySelector('.leg-status').textContent = 'NEXT';
+        }
       }
 
+      renderRouteSegments();
       persist();
 
-      // Check if all legs completed
+      // Check if all legs complete
       if (routeLegsCompleted === data.legs.length) {
-        // Solved BYTE!
-        solvedGroups.add(0);
-        const slotEl = moduleRoot.querySelector('#poster-slot-0');
-        if (slotEl) {
-          slotEl.classList.add('slot-filled');
-          const content = slotEl.querySelector('.slot-content');
-          if (content) content.textContent = 'BYTE';
-        }
-        showRewardPopup(root, 'BYTE');
-        persist();
-        ctx.onSolved();
+        // Animate pawn traversing route (350ms per leg)
+        animateRoutePawnSolve(() => {
+          solvedGroups.add(0);
+          const slotEl = moduleRoot.querySelector('#poster-slot-0');
+          if (slotEl) {
+            slotEl.classList.add('slot-filled', 'slot-stamped');
+            const content = slotEl.querySelector('.slot-content');
+            if (content) content.textContent = 'BYTE';
+          }
+          showRewardPopup(root, 'BYTE');
+          persist();
+          ctx.onSolved();
+        });
       }
     } else {
-      // Wrong cell clicked for route
+      // Wrong cell clicked
       cell.classList.add('cell-wrong-shake');
+      playWrongFeedback(cell);
       setTimeout(() => cell.classList.remove('cell-wrong-shake'), 400);
       ctx.onWrongCheck();
     }
   };
 
-  // Chip buttons click (Tile 2 & Tile 10)
+  // Solve animation for Tile 6: Pawn glides along waypoints
+  const animateRoutePawnSolve = (onComplete) => {
+    const pawnToken = moduleRoot.querySelector('#route-pawn-token');
+    if (!pawnToken || isReducedMotion()) {
+      onComplete();
+      return;
+    }
+
+    const waypoints = [
+      { col: 1, row: 7 },
+      ...data.legs.map(l => ({ col: l.targetCol, row: l.targetRow }))
+    ];
+
+    let currentStep = 0;
+    const moveNext = () => {
+      if (currentStep >= waypoints.length - 1) {
+        onComplete();
+        return;
+      }
+
+      const fromWp = waypoints[currentStep];
+      const toWp = waypoints[currentStep + 1];
+      const fromCell = moduleRoot.querySelector(`#coord-cell-${fromWp.col}-${fromWp.row}`);
+      const toCell = moduleRoot.querySelector(`#coord-cell-${toWp.col}-${toWp.row}`);
+
+      if (fromCell && toCell) {
+        const fromRect = fromCell.getBoundingClientRect();
+        const toRect = toCell.getBoundingClientRect();
+        const deltaX = toRect.left - fromRect.left;
+        const deltaY = toRect.top - fromRect.top;
+
+        pawnToken.style.transition = 'transform 350ms cubic-bezier(0.2, 0, 0, 1)';
+        pawnToken.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+        setTimeout(() => {
+          toCell.appendChild(pawnToken);
+          pawnToken.style.transition = 'none';
+          pawnToken.style.transform = 'none';
+          currentStep++;
+          setTimeout(moveNext, 50);
+        }, 360);
+      } else {
+        currentStep++;
+        moveNext();
+      }
+    };
+
+    moveNext();
+  };
+
+  // Chip buttons click (Tile 2 & 10)
   allChipBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       allChipBtns.forEach(b => b.classList.remove('chip-active'));
       btn.classList.add('chip-active');
       activeChipKey = btn.dataset.key;
-      highlightCrosshair(btn.dataset.col, btn.dataset.row);
+      highlightCell(btn.dataset.col, btn.dataset.row);
       persist();
     });
   });
 
-  // Click cell to fill into chip
+  // Handle cell click filling into active chip
   const handleCoordCellClick = (cell) => {
     let chip = null;
     if (activeChipKey) {
       chip = moduleRoot.querySelector(`.coord-chip-btn[data-key="${activeChipKey}"]`);
     }
 
-    // If no active chip, find first empty chip matching coordinates or first empty chip
     if (!chip) {
       chip = allChipBtns.find(b => b.dataset.col === cell.dataset.col && b.dataset.row === cell.dataset.row && !entries[b.dataset.key]) ||
              allChipBtns.find(b => !entries[b.dataset.key]);
@@ -379,34 +629,88 @@ export function mount(root, data, ctx) {
     if (chip && !chip.disabled) {
       const key = chip.dataset.key;
       const char = cell.dataset.char;
-      entries[key] = char;
-      const letterSpan = chip.querySelector('.chip-letter');
-      if (letterSpan) letterSpan.textContent = char;
-      chip.classList.add('chip-filled');
 
-      // Auto advance to next chip
-      const currIdx = allChipBtns.indexOf(chip);
-      allChipBtns.forEach(b => b.classList.remove('chip-active'));
-      if (currIdx < allChipBtns.length - 1) {
-        const nextChip = allChipBtns[currIdx + 1];
-        nextChip.classList.add('chip-active');
-        activeChipKey = nextChip.dataset.key;
-        highlightCrosshair(nextChip.dataset.col, nextChip.dataset.row);
-      } else {
-        activeChipKey = null;
-      }
+      animateFlyLetter(cell, chip, char, () => {
+        entries[key] = char;
+        const letterSpan = chip.querySelector('.chip-letter');
+        if (letterSpan) letterSpan.textContent = char;
+        chip.classList.add('chip-filled');
 
-      persist();
+        // Auto advance to next chip
+        const currIdx = allChipBtns.indexOf(chip);
+        allChipBtns.forEach(b => b.classList.remove('chip-active'));
+        if (currIdx < allChipBtns.length - 1) {
+          const nextChip = allChipBtns[currIdx + 1];
+          nextChip.classList.add('chip-active');
+          activeChipKey = nextChip.dataset.key;
+          highlightCell(nextChip.dataset.col, nextChip.dataset.row);
+        } else {
+          activeChipKey = null;
+        }
+
+        persist();
+      });
     }
   };
 
-  // Verification for Tile 2 & Tile 10
+  // Tile 10 Cartesian helper Jump button
+  const jumpBtn = moduleRoot.querySelector('#btn-helper-jump');
+  if (jumpBtn) {
+    jumpBtn.addEventListener('click', () => {
+      const inputX = moduleRoot.querySelector('#cartesian-input-x');
+      const inputY = moduleRoot.querySelector('#cartesian-input-y');
+      const col = parseInt(inputX.value, 10);
+      const row = parseInt(inputY.value, 10);
+      if (col >= 1 && col <= 7 && row >= 1 && row <= 7) {
+        highlightCell(col, row);
+        const cell = moduleRoot.querySelector(`#coord-cell-${col}-${row}`);
+        if (cell) cell.click();
+      }
+    });
+  }
+
+  // Clear group buttons
+  const clearBtns = Array.from(moduleRoot.querySelectorAll('.btn-group-clear'));
+  clearBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const gIdx = parseInt(btn.dataset.group, 10);
+      if (data.groupedChips) {
+        const grp = data.groupedChips[gIdx];
+        if (grp) {
+          grp.coords.forEach((_, cIdx) => {
+            const key = `g${gIdx}_c${cIdx}`;
+            delete entries[key];
+            const chip = moduleRoot.querySelector(`.coord-chip-btn[data-key="${key}"]`);
+            if (chip) {
+              chip.classList.remove('chip-filled');
+              const span = chip.querySelector('.chip-letter');
+              if (span) span.innerHTML = '&bull;';
+            }
+          });
+        }
+      } else if (data.mathCoords) {
+        data.mathCoords.forEach((_, idx) => {
+          const key = `c${idx}`;
+          delete entries[key];
+          const chip = moduleRoot.querySelector(`.coord-chip-btn[data-key="${key}"]`);
+          if (chip) {
+            chip.classList.remove('chip-filled');
+            const span = chip.querySelector('.chip-letter');
+            if (span) span.innerHTML = '&bull;';
+          }
+        });
+      }
+      persist();
+    });
+  });
+
+  // Verification
   const checkCoordinates = () => {
     let anyWrong = false;
     let firstWrongChip = null;
 
     if (data.groupedChips) {
-      // Tile 2: Check by group (LEARN, BUILD, LEAD)
+      // Tile 2: Check by group
       data.groupedChips.forEach((grp, gIdx) => {
         if (solvedGroups.has(gIdx)) return;
 
@@ -436,14 +740,12 @@ export function mount(root, data, ctx) {
           if (grpEl) {
             grpEl.classList.add('group-solved');
             grpEl.querySelector('.coord-group-status').textContent = 'SOLVED';
+            const clearB = grpEl.querySelector('.btn-group-clear');
+            if (clearB) clearB.remove();
           }
 
           const slotEl = moduleRoot.querySelector(`#poster-slot-${gIdx}`);
-          if (slotEl) {
-            slotEl.classList.add('slot-filled');
-            const content = slotEl.querySelector('.slot-content');
-            if (content) content.textContent = grp.name;
-          }
+          animateGroupLock(grpChips.filter(Boolean), slotEl, grp.name);
           showRewardPopup(root, grp.name);
         } else if (grpFilled && !grpMatches) {
           anyWrong = true;
@@ -482,13 +784,17 @@ export function mount(root, data, ctx) {
       if (allFilled && allMatches) {
         solvedGroups.add(0);
         allChipBtns.forEach(c => c.disabled = true);
-        const slotEl = moduleRoot.querySelector('#poster-slot-0');
-        if (slotEl) {
-          slotEl.classList.add('slot-filled');
-          const content = slotEl.querySelector('.slot-content');
-          if (content) content.textContent = data.finalWord || 'CYBER';
+        const grpEl = moduleRoot.querySelector('#coord-group-0');
+        if (grpEl) {
+          grpEl.classList.add('group-solved');
+          const clearB = grpEl.querySelector('.btn-group-clear');
+          if (clearB) clearB.remove();
         }
-        showRewardPopup(root, data.finalWord || 'CYBER');
+
+        const slotEl = moduleRoot.querySelector('#poster-slot-0');
+        const finalWord = data.finalWord || 'CYBER';
+        animateGroupLock(allChipBtns, slotEl, finalWord);
+        showRewardPopup(root, finalWord);
         persist();
         ctx.onSolved();
       }
@@ -496,13 +802,14 @@ export function mount(root, data, ctx) {
 
     if (anyWrong) {
       const wrongChips = moduleRoot.querySelectorAll('.chip-wrong');
-      wrongChips.forEach(c => c.classList.add('chip-shake'));
+      wrongChips.forEach(c => {
+        c.classList.add('chip-shake');
+        playWrongFeedback(c);
+      });
 
       setTimeout(() => {
         wrongChips.forEach(c => {
-          c.classList.remove('chip-shake');
-          c.classList.remove('chip-wrong');
-          c.classList.remove('chip-filled');
+          c.classList.remove('chip-shake', 'chip-wrong', 'chip-filled');
           const span = c.querySelector('.chip-letter');
           if (span) span.innerHTML = '&bull;';
           delete entries[c.dataset.key];
@@ -522,19 +829,22 @@ export function mount(root, data, ctx) {
     checkBtn.addEventListener('click', checkCoordinates);
   }
 
-  // Initial highlight if chip is active
-  if (activeChipKey) {
-    const activeChip = moduleRoot.querySelector(`.coord-chip-btn[data-key="${activeChipKey}"]`);
-    if (activeChip) highlightCrosshair(activeChip.dataset.col, activeChip.dataset.row);
-  }
+  // Active module instance for external header action bar checkAnswer()
+  activeModuleInstance = {
+    checkAll: checkCoordinates
+  };
 
-  // If Route Tracer already had hits on remount
-  if (data.isRouteTracer && routeLegsCompleted > 0) {
+  // Initial state restoration
+  if (data.isRouteTracer) {
+    renderRouteSegments();
     for (let i = 0; i < routeLegsCompleted; i++) {
       const leg = data.legs[i];
       const hitCell = cells.find(c => parseInt(c.dataset.col, 10) === leg.targetCol && parseInt(c.dataset.row, 10) === leg.targetRow);
       if (hitCell) hitCell.classList.add('cell-path-hit');
     }
+  } else if (activeChipKey) {
+    const activeChip = moduleRoot.querySelector(`.coord-chip-btn[data-key="${activeChipKey}"]`);
+    if (activeChip) highlightCell(activeChip.dataset.col, activeChip.dataset.row);
   }
 
   activeCleanup = () => {

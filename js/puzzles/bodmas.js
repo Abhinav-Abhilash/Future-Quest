@@ -1,13 +1,19 @@
 /**
  * Future Quest 2026 - BODMAS Decoder Puzzle Module
  * 
- * Handles Tile 3 (CODE THE FUTURE), Tile 5 (QUEST Anagram Tray),
- * and Tile 9 (SIGNAL Slotted Equations).
+ * Upgraded UX:
+ * - Calculator-style cards with real superscripts, large typeset expressions, and flipping letter bays.
+ * - Horizontal A-Z numerical scale strip where active key lifts 2px and turns blue.
+ * - T3: Letter cards fly into the 13-slot message strip (FLIP).
+ * - T5: Pointer-draggable anagram tiles with spring-back and snap/pulse slot dropping.
+ * - T9: Vault-style 6-slot row matching equation slot badges.
+ * - Group lock FLIP animations, tactile error vibrations, and per-group Clear buttons.
  */
 
-import { showRewardPopup } from './popup.js';
+import { animateGroupLock, playWrongFeedback, isReducedMotion } from './popup.js';
 
 let activeCleanup = null;
+let activeModuleInstance = null;
 
 export function unmount() {
   if (activeCleanup) {
@@ -18,20 +24,21 @@ export function unmount() {
     }
     activeCleanup = null;
   }
+  activeModuleInstance = null;
 }
 
-/**
- * Helper to map number (1..26) to letter (A..Z).
- */
+export function checkAnswer() {
+  if (activeModuleInstance && typeof activeModuleInstance.checkAll === 'function') {
+    activeModuleInstance.checkAll();
+  }
+}
+
 function numToLetter(num) {
   const n = parseInt(num, 10);
   if (isNaN(n) || n < 1 || n > 26) return '';
   return String.fromCharCode(64 + n);
 }
 
-/**
- * Format math expression string with clean unicode/superscripts.
- */
 function formatMathExpr(raw) {
   return raw
     .replace(/\^2/g, '²')
@@ -49,146 +56,186 @@ export function mount(root, data, ctx) {
 
   const isLocked = ctx.isLocked();
   const saved = ctx.getProgress() || {};
-  const entries = saved.entries || {}; // key -> number string
+  const entries = saved.entries || {};
   const solvedGroups = new Set(saved.solvedGroups || []);
-  const anagramSlots = saved.anagramSlots || [null, null, null, null, null]; // for Tile 5
+  const anagramSlots = saved.anagramSlots || [null, null, null, null, null];
 
-  // Mini A-Z Reference Strip (A:1 .. Z:26)
-  const azChips = Array.from({ length: 26 }, (_, i) => {
-    const l = String.fromCharCode(65 + i);
-    const n = i + 1;
-    return `<span class="az-chip mono"><strong class="az-letter">${l}</strong><span class="az-num">${n}</span></span>`;
-  }).join('');
-
-  // Poster strip
+  // Poster strip slots
   const posterGroups = data.groups || [];
   const posterSlotsHtml = posterGroups.map((grpName, idx) => {
     const isGrpSolved = solvedGroups.has(idx);
     const displayText = isGrpSolved ? (data.groupSolutions ? data.groupSolutions[idx] : grpName) : '';
     return `
-      <div class="poster-slot ${isGrpSolved ? 'slot-filled' : ''}" id="poster-slot-${idx}" data-index="${idx}">
+      <div class="poster-slot ${isGrpSolved ? 'slot-filled slot-stamped' : ''}" id="poster-slot-${idx}" data-index="${idx}">
         <span class="slot-label">${grpName}</span>
         <span class="slot-content mono">${displayText}</span>
       </div>
     `;
   }).join('');
 
-  // Equations HTML
-  // Can be grouped by words (Tile 3) or a flat list (Tile 5, Tile 9)
+  // 26-Key A-Z Horizontal Scale Strip
+  const azChips = Array.from({ length: 26 }, (_, i) => {
+    const l = String.fromCharCode(65 + i);
+    const n = i + 1;
+    return `
+      <div class="az-scale-key mono" id="az-key-${n}" data-num="${n}" data-letter="${l}">
+        <span class="az-key-letter">${l}</span>
+        <span class="az-key-num">${n}</span>
+      </div>
+    `;
+  }).join('');
+
+  // Equations Markup (Grouped or Flat)
   let equationsHtml = '';
 
   if (data.groupedEquations) {
-    // Tile 3: 3 words (CODE, THE, FUTURE)
+    // T3: 3 Words (CODE, THE, FUTURE)
     equationsHtml = data.groupedEquations.map((group, gIdx) => {
       const isGrpSolved = solvedGroups.has(gIdx);
-      const rows = group.equations.map((eq, eIdx) => {
+      const cards = group.equations.map((eq, eIdx) => {
         const key = `g${gIdx}_e${eIdx}`;
         const val = entries[key] || '';
-        const mappedLetter = numToLetter(val);
+        const letter = numToLetter(val);
         return `
-          <div class="bodmas-row ${isGrpSolved ? 'row-locked' : ''}" data-key="${key}">
-            <div class="bodmas-expr mono">${formatMathExpr(eq.display || eq.expr)}</div>
-            <div class="bodmas-eq-sign">=</div>
-            <input 
-              type="number" 
-              class="bodmas-input mono" 
-              data-group="${gIdx}"
-              data-idx="${eIdx}"
-              data-key="${key}"
-              data-expected="${eq.expected}"
-              data-letter="${eq.letter}"
-              value="${val}"
-              placeholder="?"
-              ${isGrpSolved || isLocked ? 'disabled' : ''}
-              min="1"
-              max="99"
-              aria-label="Result for equation ${eq.display || eq.expr}"
-            />
-            <div class="bodmas-mapped-letter mono" id="letter-${key}" aria-live="polite">
-              ${mappedLetter || '&bull;'}
+          <div class="bodmas-calc-card ${isGrpSolved ? 'calc-card-locked' : ''}" data-key="${key}" data-expected="${eq.expected}">
+            <div class="calc-expr-box mono">${formatMathExpr(eq.display || eq.expr)}</div>
+            <div class="calc-input-row">
+              <span class="calc-equal mono">=</span>
+              <input 
+                type="text" 
+                inputmode="numeric" 
+                pattern="[0-9]*" 
+                enterkeyhint="next" 
+                class="bodmas-keycap-input mono" 
+                data-group="${gIdx}"
+                data-idx="${eIdx}"
+                data-key="${key}"
+                data-expected="${eq.expected}"
+                data-letter="${eq.letter}"
+                value="${val}"
+                placeholder="?"
+                ${isGrpSolved || isLocked ? 'disabled' : ''}
+                aria-label="Result for equation ${eq.display || eq.expr}"
+              />
+              <div class="letter-bay">
+                <div class="letter-bay-flipper ${letter ? 'flipped' : ''}">
+                  <span class="bay-letter mono" id="letter-${key}">${letter || '?'}</span>
+                </div>
+              </div>
             </div>
           </div>
         `;
       }).join('');
 
       return `
-        <div class="bodmas-group-card ${isGrpSolved ? 'group-solved' : ''}" id="bodmas-group-${gIdx}">
-          <div class="bodmas-group-header">
-            <span class="bodmas-group-title">Word ${gIdx + 1}: ${group.name}</span>
-            <span class="bodmas-group-status mono">${isGrpSolved ? 'SOLVED' : `${group.equations.length} letters`}</span>
+        <div class="bodmas-group-panel ${isGrpSolved ? 'group-locked' : ''}" id="bodmas-group-${gIdx}">
+          <div class="bodmas-panel-header">
+            <span class="bodmas-panel-title mono">Word ${gIdx + 1}: ${group.name}</span>
+            ${!isGrpSolved && !isLocked ? `
+              <button type="button" class="btn-group-clear keycap-btn" data-group="${gIdx}">Clear</button>
+            ` : ''}
           </div>
-          <div class="bodmas-group-rows">${rows}</div>
+          <div class="bodmas-calc-grid">${cards}</div>
         </div>
       `;
     }).join('');
   } else {
-    // Flat equations (Tile 5 or Tile 9)
-    const rows = (data.equations || []).map((eq, eIdx) => {
+    // Flat Equations (T5, T9)
+    const cards = (data.equations || []).map((eq, eIdx) => {
       const key = `e${eIdx}`;
       const val = entries[key] || '';
-      const mappedLetter = numToLetter(val);
-      const slotTag = eq.slot ? `<span class="slot-tag mono">Letter #${eq.slot}</span>` : '';
+      const letter = numToLetter(val);
+      const slotBadge = eq.slot ? `<span class="calc-slot-badge mono">Slot #${eq.slot}</span>` : '';
       return `
-        <div class="bodmas-row" data-key="${key}">
-          ${slotTag}
-          <div class="bodmas-expr mono">${formatMathExpr(eq.display || eq.expr)}</div>
-          <div class="bodmas-eq-sign">=</div>
-          <input 
-            type="number" 
-            class="bodmas-input mono" 
-            data-idx="${eIdx}"
-            data-key="${key}"
-            data-expected="${eq.expected}"
-            data-letter="${eq.letter}"
-            value="${val}"
-            placeholder="?"
-            ${isLocked ? 'disabled' : ''}
-            min="1"
-            max="99"
-            aria-label="Result for equation ${eq.display || eq.expr}"
-          />
-          <div class="bodmas-mapped-letter mono" id="letter-${key}">
-            ${mappedLetter || '&bull;'}
+        <div class="bodmas-calc-card" data-key="${key}" data-expected="${eq.expected}">
+          <div class="calc-card-header">
+            ${slotBadge}
+            <div class="calc-expr-box mono">${formatMathExpr(eq.display || eq.expr)}</div>
+          </div>
+          <div class="calc-input-row">
+            <span class="calc-equal mono">=</span>
+            <input 
+              type="text" 
+              inputmode="numeric" 
+              pattern="[0-9]*" 
+              enterkeyhint="next" 
+              class="bodmas-keycap-input mono" 
+              data-idx="${eIdx}"
+              data-key="${key}"
+              data-expected="${eq.expected}"
+              data-letter="${eq.letter}"
+              value="${val}"
+              placeholder="?"
+              ${isLocked ? 'disabled' : ''}
+              aria-label="Result for equation ${eq.display || eq.expr}"
+            />
+            <div class="letter-bay">
+              <div class="letter-bay-flipper ${letter ? 'flipped' : ''}">
+                <span class="bay-letter mono" id="letter-${key}">${letter || '?'}</span>
+              </div>
+            </div>
           </div>
         </div>
       `;
     }).join('');
 
-    equationsHtml = `<div class="bodmas-flat-rows">${rows}</div>`;
+    // T9 Vault Row header
+    const vaultRowHtml = data.finalWord === 'SIGNAL' ? `
+      <div class="signal-vault-row" role="region" aria-label="Signal Vault Slots 1 to 6">
+        <span class="vault-row-title mono">VAULT SLOTS:</span>
+        <div class="vault-slots-container">
+          ${[1, 2, 3, 4, 5, 6].map(num => `
+            <div class="vault-slot-cell" id="vault-slot-${num}">
+              <span class="vault-slot-num mono">#${num}</span>
+              <span class="vault-slot-char mono">&bull;</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : '';
+
+    equationsHtml = `
+      ${vaultRowHtml}
+      <div class="bodmas-calc-grid">${cards}</div>
+    `;
   }
 
-  // Anagram Tray for Tile 5
+  // T5 Anagram Tray
   let anagramHtml = '';
   if (data.hasAnagramTray) {
     const isTrayUnlocked = saved.trayUnlocked || solvedGroups.has(0);
     anagramHtml = `
-      <div class="anagram-tray-card ${isTrayUnlocked ? 'unlocked' : 'locked'}" id="anagram-tray-container">
-        <div class="anagram-header">
-          <h3 class="anagram-title">Step 2: Anagram Word Assembly</h3>
-          <span class="anagram-badge mono" id="anagram-badge">${isTrayUnlocked ? 'UNLOCKED' : 'Locked (solve equations first)'}</span>
+      <div class="anagram-tray-panel ${isTrayUnlocked ? 'unlocked' : 'locked'}" id="anagram-tray-panel">
+        <div class="anagram-panel-header">
+          <div class="anagram-tag-row">
+            <span class="anagram-step-tag mono">STEP 2</span>
+            <span class="anagram-badge mono" id="anagram-badge">${isTrayUnlocked ? 'UNLOCKED' : 'Locked (solve equations first)'}</span>
+          </div>
+          <h3 class="anagram-title">Assemble the 5-Letter Word</h3>
+          <p class="anagram-prompt">Drag or tap tiles into the target slots to form the final secret word.</p>
         </div>
-        <p class="anagram-instruction">Tap a tile to place it into the next empty slot below. Form the 5-letter target word.</p>
 
         <!-- Target Slots -->
-        <div class="anagram-target-slots" role="region" aria-label="Target Letter Slots">
+        <div class="anagram-target-slots" role="region" aria-label="Target 5 Slots">
           ${[0, 1, 2, 3, 4].map(idx => `
-            <button type="button" class="anagram-target-slot mono" data-slot-idx="${idx}" aria-label="Slot ${idx + 1}">
-              ${anagramSlots[idx] || ''}
-            </button>
+            <div class="anagram-slot-box keycap-slot" data-slot-idx="${idx}" aria-label="Slot ${idx + 1}">
+              <span class="slot-idx-hint mono">${idx + 1}</span>
+              <span class="slot-letter-val mono">${anagramSlots[idx] || ''}</span>
+            </div>
           `).join('')}
         </div>
 
         <!-- Available Letter Tiles Tray -->
-        <div class="anagram-available-tray" id="anagram-available-tray" role="region" aria-label="Available Letter Tiles">
-          <!-- Populated dynamically -->
+        <div class="anagram-tiles-tray" id="anagram-tiles-tray" role="region" aria-label="Available Letter Tiles">
+          <!-- Letter tiles injected dynamically -->
         </div>
 
-        <div class="anagram-actions">
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-anagram-reset" ${!isTrayUnlocked || isLocked ? 'disabled' : ''}>
+        <div class="anagram-actions-row">
+          <button type="button" class="btn btn-secondary btn-sm keycap-btn" id="btn-anagram-reset" ${!isTrayUnlocked || isLocked ? 'disabled' : ''}>
             Reset Slots
           </button>
-          <button type="button" class="btn btn-primary btn-sm" id="btn-anagram-check" ${!isTrayUnlocked || isLocked ? 'disabled' : ''}>
-            Check Anagram
+          <button type="button" class="btn btn-primary keycap-btn" id="btn-anagram-confirm" ${!isTrayUnlocked || isLocked ? 'disabled' : ''}>
+            Confirm Word
           </button>
         </div>
       </div>
@@ -196,40 +243,29 @@ export function mount(root, data, ctx) {
   }
 
   root.innerHTML = `
-    <div class="puzzle-interactive-module puzzle-bodmas" id="bodmas-module-root">
-      <!-- Poster Slot Strip -->
+    <div class="puzzle-bodmas-wrap" id="bodmas-wrap">
+      <!-- Top Poster Strip -->
       <div class="poster-strip-container" role="region" aria-label="Decoded Poster Fragments">
         <div class="poster-strip-title">Decoded Poster Fragments:</div>
         <div class="poster-strip-slots">${posterSlotsHtml}</div>
       </div>
 
-      <!-- Mini A-Z Reference Strip -->
-      <div class="bodmas-az-strip-wrapper" role="region" aria-label="A to Z Numerical Reference">
-        <div class="az-strip-header">
-          <span class="az-strip-label">Alphabet to Number Index (A=1 ... Z=26):</span>
-        </div>
-        <div class="bodmas-az-strip">${azChips}</div>
+      <!-- Horizontal A-Z Numerical Scale Strip -->
+      <div class="az-scale-container" role="region" aria-label="A to Z Numerical Scale (1=A ... 26=Z)">
+        <div class="az-scale-track">${azChips}</div>
       </div>
 
-      <!-- Equations Area -->
-      <div class="bodmas-equations-area" role="region" aria-label="BODMAS Equations">
+      <!-- Stage Calculations -->
+      <div class="bodmas-stage-content">
         ${equationsHtml}
-      </div>
-
-      <!-- Main Action Bar -->
-      <div class="puzzle-action-bar">
-        <button type="button" class="btn btn-primary" id="btn-bodmas-check" ${isLocked ? 'disabled' : ''}>
-          Check Equations
-        </button>
-        <span class="action-note text-muted">Solve each equation using standard order of operations</span>
       </div>
 
       ${anagramHtml}
     </div>
   `;
 
-  const moduleRoot = root.querySelector('#bodmas-module-root');
-  const allInputs = Array.from(moduleRoot.querySelectorAll('.bodmas-input'));
+  const wrap = root.querySelector('#bodmas-wrap');
+  const allInputs = Array.from(wrap.querySelectorAll('.bodmas-keycap-input'));
 
   const persist = () => {
     ctx.saveProgress({
@@ -240,83 +276,198 @@ export function mount(root, data, ctx) {
     });
   };
 
-  // Live letter mapping on input
+  // Highlight A-Z scale strip key on input / focus
+  const highlightScaleKey = (num) => {
+    wrap.querySelectorAll('.az-scale-key').forEach(k => k.classList.remove('key-active'));
+    const n = parseInt(num, 10);
+    if (!isNaN(n) && n >= 1 && n <= 26) {
+      const activeKey = wrap.querySelector(`#az-key-${n}`);
+      if (activeKey) {
+        activeKey.classList.add('key-active');
+        activeKey.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+      }
+    }
+  };
+
+  // Update T9 vault slot if applicable
+  const updateVaultSlot = (eqIdx, letter) => {
+    if (data.finalWord !== 'SIGNAL') return;
+    const eq = data.equations[eqIdx];
+    if (!eq || !eq.slot) return;
+    const slotCell = wrap.querySelector(`#vault-slot-${eq.slot}`);
+    if (slotCell) {
+      const charEl = slotCell.querySelector('.vault-slot-char');
+      if (charEl) charEl.textContent = letter || '•';
+      slotCell.classList.toggle('vault-slot-filled', !!letter);
+    }
+  };
+
+  // Input Events: Numerical entry, live letter bay flipping, next input navigation
   allInputs.forEach((inp, idx) => {
+    inp.addEventListener('focus', () => {
+      highlightScaleKey(inp.value);
+      inp.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
+
     inp.addEventListener('input', (e) => {
       const val = e.target.value.trim();
-      const key = e.target.dataset.key;
+      const key = inp.dataset.key;
       entries[key] = val;
-
-      const letterBadge = moduleRoot.querySelector(`#letter-${key}`);
-      if (letterBadge) {
-        const letter = numToLetter(val);
-        letterBadge.innerHTML = letter || '&bull;';
-      }
       persist();
+
+      const letter = numToLetter(val);
+      const flipper = inp.closest('.calc-input-row')?.querySelector('.letter-bay-flipper');
+      const letterSpan = flipper?.querySelector('.bay-letter');
+
+      if (letterSpan) {
+        letterSpan.textContent = letter || '?';
+      }
+      if (flipper) {
+        flipper.classList.toggle('flipped', !!letter);
+      }
+
+      highlightScaleKey(val);
+
+      if (data.finalWord === 'SIGNAL') {
+        updateVaultSlot(parseInt(inp.dataset.idx, 10), letter);
+      }
     });
 
     inp.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        // Move to next input or check
         if (idx < allInputs.length - 1) {
           allInputs[idx + 1].focus();
         } else {
-          checkEquations();
+          checkAll();
         }
       }
     });
   });
 
-  // Anagram Tray Logic for Tile 5
+  // Per-group Clear buttons
+  wrap.querySelectorAll('.btn-group-clear').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const gIdx = parseInt(btn.dataset.group, 10);
+      const panel = wrap.querySelector(`#bodmas-group-${gIdx}`);
+      if (!panel) return;
+      const groupInputs = panel.querySelectorAll('.bodmas-keycap-input:not(:disabled)');
+      groupInputs.forEach(inp => {
+        inp.value = '';
+        delete entries[inp.dataset.key];
+        const flipper = inp.closest('.calc-input-row')?.querySelector('.letter-bay-flipper');
+        if (flipper) {
+          flipper.classList.remove('flipped');
+          flipper.querySelector('.bay-letter').textContent = '?';
+        }
+      });
+      persist();
+      if (groupInputs[0]) groupInputs[0].focus();
+    });
+  });
+
+  // T5 Anagram Pointer Drag & Snap
   if (data.hasAnagramTray) {
+    const letters = ['Q', 'U', 'E', 'S', 'T'];
+
     const renderTray = () => {
-      const trayEl = moduleRoot.querySelector('#anagram-available-tray');
+      const trayEl = wrap.querySelector('#anagram-tiles-tray');
       if (!trayEl) return;
       trayEl.innerHTML = '';
 
-      // All 5 letters: Q, U, E, S, T
-      const letters = ['Q', 'U', 'E', 'S', 'T'];
-      // Count used in slots
       const usedCounts = {};
       anagramSlots.forEach(ch => {
         if (ch) usedCounts[ch] = (usedCounts[ch] || 0) + 1;
       });
 
-      letters.forEach(letter => {
+      letters.forEach((letter, i) => {
         const used = usedCounts[letter] || 0;
         const available = 1 - used;
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = `anagram-tile mono ${available <= 0 ? 'tile-used' : ''}`;
-        btn.textContent = letter;
-        btn.disabled = available <= 0 || !saved.trayUnlocked || isLocked;
+        const tile = document.createElement('div');
+        tile.className = `anagram-tile mono keycap-btn ${available <= 0 ? 'tile-used' : ''}`;
+        tile.textContent = letter;
+        tile.dataset.letter = letter;
 
-        btn.addEventListener('click', () => {
-          // Place in first empty slot
-          const emptyIdx = anagramSlots.indexOf(null);
-          if (emptyIdx !== -1) {
-            anagramSlots[emptyIdx] = letter;
-            updateSlots();
-            renderTray();
-            persist();
-          }
-        });
-        trayEl.appendChild(btn);
+        if (available > 0 && saved.trayUnlocked && !isLocked) {
+          // Pointer Drag & Spring-back
+          let isDragging = false;
+          let startX = 0;
+          let startY = 0;
+
+          tile.addEventListener('pointerdown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            tile.setPointerCapture(e.pointerId);
+            tile.classList.add('tile-dragging');
+          });
+
+          tile.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            tile.style.transform = `translate(${dx}px, ${dy}px) scale(1.08)`;
+          });
+
+          const onPointerEnd = (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            tile.classList.remove('tile-dragging');
+
+            // Check if dropped on a target slot
+            tile.style.display = 'none';
+            const elemBelow = document.elementFromPoint(e.clientX, e.clientY);
+            tile.style.display = '';
+
+            const slotBox = elemBelow?.closest('.keycap-slot');
+            if (slotBox) {
+              const sIdx = parseInt(slotBox.dataset.slotIdx, 10);
+              anagramSlots[sIdx] = letter;
+              slotBox.classList.add('slot-pulse');
+              setTimeout(() => slotBox.classList.remove('slot-pulse'), 250);
+              updateSlots();
+              renderTray();
+              persist();
+              return;
+            }
+
+            // If not dropped on a slot, spring back
+            tile.style.transition = 'transform 180ms ease';
+            tile.style.transform = 'translate(0, 0)';
+            setTimeout(() => { tile.style.transition = ''; }, 180);
+          };
+
+          tile.addEventListener('pointerup', onPointerEnd);
+          tile.addEventListener('pointercancel', onPointerEnd);
+
+          // Tap tile to place in first empty slot
+          tile.addEventListener('click', () => {
+            const emptyIdx = anagramSlots.indexOf(null);
+            if (emptyIdx !== -1) {
+              anagramSlots[emptyIdx] = letter;
+              updateSlots();
+              renderTray();
+              persist();
+            }
+          });
+        }
+
+        trayEl.appendChild(tile);
       });
     };
 
     const updateSlots = () => {
-      const slotBtns = moduleRoot.querySelectorAll('.anagram-target-slot');
-      slotBtns.forEach((btn, idx) => {
-        btn.textContent = anagramSlots[idx] || '';
+      const slotBoxes = wrap.querySelectorAll('.keycap-slot');
+      slotBoxes.forEach((box, idx) => {
+        const valSpan = box.querySelector('.slot-letter-val');
+        if (valSpan) valSpan.textContent = anagramSlots[idx] || '';
+        box.classList.toggle('slot-has-letter', !!anagramSlots[idx]);
       });
     };
 
-    // Slot click removes placed letter
-    const slotBtns = moduleRoot.querySelectorAll('.anagram-target-slot');
-    slotBtns.forEach((btn, idx) => {
-      btn.addEventListener('click', () => {
+    // Tap slot to remove letter
+    wrap.querySelectorAll('.keycap-slot').forEach((box, idx) => {
+      box.addEventListener('click', () => {
         if (anagramSlots[idx] && !isLocked && !solvedGroups.has(0)) {
           anagramSlots[idx] = null;
           updateSlots();
@@ -326,7 +477,7 @@ export function mount(root, data, ctx) {
       });
     });
 
-    const resetBtn = moduleRoot.querySelector('#btn-anagram-reset');
+    const resetBtn = wrap.querySelector('#btn-anagram-reset');
     if (resetBtn) {
       resetBtn.addEventListener('click', () => {
         for (let i = 0; i < 5; i++) anagramSlots[i] = null;
@@ -336,26 +487,21 @@ export function mount(root, data, ctx) {
       });
     }
 
-    const checkAnagramBtn = moduleRoot.querySelector('#btn-anagram-check');
-    if (checkAnagramBtn) {
-      checkAnagramBtn.addEventListener('click', () => {
+    const confirmBtn = wrap.querySelector('#btn-anagram-confirm');
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => {
         const word = anagramSlots.join('');
         if (word === 'QUEST') {
-          // Solved!
           solvedGroups.add(0);
-          const slotEl = moduleRoot.querySelector('#poster-slot-0');
-          if (slotEl) {
-            slotEl.classList.add('slot-filled');
-            const content = slotEl.querySelector('.slot-content');
-            if (content) content.textContent = 'QUEST';
-          }
-          showRewardPopup(root, 'QUEST');
-          persist();
-          ctx.onSolved();
+          const slotEl = wrap.querySelector('#poster-slot-0');
+          const trayPanel = wrap.querySelector('#anagram-tray-panel');
+          animateGroupLock(trayPanel, slotEl, 'QUEST', root, () => {
+            persist();
+            ctx.onSolved();
+          });
         } else {
-          // Wrong word
-          checkAnagramBtn.classList.add('btn-wrong-shake');
-          setTimeout(() => checkAnagramBtn.classList.remove('btn-wrong-shake'), 400);
+          const errorBar = document.querySelector('#bar-error-text');
+          playWrongFeedback(confirmBtn, errorBar);
           ctx.onWrongCheck();
         }
       });
@@ -365,24 +511,24 @@ export function mount(root, data, ctx) {
     updateSlots();
   }
 
-  // Verification
-  const checkEquations = () => {
+  // Answer Check Verification
+  const checkAll = () => {
     let anyWrong = false;
-    let firstWrongInput = null;
+    let wrongInputs = [];
 
     if (data.groupedEquations) {
-      // Tile 3: Check by group
+      // T3: Check by group
       data.groupedEquations.forEach((group, gIdx) => {
         if (solvedGroups.has(gIdx)) return;
 
         let grpFilled = true;
         let grpMatches = true;
-        const grpInputs = [];
+        const groupInputs = [];
 
         group.equations.forEach((eq, eIdx) => {
           const key = `g${gIdx}_e${eIdx}`;
-          const input = moduleRoot.querySelector(`.bodmas-input[data-key="${key}"]`);
-          grpInputs.push(input);
+          const input = wrap.querySelector(`.bodmas-keycap-input[data-key="${key}"]`);
+          groupInputs.push(input);
           const val = (entries[key] || '').trim();
 
           if (!val) {
@@ -394,26 +540,18 @@ export function mount(root, data, ctx) {
 
         if (grpFilled && grpMatches) {
           solvedGroups.add(gIdx);
-          grpInputs.forEach(inp => { if (inp) inp.disabled = true; });
-          const card = moduleRoot.querySelector(`#bodmas-group-${gIdx}`);
-          if (card) {
-            card.classList.add('group-solved');
-            card.querySelector('.bodmas-group-status').textContent = 'SOLVED';
-          }
+          groupInputs.forEach(inp => { if (inp) inp.disabled = true; });
 
-          const slotEl = moduleRoot.querySelector(`#poster-slot-${gIdx}`);
-          if (slotEl) {
-            slotEl.classList.add('slot-filled');
-            const content = slotEl.querySelector('.slot-content');
-            if (content) content.textContent = group.solution || group.name;
-          }
-          showRewardPopup(root, group.solution || group.name);
+          const panel = wrap.querySelector(`#bodmas-group-${gIdx}`);
+          if (panel) panel.classList.add('group-locked');
+
+          const slotEl = wrap.querySelector(`#poster-slot-${gIdx}`);
+          animateGroupLock(groupInputs, slotEl, group.solution || group.name, root);
         } else if (grpFilled && !grpMatches) {
           anyWrong = true;
-          grpInputs.forEach(inp => {
+          groupInputs.forEach(inp => {
             if (inp && parseInt(inp.value, 10) !== parseInt(inp.dataset.expected, 10)) {
-              inp.classList.add('input-wrong');
-              if (!firstWrongInput) firstWrongInput = inp;
+              wrongInputs.push(inp);
             }
           });
         }
@@ -425,7 +563,7 @@ export function mount(root, data, ctx) {
         ctx.onSolved();
       }
     } else if (data.hasAnagramTray) {
-      // Tile 5: Check 5 equations to unlock anagram tray
+      // T5: Unlock Anagram Tray
       let allEqsCorrect = true;
       allInputs.forEach(inp => {
         const val = parseInt(inp.value, 10);
@@ -434,29 +572,26 @@ export function mount(root, data, ctx) {
           allEqsCorrect = false;
           if (!isNaN(val)) {
             anyWrong = true;
-            inp.classList.add('input-wrong');
-            if (!firstWrongInput) firstWrongInput = inp;
+            wrongInputs.push(inp);
           }
         }
       });
 
       if (allEqsCorrect) {
         saved.trayUnlocked = true;
-        const trayCard = moduleRoot.querySelector('#anagram-tray-container');
-        if (trayCard) {
-          trayCard.classList.remove('locked');
-          trayCard.classList.add('unlocked');
-          trayCard.querySelector('#anagram-badge').textContent = 'UNLOCKED';
-          const rBtn = trayCard.querySelector('#btn-anagram-reset');
-          const cBtn = trayCard.querySelector('#btn-anagram-check');
-          if (rBtn) rBtn.disabled = false;
-          if (cBtn) cBtn.disabled = false;
+        const trayPanel = wrap.querySelector('#anagram-tray-panel');
+        if (trayPanel) {
+          trayPanel.classList.remove('locked');
+          trayPanel.classList.add('unlocked');
+          const badge = trayPanel.querySelector('#anagram-badge');
+          if (badge) badge.textContent = 'UNLOCKED';
+          wrap.querySelectorAll('#btn-anagram-reset, #btn-anagram-confirm').forEach(b => b.disabled = false);
         }
         allInputs.forEach(inp => inp.disabled = true);
         persist();
       }
     } else {
-      // Tile 9: Flat equations mapping to slots (SIGNAL)
+      // T9: Slotted Equations (SIGNAL)
       let allFilled = true;
       let allCorrect = true;
 
@@ -468,40 +603,35 @@ export function mount(root, data, ctx) {
         } else if (val !== expected) {
           allCorrect = false;
           anyWrong = true;
-          inp.classList.add('input-wrong');
-          if (!firstWrongInput) firstWrongInput = inp;
+          wrongInputs.push(inp);
         }
       });
 
       if (allFilled && allCorrect) {
         solvedGroups.add(0);
         allInputs.forEach(inp => inp.disabled = true);
-        const slotEl = moduleRoot.querySelector('#poster-slot-0');
-        if (slotEl) {
-          slotEl.classList.add('slot-filled');
-          const content = slotEl.querySelector('.slot-content');
-          if (content) content.textContent = data.finalWord || 'SIGNAL';
-        }
-        showRewardPopup(root, data.finalWord || 'SIGNAL');
-        persist();
-        ctx.onSolved();
+        const slotEl = wrap.querySelector('#poster-slot-0');
+        animateGroupLock(allInputs, slotEl, data.finalWord || 'SIGNAL', root, () => {
+          persist();
+          ctx.onSolved();
+        });
       }
     }
 
     if (anyWrong) {
-      const wrongInputs = moduleRoot.querySelectorAll('.input-wrong');
-      wrongInputs.forEach(inp => inp.classList.add('input-shake'));
-
+      const errorBar = document.querySelector('#bar-error-text');
+      playWrongFeedback(wrongInputs, errorBar);
       setTimeout(() => {
         wrongInputs.forEach(inp => {
-          inp.classList.remove('input-shake');
-          inp.classList.remove('input-wrong');
           inp.value = '';
           delete entries[inp.dataset.key];
-          const letterBadge = moduleRoot.querySelector(`#letter-${inp.dataset.key}`);
-          if (letterBadge) letterBadge.innerHTML = '&bull;';
+          const flipper = inp.closest('.calc-input-row')?.querySelector('.letter-bay-flipper');
+          if (flipper) {
+            flipper.classList.remove('flipped');
+            flipper.querySelector('.bay-letter').textContent = '?';
+          }
         });
-        if (firstWrongInput) firstWrongInput.focus();
+        if (wrongInputs[0]) wrongInputs[0].focus();
         persist();
       }, 450);
 
@@ -509,10 +639,7 @@ export function mount(root, data, ctx) {
     }
   };
 
-  const checkBtn = moduleRoot.querySelector('#btn-bodmas-check');
-  if (checkBtn) {
-    checkBtn.addEventListener('click', checkEquations);
-  }
+  activeModuleInstance = { checkAll };
 
   activeCleanup = () => {
     allInputs.forEach(inp => inp.replaceWith(inp.cloneNode(true)));
