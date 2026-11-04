@@ -235,24 +235,6 @@ export const Screens = {
                 </span>
                 <span class="ready-check-text">We have read and agree to the competition rules.</span>
               </label>
-              <label class="ready-check-item">
-                <input type="checkbox" id="chk-skills-ready" class="ready-checkbox sr-only" />
-                <span class="custom-checkbox" aria-hidden="true">
-                  <svg class="check-svg" viewBox="0 0 16 16">
-                    <polyline points="3 8 6.5 12 13 4"></polyline>
-                  </svg>
-                </span>
-                <span class="ready-check-text">Basic web skills help: some puzzles use a browser's developer tools.</span>
-              </label>
-              <label class="ready-check-item">
-                <input type="checkbox" id="chk-skills-ready" class="ready-checkbox sr-only" />
-                <span class="custom-checkbox" aria-hidden="true">
-                  <svg class="check-svg" viewBox="0 0 16 16">
-                    <polyline points="3 8 6.5 12 13 4"></polyline>
-                  </svg>
-                </span>
-                <span class="ready-check-text">Basic web skills help: some puzzles use a browser's developer tools.</span>
-              </label>
             </div>
 
             <div class="entry-notice">
