@@ -104,7 +104,7 @@ export const CONFIG = {
     puzzle_1: {
       id: "puzzle_1",
       type: "ascii",
-      title: "ASCII Quote Decoder",
+      title: "ASCII Decoder",
       category: "Information Security",
       whatToDo: "Convert the numerical ASCII codes into characters to decode the quote. Use the reference chart if needed.",
       prompt: "Translate the 8-word quote encoded in standard ASCII numbers below.",
@@ -116,7 +116,7 @@ export const CONFIG = {
     puzzle_2: {
       id: "puzzle_2",
       type: "coords",
-      title: "Coordinates Grid: Multi-Word Decoder",
+      title: "Coordinates Grid",
       category: "Computer Science",
       whatToDo: "Locate the given (Col, Row) coordinate pairs on the 7×7 grid. Extract the letters to discover 3 core engineering principles.",
       prompt: "Read the cells at the designated coordinates to uncover the three mission keywords.",
@@ -128,19 +128,19 @@ export const CONFIG = {
     puzzle_3: {
       id: "puzzle_3",
       type: "bodmas",
-      title: "Code The Future: BODMAS Decoder",
+      title: "BODMAS Decoder",
       category: "Computer Networks",
       whatToDo: "Evaluate each math expression using standard BODMAS/PEMDAS precedence. Map each number to its corresponding letter (1=A ... 26=Z).",
       prompt: "Calculate the 13 mathematical expressions to reveal the 3-word slogan.",
       data: {
         id: "puzzle_3",
-        groups: ["First Word", "Second Word", "Third Word"]
+        groups: ["Word 1", "Word 2", "Word 3"]
       }
     },
     puzzle_4: {
       id: "puzzle_4",
       type: "riddle",
-      title: "The 17-Year-Old OS Riddle",
+      title: "System Riddle",
       category: "Operating Systems & Hardware",
       whatToDo: "Decrypt the identity riddle: read the cryptic clues about the legendary 17-year-old operating system's nickname, and type the letter keycaps.",
       prompt: "Identify the 17-year-old mobile OS with sweet, spiced roots.",
@@ -162,7 +162,7 @@ export const CONFIG = {
     puzzle_5: {
       id: "puzzle_5",
       type: "ascii",
-      title: "Reverse-Index Cipher: WHERE HUMAN MEETS AI",
+      title: "Reverse-Index Cipher",
       category: "Cybernetics & Cryptography",
       whatToDo: "Decode the reverse-index numerical tokens into letters (where Z=1, Y=2, X=3 ... C=24, B=25, A=26). Type the letters to reveal the centerpiece phrase.",
       prompt: "Decrypt the 4-word centerpiece theme using reverse alphabet indexing.",
@@ -175,7 +175,7 @@ export const CONFIG = {
     puzzle_6: {
       id: "puzzle_6",
       type: "riddle",
-      title: "Visual Clue: Host Institution",
+      title: "Visual Clue Riddle",
       category: "Institutional Identity",
       whatToDo: "Inspect the cosmic illustration to identify the host institution and department. Deduce the 6 words and type the letters into the keycaps.",
       prompt: "Examine the visual clues in the artwork to deduce the 6-word hosting institution and school.",
@@ -203,7 +203,7 @@ export const CONFIG = {
     puzzle_7: {
       id: "puzzle_7",
       type: "wordsearch",
-      title: "Treasure Hunt Word Search",
+      title: "Word Search",
       category: "Applied Cryptography",
       whatToDo: "Locate all 20 tech terms from the word list in the 15×15 matrix. Words can go in any of 8 directions (horizontal, vertical, diagonal, forward, or backward).",
       prompt: "Find the 20 technology words listed in the checklist below.",
@@ -214,7 +214,7 @@ export const CONFIG = {
     puzzle_8: {
       id: "puzzle_8",
       type: "riddle",
-      title: "The Orbital Starman Riddle",
+      title: "Aerospace Riddle",
       category: "Automotive & Aerospace",
       whatToDo: "Deduce the vehicle described in the cosmic riddle. Type the 8-letter model name into the tactile keycaps.",
       prompt: "Solve the riddle of the spacefaring convertible piloted by Starman.",
@@ -228,14 +228,14 @@ export const CONFIG = {
           "With Starman at the wheel, what car am I?"
         ],
         words: [
-          { name: "Vehicle Model", length: 8 }
+          { name: "Word 1", length: 8 }
         ]
       }
     },
     puzzle_9: {
       id: "puzzle_9",
       type: "riddle",
-      title: "The Dual Color Palette Riddle",
+      title: "Color Palette Riddle",
       category: "Colorimetry & Graphic Design",
       whatToDo: "Deduce the two background colors from the poetic colorimetry riddle. Type the color names into the keycaps.",
       prompt: "Identify the two complementary colors that form the poster canvas background.",
@@ -250,19 +250,19 @@ export const CONFIG = {
           "What two colors are we?"
         ],
         words: [
-          { name: "Color 1 (Part 1)", length: 4 },
-          { name: "Color 1 (Part 2)", length: 4 },
-          { name: "Conjunction", length: 3 },
-          { name: "Color 2 (Part 1)", length: 5 },
-          { name: "Color 2 (Part 2)", length: 5 },
-          { name: "Color 2 (Part 3)", length: 4 }
+          { name: "Word 1", length: 4 },
+          { name: "Word 2", length: 4 },
+          { name: "Word 3", length: 3 },
+          { name: "Word 4", length: 5 },
+          { name: "Word 5", length: 5 },
+          { name: "Word 6", length: 4 }
         ]
       }
     },
     puzzle_10: {
       id: "puzzle_10",
       type: "coords",
-      title: "Coordinates Grid: FUTURE QUEST",
+      title: "Cartesian Coordinates Grid",
       category: "Design Systems & Event Geometry",
       whatToDo: "Locate the given (Col, Row) coordinate pairs on the 7×7 grid. Extract the letters to discover the 2-word competition theme.",
       prompt: "Read the cells at the designated coordinates to uncover the event title.",

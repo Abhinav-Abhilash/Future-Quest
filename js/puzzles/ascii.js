@@ -377,33 +377,29 @@ export function mount(root, data, ctx) {
   // Initial live sentence render
   updateLiveSentence();
 
-  // Input events: Auto-advance, backspace navigation, card flipping, paste
+  // Input events: Single-word auto-advance, backspace navigation, card flipping, paste
   allInputs.forEach((inp, idx) => {
-    inp.addEventListener('focus', () => {
-      inp.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    });
-
     inp.addEventListener('input', (e) => {
       const val = e.target.value;
       const char = val ? val[val.length - 1] : '';
       inp.value = char;
       const key = inp.dataset.key;
       const flipper = inp.closest('.card-slot-flipper');
+      const wIdx = parseInt(inp.dataset.word, 10);
+      const cIdx = parseInt(inp.dataset.char, 10);
 
       if (char) {
         entries[key] = char;
         if (flipper) flipper.classList.add('flipped');
         persist();
         updateLiveSentence();
-        checkWordLock(parseInt(inp.dataset.word, 10));
+        checkWordLock(wIdx);
 
-        // Auto-advance to next available input
-        for (let i = idx + 1; i < allInputs.length; i++) {
-          if (!allInputs[i].disabled) {
-            allInputs[i].focus();
-            allInputs[i].select();
-            break;
-          }
+        // Advance to next slot in the SAME word only
+        const nextInSameWord = wrap.querySelector(`.ascii-keycap-input[data-word="${wIdx}"][data-char="${cIdx + 1}"]`);
+        if (nextInSameWord && !nextInSameWord.disabled) {
+          nextInSameWord.focus();
+          nextInSameWord.select();
         }
       } else {
         delete entries[key];
@@ -414,28 +410,25 @@ export function mount(root, data, ctx) {
     });
 
     inp.addEventListener('keydown', (e) => {
+      const wIdx = parseInt(inp.dataset.word, 10);
+      const cIdx = parseInt(inp.dataset.char, 10);
+
       if (e.key === 'Backspace') {
-        if (!inp.value) {
-          for (let i = idx - 1; i >= 0; i--) {
-            if (!allInputs[i].disabled) {
-              allInputs[i].focus();
-              break;
-            }
+        if (!inp.value && cIdx > 0) {
+          const prevInSameWord = wrap.querySelector(`.ascii-keycap-input[data-word="${wIdx}"][data-char="${cIdx - 1}"]`);
+          if (prevInSameWord && !prevInSameWord.disabled) {
+            prevInSameWord.focus();
           }
         }
-      } else if (e.key === 'ArrowLeft') {
-        for (let i = idx - 1; i >= 0; i--) {
-          if (!allInputs[i].disabled) {
-            allInputs[i].focus();
-            break;
-          }
+      } else if (e.key === 'ArrowLeft' && cIdx > 0) {
+        const prevInSameWord = wrap.querySelector(`.ascii-keycap-input[data-word="${wIdx}"][data-char="${cIdx - 1}"]`);
+        if (prevInSameWord && !prevInSameWord.disabled) {
+          prevInSameWord.focus();
         }
       } else if (e.key === 'ArrowRight') {
-        for (let i = idx + 1; i < allInputs.length; i++) {
-          if (!allInputs[i].disabled) {
-            allInputs[i].focus();
-            break;
-          }
+        const nextInSameWord = wrap.querySelector(`.ascii-keycap-input[data-word="${wIdx}"][data-char="${cIdx + 1}"]`);
+        if (nextInSameWord && !nextInSameWord.disabled) {
+          nextInSameWord.focus();
         }
       } else if (e.key === 'Enter') {
         e.preventDefault();

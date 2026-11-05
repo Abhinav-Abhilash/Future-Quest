@@ -2146,21 +2146,10 @@
   color: #FFFFFF;
 }
 
-.cell-pawn-token {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  color: #FFC928;
-}
-
-/* Locked Radar Target Cell */
-.coord-cell.cell-path-hit {
-  background: rgba(13, 148, 136, 0.28) !important;
-  border-color: #2DD4BF !important;
-  color: #FFC928 !important;
-  text-shadow: 0 0 8px rgba(255, 201, 40, 0.6);
+.coord-cell.cell-selected {
+  border-color: #2DD4BF;
+  background: #162B3A;
+  color: #FFFFFF;
 }
 
 /* Controls Column & Target Lock Cartridges */
@@ -2178,11 +2167,6 @@
   border-radius: 6px;
 }
 
-.coord-word-group.group-solved {
-  border-color: #238636;
-  background: rgba(35, 134, 54, 0.08);
-}
-
 .coord-group-header {
   display: flex;
   justify-content: space-between;
@@ -2196,18 +2180,13 @@
   color: #FFFFFF;
 }
 
-.coord-group-status {
-  font-size: 11px;
-  color: var(--text-muted, #7E7492);
-}
-
 .coord-chips-row {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-/* Target Lock Cartridges */
+/* Neutral Target Lock Cartridges */
 .coord-chip-btn {
   display: inline-flex;
   flex-direction: column;
@@ -2237,60 +2216,12 @@
 }
 
 .coord-chip-btn.chip-active {
-  border-color: #FFC928 !important;
+  border-color: #2DD4BF !important;
   background: #1E3042 !important;
-  box-shadow: 0 0 10px rgba(255, 201, 40, 0.35);
 }
 
 .coord-chip-btn.chip-filled .chip-letter {
-  color: #FFC928;
-  text-shadow: 0 0 6px rgba(255, 201, 40, 0.5);
-}
-
-.coord-chip-btn.chip-wrong {
-  border-color: #F85149 !important;
-  color: #F85149 !important;
-}
-
-/* Tile 10 Cartesian Live Selector */
-.coord-cartesian-helper {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid #1E3A4C;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.helper-label {
-  font-size: 10px;
-  color: var(--text-muted, #7E7492);
-  letter-spacing: 0.05em;
-}
-
-.helper-inputs {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.helper-field {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  color: var(--text-muted, #7E7492);
-}
-
-.helper-input {
-  width: 44px;
-  height: 28px;
-  text-align: center;
-  background: #090F14;
-  font-size: 13px;
-  font-weight: 700;
-  color: #99F6E4;
-  border: 1px solid #1E3A4C;
+  color: #FFFFFF;
 }
 
 /* Route Tracer Waypoint Log Panel */
@@ -2346,18 +2277,6 @@
   font-size: 12px;
 }
 
-.route-leg-item.leg-active {
-  border-left: 3px solid #14B8A6;
-  border-color: #14B8A6;
-  background: #112533;
-}
-
-.route-leg-item.leg-done {
-  border-left: 3px solid #3FB950;
-  border-color: #238636;
-  background: rgba(63, 185, 80, 0.08);
-}
-
 .leg-step-badge {
   font-size: 10px;
   font-weight: 700;
@@ -2372,21 +2291,6 @@
 
 .leg-desc {
   color: var(--text-primary, #F0EDF6);
-}
-
-.leg-target-hint {
-  font-size: 10px;
-  color: var(--text-muted, #7E7492);
-}
-
-.leg-status {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-muted, #7E7492);
-}
-
-.route-leg-item.leg-done .leg-status {
-  color: #3FB950;
 }
 
 

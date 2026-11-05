@@ -20,7 +20,7 @@ export const PUZZLES = {
   puzzle_1: {
     id: 'puzzle_1',
     type: 'ascii',
-    title: 'ASCII Quote Decoder',
+    title: 'ASCII Decoder',
     category: 'Information Security',
     difficulty: 'easy',
     timeLimit: 600,
@@ -61,7 +61,7 @@ export const PUZZLES = {
   puzzle_2: {
     id: 'puzzle_2',
     type: 'coords',
-    title: 'Coordinates Grid: Multi-Word Decoder',
+    title: 'Coordinates Grid',
     category: 'Computer Science',
     difficulty: 'easy',
     timeLimit: 600,
@@ -102,7 +102,7 @@ export const PUZZLES = {
   puzzle_3: {
     id: 'puzzle_3',
     type: 'bodmas',
-    title: 'Code The Future: BODMAS Decoder',
+    title: 'BODMAS Decoder',
     category: 'Computer Networks',
     difficulty: 'medium',
     timeLimit: 900,
@@ -123,10 +123,10 @@ export const PUZZLES = {
     },
     clientData: {
       id: 'puzzle_3',
-      groups: ['First Word', 'Second Word', 'Third Word'],
+      groups: ['Word 1', 'Word 2', 'Word 3'],
       groupedEquations: [
         {
-          name: 'First Word',
+          name: 'Word 1',
           equations: [
             { expr: '20 - 4 * 5 + 3', display: '20 - 4 * 5 + 3' },
             { expr: '3^2 + 18 / 3', display: '3^2 + 18 / 3' },
@@ -135,7 +135,7 @@ export const PUZZLES = {
           ],
         },
         {
-          name: 'Second Word',
+          name: 'Word 2',
           equations: [
             { expr: '4^2 + 12 / 3', display: '4^2 + 12 / 3' },
             { expr: '2^3 + 6 - 3 * 2', display: '2^3 + 6 - 3 * 2' },
@@ -143,7 +143,7 @@ export const PUZZLES = {
           ],
         },
         {
-          name: 'Third Word',
+          name: 'Word 3',
           equations: [
             { expr: '3 * (4 + 4) / 4', display: '3 * (4 + 4) / 4' },
             { expr: '5^2 - 12 / 3', display: '5^2 - 12 / 3' },
@@ -161,7 +161,7 @@ export const PUZZLES = {
   puzzle_4: {
     id: 'puzzle_4',
     type: 'riddle',
-    title: 'The 17-Year-Old OS Riddle',
+    title: 'System Riddle',
     category: 'Operating Systems & Hardware',
     difficulty: 'medium',
     timeLimit: 900,
@@ -199,7 +199,7 @@ export const PUZZLES = {
   puzzle_5: {
     id: 'puzzle_5',
     type: 'ascii',
-    title: 'Reverse-Index Cipher: WHERE HUMAN MEETS AI',
+    title: 'Reverse-Index Cipher',
     category: 'Cybernetics & Cryptography',
     difficulty: 'medium',
     timeLimit: 900,
@@ -230,7 +230,7 @@ export const PUZZLES = {
   puzzle_6: {
     id: 'puzzle_6',
     type: 'riddle',
-    title: 'Visual Clue: Host Institution',
+    title: 'Visual Clue Riddle',
     category: 'Institutional Identity',
     difficulty: 'medium',
     timeLimit: 900,
@@ -279,7 +279,7 @@ export const PUZZLES = {
   puzzle_7: {
     id: 'puzzle_7',
     type: 'wordsearch',
-    title: 'Treasure Hunt Word Search',
+    title: 'Word Search',
     category: 'Applied Cryptography',
     difficulty: 'hard',
     timeLimit: 1200,
@@ -344,7 +344,7 @@ export const PUZZLES = {
   puzzle_8: {
     id: 'puzzle_8',
     type: 'riddle',
-    title: 'The Orbital Starman Riddle',
+    title: 'Aerospace Riddle',
     category: 'Automotive & Aerospace',
     difficulty: 'hard',
     timeLimit: 1200,
@@ -371,7 +371,7 @@ export const PUZZLES = {
         'Drop my roof to feel wind in your face.',
         'With Starman at the wheel, what car am I?',
       ],
-      words: [{ name: 'Vehicle Model', length: 8 }],
+      words: [{ name: 'Word 1', length: 8 }],
     },
     acceptedAnswers: ['ROADSTER'],
   },
@@ -379,7 +379,7 @@ export const PUZZLES = {
   puzzle_9: {
     id: 'puzzle_9',
     type: 'riddle',
-    title: 'The Dual Color Palette Riddle',
+    title: 'Color Palette Riddle',
     category: 'Colorimetry & Graphic Design',
     difficulty: 'hard',
     timeLimit: 1200,
@@ -404,13 +404,12 @@ export const PUZZLES = {
         'What two colors are we?',
       ],
       words: [
-        { name: 'Color 1 (Part 1)', length: 4 },
-        { name: 'Color 1 (Part 2)', length: 4 },
-        { name: 'Color 1 (Part 2)', length: 4 },
-        { name: 'Conjunction', length: 3 },
-        { name: 'Color 2 (Part 1)', length: 5 },
-        { name: 'Color 2 (Part 2)', length: 5 },
-        { name: 'Color 2 (Part 3)', length: 4 },
+        { name: 'Word 1', length: 4 },
+        { name: 'Word 2', length: 4 },
+        { name: 'Word 3', length: 3 },
+        { name: 'Word 4', length: 5 },
+        { name: 'Word 5', length: 5 },
+        { name: 'Word 6', length: 4 },
       ],
     },
     acceptedAnswers: [
@@ -423,7 +422,7 @@ export const PUZZLES = {
   puzzle_10: {
     id: 'puzzle_10',
     type: 'coords',
-    title: 'Coordinates Grid: FUTURE QUEST',
+    title: 'Cartesian Coordinates Grid',
     category: 'Design Systems & Event Geometry',
     difficulty: 'medium',
     timeLimit: 900,

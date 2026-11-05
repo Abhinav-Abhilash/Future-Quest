@@ -112,7 +112,10 @@ function setupEventListeners() {
   const slots = Array.from(containerEl.querySelectorAll('.riddle-letter-slot'));
 
   slots.forEach((slot, idx) => {
-    // Input event: auto advance
+    const wIdx = parseInt(slot.dataset.wordIdx, 10);
+    const cIdx = parseInt(slot.dataset.charIdx, 10);
+
+    // Input event: auto advance within same word only
     slot.addEventListener('input', (e) => {
       const val = (e.target.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
       e.target.value = val ? val[val.length - 1] : '';
@@ -120,23 +123,35 @@ function setupEventListeners() {
       persistLetters();
       updateLivePreview();
 
-      if (e.target.value && idx < slots.length - 1) {
-        slots[idx + 1].focus();
-        slots[idx + 1].select();
+      if (e.target.value) {
+        const nextInSameWord = containerEl.querySelector(`.riddle-letter-slot[data-word-idx="${wIdx}"][data-char-idx="${cIdx + 1}"]`);
+        if (nextInSameWord && !nextInSameWord.disabled) {
+          nextInSameWord.focus();
+          nextInSameWord.select();
+        }
       }
     });
 
-    // Keydown event: Backspace backward navigation & arrow navigation
+    // Keydown event: Backspace backward navigation & arrow navigation within same word
     slot.addEventListener('keydown', (e) => {
-      if (e.key === 'Backspace' && !e.target.value && idx > 0) {
-        slots[idx - 1].focus();
-        slots[idx - 1].select();
-      } else if (e.key === 'ArrowRight' && idx < slots.length - 1) {
-        slots[idx + 1].focus();
-        slots[idx + 1].select();
-      } else if (e.key === 'ArrowLeft' && idx > 0) {
-        slots[idx - 1].focus();
-        slots[idx - 1].select();
+      if (e.key === 'Backspace' && !e.target.value && cIdx > 0) {
+        const prevInSameWord = containerEl.querySelector(`.riddle-letter-slot[data-word-idx="${wIdx}"][data-char-idx="${cIdx - 1}"]`);
+        if (prevInSameWord && !prevInSameWord.disabled) {
+          prevInSameWord.focus();
+          prevInSameWord.select();
+        }
+      } else if (e.key === 'ArrowRight') {
+        const nextInSameWord = containerEl.querySelector(`.riddle-letter-slot[data-word-idx="${wIdx}"][data-char-idx="${cIdx + 1}"]`);
+        if (nextInSameWord && !nextInSameWord.disabled) {
+          nextInSameWord.focus();
+          nextInSameWord.select();
+        }
+      } else if (e.key === 'ArrowLeft' && cIdx > 0) {
+        const prevInSameWord = containerEl.querySelector(`.riddle-letter-slot[data-word-idx="${wIdx}"][data-char-idx="${cIdx - 1}"]`);
+        if (prevInSameWord && !prevInSameWord.disabled) {
+          prevInSameWord.focus();
+          prevInSameWord.select();
+        }
       } else if (e.key === 'Enter') {
         checkAnswer();
       }

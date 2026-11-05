@@ -1507,7 +1507,6 @@ export const Screens = {
     }
 
     const summary = GameState.getSummary();
-    const verificationHash = GameState.generateVerificationHash();
 
     // Assemble Clue Inventory
     const gridOrder = state.gridOrder || [];

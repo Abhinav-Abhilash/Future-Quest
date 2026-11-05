@@ -89,11 +89,9 @@ export function mount(root, data, ctx) {
   let equationsHtml = '';
 
   if (data.groupedEquations) {
-    // T3: 3 Words (CODE, THE, FUTURE)
-    const ORDINAL_LABELS = ['First Word', 'Second Word', 'Third Word', 'Fourth Word', 'Fifth Word', 'Sixth Word'];
     equationsHtml = data.groupedEquations.map((group, gIdx) => {
       const isGrpSolved = solvedGroups.has(gIdx);
-      const groupTitle = `${ORDINAL_LABELS[gIdx] || `Word ${gIdx + 1}`} (${group.equations.length} letters)`;
+      const groupTitle = `Word ${gIdx + 1} (${group.equations.length} letters)`;
       const cards = group.equations.map((eq, eIdx) => {
         const key = `g${gIdx}_e${eIdx}`;
         const val = entries[key] || '';
@@ -177,23 +175,7 @@ export function mount(root, data, ctx) {
       `;
     }).join('');
 
-    // T9 Vault Row header
-    const vaultRowHtml = data.finalWord === 'SIGNAL' ? `
-      <div class="signal-vault-row" role="region" aria-label="Signal Vault Slots 1 to 6">
-        <span class="vault-row-title mono">VAULT SLOTS:</span>
-        <div class="vault-slots-container">
-          ${[1, 2, 3, 4, 5, 6].map(num => `
-            <div class="vault-slot-cell" id="vault-slot-${num}">
-              <span class="vault-slot-num mono">#${num}</span>
-              <span class="vault-slot-char mono">&bull;</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    ` : '';
-
     equationsHtml = `
-      ${vaultRowHtml}
       <div class="bodmas-calc-grid">${cards}</div>
     `;
   }
@@ -274,39 +256,8 @@ export function mount(root, data, ctx) {
     });
   };
 
-  // Highlight A-Z scale strip key on input / focus
-  const highlightScaleKey = (num) => {
-    wrap.querySelectorAll('.az-scale-key').forEach(k => k.classList.remove('key-active'));
-    const n = parseInt(num, 10);
-    if (!isNaN(n) && n >= 1 && n <= 26) {
-      const activeKey = wrap.querySelector(`#az-key-${n}`);
-      if (activeKey) {
-        activeKey.classList.add('key-active');
-        activeKey.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
-      }
-    }
-  };
-
-  // Update T9 vault slot if applicable
-  const updateVaultSlot = (eqIdx, letter) => {
-    if (data.finalWord !== 'SIGNAL') return;
-    const eq = data.equations[eqIdx];
-    if (!eq || !eq.slot) return;
-    const slotCell = wrap.querySelector(`#vault-slot-${eq.slot}`);
-    if (slotCell) {
-      const charEl = slotCell.querySelector('.vault-slot-char');
-      if (charEl) charEl.textContent = letter || '•';
-      slotCell.classList.toggle('vault-slot-filled', !!letter);
-    }
-  };
-
-  // Input Events: Numerical entry, live letter bay flipping, next input navigation
+  // Input Events: Numerical entry, live letter bay flipping, same-group navigation
   allInputs.forEach((inp, idx) => {
-    inp.addEventListener('focus', () => {
-      highlightScaleKey(inp.value);
-      inp.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    });
-
     inp.addEventListener('input', (e) => {
       const val = e.target.value.trim();
       const key = inp.dataset.key;
@@ -323,22 +274,21 @@ export function mount(root, data, ctx) {
       if (flipper) {
         flipper.classList.toggle('flipped', !!letter);
       }
-
-      highlightScaleKey(val);
-
-      if (data.finalWord === 'SIGNAL') {
-        updateVaultSlot(parseInt(inp.dataset.idx, 10), letter);
-      }
     });
 
     inp.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        if (idx < allInputs.length - 1) {
-          allInputs[idx + 1].focus();
-        } else {
-          checkAll();
+        const gIdx = inp.dataset.group;
+        const eIdx = parseInt(inp.dataset.idx, 10);
+        if (gIdx !== undefined && !isNaN(eIdx)) {
+          const nextInGrp = wrap.querySelector(`.bodmas-keycap-input[data-group="${gIdx}"][data-idx="${eIdx + 1}"]`);
+          if (nextInGrp && !nextInGrp.disabled) {
+            nextInGrp.focus();
+            return;
+          }
         }
+        checkAll();
       }
     });
   });
@@ -487,20 +437,24 @@ export function mount(root, data, ctx) {
 
     const confirmBtn = wrap.querySelector('#btn-anagram-confirm');
     if (confirmBtn) {
-      confirmBtn.addEventListener('click', () => {
+      confirmBtn.addEventListener('click', async () => {
         const word = anagramSlots.join('');
-        if (word === 'QUEST') {
+        let res = null;
+        if (typeof ctx.checkAnswer === 'function') {
+          res = await ctx.checkAnswer(word);
+        }
+        if (res && res.correct) {
           solvedGroups.add(0);
           const slotEl = wrap.querySelector('#poster-slot-0');
           const trayPanel = wrap.querySelector('#anagram-tray-panel');
-          animateGroupLock(trayPanel, slotEl, 'QUEST', root, () => {
+          animateGroupLock(trayPanel, slotEl, word, root, () => {
             persist();
-            ctx.onSolved();
+            if (ctx.onSolved) ctx.onSolved(res);
           });
         } else {
           const errorBar = document.querySelector('#bar-error-text');
           playWrongFeedback(confirmBtn, errorBar);
-          ctx.onWrongCheck();
+          if (ctx.onWrongCheck) ctx.onWrongCheck(res);
         }
       });
     }
