@@ -88,7 +88,6 @@ export function mount(root, data, ctx) {
         >
           <span class="coord-cell-char">${char}</span>
           ${isStartCell ? `<span class="cell-pawn-token" id="route-pawn-token">${PUZZLE_ART.pawn}</span>` : ''}
-          <span class="cell-reticle" aria-hidden="true">${PUZZLE_ART.reticle}</span>
         </button>
       `;
     }
@@ -249,11 +248,8 @@ export function mount(root, data, ctx) {
               <!-- Left Row Headers -->
               <div class="coords-row-headers" id="coords-row-headers">${rowHeadersHtml}</div>
               
-              <!-- 7x7 Grid with sweeping crosshairs and route overlay -->
+              <!-- 7x7 Grid with route overlay -->
               <div class="coords-grid-stage" id="coords-grid-stage">
-                <div class="coords-crosshair-h" id="crosshair-h" aria-hidden="true"></div>
-                <div class="coords-crosshair-v" id="crosshair-v" aria-hidden="true"></div>
-                
                 ${data.isRouteTracer ? `
                   <svg class="coords-route-svg-overlay" id="coords-route-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
                     <defs>
@@ -293,8 +289,6 @@ export function mount(root, data, ctx) {
   const colHeaders = Array.from(moduleRoot.querySelectorAll('.coord-header-col'));
   const rowHeaders = Array.from(moduleRoot.querySelectorAll('.coord-header-row'));
   const allChipBtns = Array.from(moduleRoot.querySelectorAll('.coord-chip-btn'));
-  const crosshairH = moduleRoot.querySelector('#crosshair-h');
-  const crosshairV = moduleRoot.querySelector('#crosshair-v');
   const routeSvgGroup = moduleRoot.querySelector('#route-segments-group');
 
   const persist = () => {
@@ -304,58 +298,6 @@ export function mount(root, data, ctx) {
       activeChipKey,
       routeLegsCompleted
     });
-  };
-
-  // Crosshair sweeping animation
-  const positionCrosshairs = (cell) => {
-    if (!cell || !gridStage) return;
-    const stageRect = gridStage.getBoundingClientRect();
-    const cellRect = cell.getBoundingClientRect();
-
-    const topOffset = cellRect.top - stageRect.top;
-    const leftOffset = cellRect.left - stageRect.left;
-    const cellHeight = cellRect.height;
-    const cellWidth = cellRect.width;
-
-    if (crosshairH) {
-      crosshairH.style.opacity = '1';
-      crosshairH.style.height = `${cellHeight}px`;
-      crosshairH.style.transform = `translateY(${topOffset}px)`;
-    }
-    if (crosshairV) {
-      crosshairV.style.opacity = '1';
-      crosshairV.style.width = `${cellWidth}px`;
-      crosshairV.style.transform = `translateX(${leftOffset}px)`;
-    }
-
-    const col = cell.dataset.col;
-    const row = cell.dataset.row;
-    colHeaders.forEach(ch => ch.classList.toggle('header-active', ch.dataset.col === col));
-    rowHeaders.forEach(rh => rh.classList.toggle('header-active', rh.dataset.row === row));
-
-    // Update helper inputs for Tile 10
-    const inputX = moduleRoot.querySelector('#cartesian-input-x');
-    const inputY = moduleRoot.querySelector('#cartesian-input-y');
-    if (inputX && inputY && document.activeElement !== inputX && document.activeElement !== inputY) {
-      inputX.value = col;
-      inputY.value = row;
-    }
-  };
-
-  const clearCrosshairs = () => {
-    if (crosshairH) crosshairH.style.opacity = '0';
-    if (crosshairV) crosshairV.style.opacity = '0';
-    colHeaders.forEach(ch => ch.classList.remove('header-active'));
-    rowHeaders.forEach(rh => rh.classList.remove('header-active'));
-  };
-
-  const highlightCell = (col, row) => {
-    const target = cells.find(c => c.dataset.col === String(col) && c.dataset.row === String(row));
-    if (target) {
-      cells.forEach(c => c.classList.remove('cell-targeted'));
-      target.classList.add('cell-targeted');
-      positionCrosshairs(target);
-    }
   };
 
   // FLIP animation of letter from cell into chip
@@ -448,27 +390,8 @@ export function mount(root, data, ctx) {
     }
   };
 
-  // Attach cell interactions
+  // Attach cell interactions (neutral, no auto-assist highlighting)
   cells.forEach((cell, idx) => {
-    cell.addEventListener('mouseenter', () => {
-      positionCrosshairs(cell);
-    });
-
-    cell.addEventListener('mouseleave', () => {
-      if (activeChipKey) {
-        const activeChip = moduleRoot.querySelector(`.coord-chip-btn[data-key="${activeChipKey}"]`);
-        if (activeChip) {
-          highlightCell(activeChip.dataset.col, activeChip.dataset.row);
-          return;
-        }
-      }
-      clearCrosshairs();
-    });
-
-    cell.addEventListener('focus', () => {
-      positionCrosshairs(cell);
-    });
-
     cell.addEventListener('click', () => {
       if (isLocked) return;
 
@@ -607,7 +530,6 @@ export function mount(root, data, ctx) {
       allChipBtns.forEach(b => b.classList.remove('chip-active'));
       btn.classList.add('chip-active');
       activeChipKey = btn.dataset.key;
-      highlightCell(btn.dataset.col, btn.dataset.row);
       persist();
     });
   });
@@ -641,7 +563,6 @@ export function mount(root, data, ctx) {
           const nextChip = allChipBtns[currIdx + 1];
           nextChip.classList.add('chip-active');
           activeChipKey = nextChip.dataset.key;
-          highlightCell(nextChip.dataset.col, nextChip.dataset.row);
         } else {
           activeChipKey = null;
         }
@@ -660,7 +581,6 @@ export function mount(root, data, ctx) {
       const col = parseInt(inputX.value, 10);
       const row = parseInt(inputY.value, 10);
       if (col >= 1 && col <= 7 && row >= 1 && row <= 7) {
-        highlightCell(col, row);
         const cell = moduleRoot.querySelector(`#coord-cell-${col}-${row}`);
         if (cell) cell.click();
       }
@@ -779,9 +699,6 @@ export function mount(root, data, ctx) {
       const hitCell = cells.find(c => parseInt(c.dataset.col, 10) === leg.targetCol && parseInt(c.dataset.row, 10) === leg.targetRow);
       if (hitCell) hitCell.classList.add('cell-path-hit');
     }
-  } else if (activeChipKey) {
-    const activeChip = moduleRoot.querySelector(`.coord-chip-btn[data-key="${activeChipKey}"]`);
-    if (activeChip) highlightCell(activeChip.dataset.col, activeChip.dataset.row);
   }
 
   activeCleanup = () => {

@@ -365,28 +365,6 @@ export function mount(root, data, ctx) {
     });
   }
 
-  // Highlight ASCII table row on hover or focus
-  const highlightChartCode = (code) => {
-    wrap.querySelectorAll('.chart-row').forEach(r => {
-      r.classList.remove('row-active', 'chart-row-active');
-    });
-    const row = wrap.querySelector(`#chart-row-${code}`);
-    if (row) {
-      row.classList.add('row-active', 'chart-row-active');
-      row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }
-  };
-
-  // Card hover listener to highlight ASCII chart
-  wrap.querySelectorAll('.ascii-physical-card').forEach(card => {
-    card.addEventListener('pointerenter', () => {
-      const codeEl = card.querySelector('.card-mono-code');
-      if (codeEl) {
-        highlightChartCode(codeEl.textContent.trim());
-      }
-    });
-  });
-
   // Check and lock a single word when solved
   const checkWordLock = (wIdx) => {
     const wordObj = words[wIdx];
@@ -402,8 +380,6 @@ export function mount(root, data, ctx) {
   // Input events: Auto-advance, backspace navigation, card flipping, paste
   allInputs.forEach((inp, idx) => {
     inp.addEventListener('focus', () => {
-      const code = inp.dataset.code;
-      if (code) highlightChartCode(code);
       inp.scrollIntoView({ block: 'center', behavior: 'smooth' });
     });
 
