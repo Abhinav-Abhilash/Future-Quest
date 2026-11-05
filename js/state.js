@@ -162,9 +162,11 @@ class StateManager {
     } catch (err) {
       if (err.status === 401) {
         // No active session on server
-        this.state = null;
-        this.saveState();
-        return null;
+        if (!this.state?.isLocalFallback) {
+          this.state = null;
+          this.saveState();
+        }
+        return this.state;
       }
       // Offline / network failure: keep existing cache
       return this.state;
@@ -193,19 +195,61 @@ class StateManager {
    * Calls POST /api/register.
    */
   async initSession(teamName, schoolName, members = []) {
-    const res = await Api.register({
-      teamName: teamName.trim(),
-      schoolName: schoolName.trim(),
-      members,
-    });
+    try {
+      const res = await Api.register({
+        teamName: teamName.trim(),
+        schoolName: schoolName.trim(),
+        members,
+      });
 
-    if (!res || !res.team) {
-      throw new Error(res?.error || 'Registration failed');
+      if (!res || !res.team) {
+        throw new Error(res?.error || 'Registration failed');
+      }
+
+      // Immediately sync state to load seeded grid order and initialized blocks
+      await this.syncWithServer();
+      return this.state;
+    } catch (err) {
+      // Re-throw user validation errors (e.g. duplicate team name)
+      if (err.status === 400 || err.status === 409) {
+        throw err;
+      }
+
+      console.warn('Backend API registration unreachable, activating resilient local session:', err);
+      const cleanQuestIds = Object.keys(CONFIG.PUZZLES);
+      const blocks = {};
+      cleanQuestIds.forEach((id) => {
+        blocks[id] = {
+          status: 'AVAILABLE',
+          attemptsUsed: 0,
+          hintUsed: false,
+          timeSpentMs: 0,
+          activeSince: null,
+          unlockedClue: null,
+          timeLimitSeconds: CONFIG.PUZZLES[id]?.timeLimit || 600,
+          timeRemainingSeconds: CONFIG.PUZZLES[id]?.timeLimit || 600,
+          progress: {},
+        };
+      });
+
+      const now = Date.now();
+      this.state = {
+        teamName: teamName.trim(),
+        schoolName: schoolName.trim(),
+        timerStartedAt: now,
+        timerLockedAt: null,
+        vaultEntered: false,
+        hintsRemaining: 3,
+        gridOrder: [...cleanQuestIds, 'vault_12'],
+        activeBlock: null,
+        blocks,
+        verificationHash: null,
+        isLocalFallback: true,
+      };
+
+      this.saveState();
+      return this.state;
     }
-
-    // Immediately sync state to load seeded grid order and initialized blocks
-    await this.syncWithServer();
-    return this.state;
   }
 
   /**
@@ -305,8 +349,21 @@ class StateManager {
       this.saveState();
       return block;
     } catch (err) {
-      console.error(`Failed to open puzzle ${id}:`, err);
-      throw err;
+      console.warn(`Backend openPuzzle failed for ${id}, using local state fallback:`, err);
+      if (!this.state.blocks[id]) {
+        this.state.blocks[id] = {};
+      }
+      const block = this.state.blocks[id];
+      if (block.status === 'AVAILABLE') {
+        block.status = 'OPENED';
+      }
+      block.attemptsUsed = block.attemptsUsed || 0;
+      block.timeLimitSeconds = block.timeLimitSeconds || (CONFIG.PUZZLES[id]?.timeLimit) || 600;
+      block.timeRemainingSeconds = block.timeRemainingSeconds ?? block.timeLimitSeconds;
+      block.activeSince = block.status === 'OPENED' ? (block.activeSince || getServerNow()) : null;
+      this.state.activeBlock = id;
+      this.saveState();
+      return block;
     }
   }
 

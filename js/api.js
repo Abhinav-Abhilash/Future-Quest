@@ -150,6 +150,13 @@ export async function fetchApi(endpoint, options = {}) {
     } catch (_parseErr) {
       data = null;
     }
+  } else {
+    try {
+      const text = await response.text();
+      if (text && text.length < 300) {
+        data = { error: text };
+      }
+    } catch (_e) {}
   }
 
   // Check HTTP response status codes
@@ -157,7 +164,7 @@ export async function fetchApi(endpoint, options = {}) {
     return data;
   }
 
-  const errorMessage = data?.error || data?.message || response.statusText || 'Request failed';
+  const errorMessage = data?.error || data?.message || (response.status === 404 ? 'Contest service endpoint unavailable' : response.statusText) || 'Request failed';
 
   if (response.status === 401) {
     throw new UnauthorizedError(errorMessage);

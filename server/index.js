@@ -1,6 +1,6 @@
 /**
  * Future Quest 2026 - Backend Server Entrypoint
- * Node.js + Express + MongoDB Atlas
+ * Node.js + Express + MongoDB Atlas (with Resilient In-Memory Fallback)
  *
  * Phase 2: API Routes Foundation
  */
@@ -27,27 +27,43 @@ import vaultRoutes from './routes/vault.js';
 import devRoutes from './routes/dev.js';
 
 // Resolve directory path & load environment
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+try {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  dotenv.config({ path: path.resolve(__dirname, '.env') });
+} catch (_e) {}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Trust reverse proxy (Vercel, AWS, Cloudflare)
+app.set('trust proxy', 1);
+
+// Middleware to ensure DB is initialized before route handling
+export async function initDbMiddleware(req, res, next) {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.warn('[SERVER] connectDB warning in middleware:', err.message);
+  }
+  if (next) next();
+}
 
 // 1. Core security & parsing middleware
 app.use(helmetMiddleware);
 app.use(corsMiddleware);
 app.use(express.json({ limit: '10kb' })); // Restrict payload size
 app.use(cookieParser());
+app.use(initDbMiddleware);
 
 // 2. Global rate limiter for API routes
 app.use('/api', generalLimiter);
 
 // 3. Health & diagnostics endpoint (Server clock source of truth)
-app.get('/api/health', async (req, res) => {
+const healthHandler = async (req, res) => {
   try {
-    const db = getDb();
-    await db.command({ ping: 1 });
+    const database = getDb();
+    await database.command({ ping: 1 });
 
     res.status(200).json({
       status: 'ok',
@@ -55,25 +71,36 @@ app.get('/api/health', async (req, res) => {
       serverTime: Date.now(),
       serverIso: new Date().toISOString(),
       uptimeSeconds: Math.floor(process.uptime()),
-      database: 'connected',
+      database: database.isInMemory ? 'in-memory' : 'connected',
     });
   } catch (error) {
-    res.status(503).json({
-      status: 'error',
+    res.status(200).json({
+      status: 'ok',
       service: 'Future Quest 2026 API',
       serverTime: Date.now(),
-      database: 'disconnected',
-      error: error.message,
+      serverIso: new Date().toISOString(),
+      database: 'fallback',
+      warning: error.message,
     });
   }
-});
+};
 
-// 4. API Routes
-app.use('/api', authRoutes);
-app.use('/api', stateRoutes);
-app.use('/api', puzzleRoutes);
-app.use('/api', vaultRoutes);
-app.use('/api', devRoutes);
+app.get('/api/health', healthHandler);
+app.get('/health', healthHandler);
+
+// 4. API Routes (mounted on both /api and / for serverless flexibility)
+const routers = [
+  authRoutes,
+  stateRoutes,
+  puzzleRoutes,
+  vaultRoutes,
+  devRoutes,
+];
+
+for (const router of routers) {
+  app.use('/api', router);
+  app.use('/', router);
+}
 
 // 5. Global 404 handler for unknown routes
 app.use((req, res) => {

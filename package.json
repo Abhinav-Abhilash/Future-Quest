@@ -4,12 +4,22 @@
   "description": "Future Quest 2026 - Online Tech Treasure Hunt",
   "type": "module",
   "scripts": {
-    "start": "npm --prefix server start",
+    "start": "node server/index.js",
     "dev": "npm --prefix server run dev",
     "test:puzzles": "node tools/verify-puzzles.mjs && node tools/test-suite.mjs",
     "test:db": "npm --prefix server run test:db",
     "test:routes": "npm --prefix server run test:routes",
     "test:e2e": "node tools/test-phase3-e2e.mjs",
     "test": "npm run test:puzzles && npm run test:routes && npm run test:e2e"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "mongodb": "^6.13.0",
+    "zod": "^3.24.2"
   }
 }
