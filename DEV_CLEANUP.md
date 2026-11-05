@@ -99,7 +99,7 @@ Every puzzle tile corresponds to a specific element of the final competition pos
 | **Task 7** | `puzzle_7` | `wordsearch` | 🔴 Hard | `20 Technology Words` | **Word Bank Spec** (20 tech words for body paragraph) |
 | **Task 8** | `puzzle_8` | `riddle` | 🔴 Hard | `"ROADSTER"` | **Vehicle Spec** (Tesla Roadster / Aerospace Telemetry) |
 | **Task 9** | `puzzle_9` | `riddle` | 🔴 Hard | `"DARK BLUE AND LIGHT STEEL BLUE"` | **Canvas Background Asset** (`assets/poster_background_palette.png`, gradient) |
-| **Task 10** | `puzzle_10` | `coords` | 🔴 Hard | `"ALIGN"` | **Geometric Grid Alignment Spec** (Concentric Circles & Rule of Thirds Grid) |
+| **Task 10** | `puzzle_10` | `coords` | 🔴 Hard | `"FUTURE QUEST"` | **Geometric Grid Alignment Spec** (Concentric Circles & Rule of Thirds Grid) |
 | **Task 11** | `puzzle_11` | `riddle` | 🟡 Medium | `"FUTURE QUEST 2026"` | **Primary Hero Headline Spec** (`Montserrat ExtraBold`, `36pt`, White) |
 
 ---

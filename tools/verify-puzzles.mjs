@@ -159,17 +159,21 @@ const t9_ok = t9.solution === 'DARK BLUE AND LIGHT STEEL BLUE' &&
 report('T9 Dual Color Riddle Dynamic Check (DARK BLUE AND LIGHT STEEL BLUE)', t9_ok);
 
 // -------------------------------------------------------------
-// T10: Cartesian Coordinates Grid (ALIGN)
+// T10: Coordinates Grid (FUTURE QUEST)
 // -------------------------------------------------------------
 const t10 = CONFIG.PUZZLES.puzzle_10.data;
 let t10_ok = true;
-// In Cartesian bottom-up, row 1 is bottom (index 6), row 7 is top (index 0): grid[7 - r][c - 1]
-const t10_spelled = t10.mathCoords.map(item => {
-  const cellCh = t10.grid[7 - item.row][item.col - 1];
-  if (cellCh !== item.letter) t10_ok = false;
-  return cellCh;
-}).join('');
-report('T10 Cartesian COORDS Dynamic Check (ALIGN)', t10_ok && t10_spelled === t10.finalWord && t10_spelled === 'ALIGN', t10_spelled);
+const t10_spelledWords = t10.groupedChips.map(grp => {
+  const spelled = grp.coords.map(([c, r, expectedCh]) => {
+    const cellCh = t10.grid[r - 1][c - 1];
+    if (cellCh !== expectedCh) t10_ok = false;
+    return cellCh;
+  }).join('');
+  if (spelled !== grp.name) t10_ok = false;
+  return spelled;
+});
+const t10_full = t10_spelledWords.join(' ');
+report('T10 COORDS Dynamic Check (FUTURE QUEST)', t10_ok && t10_full === 'FUTURE QUEST', t10_full);
 
 // -------------------------------------------------------------
 // T11: Hero Headline Title (FUTURE QUEST 2026)

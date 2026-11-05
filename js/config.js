@@ -138,7 +138,7 @@ export const CONFIG = {
     puzzle_7: "AROUND",
     puzzle_8: "ROADSTER",
     puzzle_9: "DARK BLUE AND LIGHT STEEL BLUE",
-    puzzle_10: "ALIGN",
+    puzzle_10: "FUTURE QUEST",
     puzzle_11: "FUTURE QUEST 2026"
   },
 
@@ -524,11 +524,11 @@ export const CONFIG = {
     puzzle_10: {
       id: "puzzle_10",
       type: "coords",
-      title: "Geometric Grid Alignment: ALIGN",
-      category: "Design Systems & Layout Geometry",
-      whatToDo: "Locate the 5 Cartesian coordinate points (x, y) on the 7×7 geometry blueprint to spell out the master layout directive.",
-      prompt: "Trace the 5 Cartesian grid points from origin (1,1) bottom-left.",
-      hint: "In Cartesian mode, coordinate (1,1) begins at the bottom-left corner. Count horizontally across the X-axis for column, then vertically up the Y-axis for row.",
+      title: "Coordinates Grid: FUTURE QUEST",
+      category: "Design Systems & Event Geometry",
+      whatToDo: "Locate the given (Col, Row) coordinate pairs on the 7×7 grid. Extract the letters to discover the 2-word competition theme.",
+      prompt: "Read the cells at the designated coordinates to uncover the event title.",
+      hint: "Read each coordinate pair as (Column, Row). Count columns from left to right (1–7) and rows from top to bottom (1–7) to find each letter.",
       clueType: "spec",
       clue: {
         title: "Clue Fragment 10: Geometric Grid Alignment Specification",
@@ -543,25 +543,40 @@ export const CONFIG = {
       },
       data: {
         id: "puzzle_10",
-        isCartesian: true,
-        groups: ["Layout Directive"],
-        groupSolutions: ["ALIGN"],
-        finalWord: "ALIGN",
+        groups: ["Word 1", "Word 2"],
+        groupSolutions: ["FUTURE", "QUEST"],
+        finalWord: "FUTURE QUEST",
         grid: [
-          ['M', 'Q', 'F', 'I', 'X', 'B', 'K'],
-          ['J', 'L', 'W', 'D', 'N', 'K', 'E'],
+          ['M', 'P', 'F', 'I', 'X', 'B', 'K'],
+          ['J', 'L', 'W', 'D', 'N', 'U', 'E'],
           ['A', 'N', 'G', 'R', 'C', 'P', 'Z'],
-          ['T', 'G', 'O', 'Y', 'L', 'D', 'H'],
-          ['D', 'B', 'S', 'I', 'M', 'F', 'U'],
-          ['R', 'X', 'K', 'Q', 'E', 'W', 'N'],
-          ['Z', 'H', 'P', 'L', 'V', 'J', 'O']
+          ['O', 'T', 'Y', 'L', 'V', 'D', 'H'],
+          ['U', 'B', 'S', 'M', 'K', 'A', 'U'],
+          ['H', 'X', 'K', 'Q', 'E', 'W', 'N'],
+          ['Z', 'C', 'P', 'L', 'R', 'T', 'O']
         ],
-        mathCoords: [
-          { expr: "(1, 5)", col: 1, row: 5, letter: "A" },
-          { expr: "(5, 4)", col: 5, row: 4, letter: "L" },
-          { expr: "(4, 7)", col: 4, row: 7, letter: "I" },
-          { expr: "(3, 5)", col: 3, row: 5, letter: "G" },
-          { expr: "(5, 6)", col: 5, row: 6, letter: "N" }
+        groupedChips: [
+          {
+            name: "FUTURE",
+            coords: [
+              [3, 1, 'F'],
+              [6, 2, 'U'],
+              [2, 4, 'T'],
+              [7, 5, 'U'],
+              [4, 3, 'R'],
+              [5, 6, 'E']
+            ]
+          },
+          {
+            name: "QUEST",
+            coords: [
+              [4, 6, 'Q'],
+              [1, 5, 'U'],
+              [7, 2, 'E'],
+              [3, 5, 'S'],
+              [6, 7, 'T']
+            ]
+          }
         ]
       }
     },
