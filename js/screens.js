@@ -569,6 +569,8 @@ export const Screens = {
         let isClickable = !isVaultEntered;
         let elapsedIndicator = '';
 
+        let failedCrossOverlay = '';
+
         if (isInProgress) {
           statusClass = 'status-in-progress';
           statusBadgeHtml = `
@@ -577,7 +579,7 @@ export const Screens = {
               <span class="badge-text">In progress</span>
             </div>
           `;
-          elapsedIndicator = `<div class="tile-time-elapsed">In progress</div>`;
+          elapsedIndicator = `<div class="tile-time-elapsed tile-elapsed-inprogress">In progress</div>`;
         } else if (isSolved) {
           statusClass = 'status-solved';
           statusBadgeHtml = `
@@ -586,6 +588,7 @@ export const Screens = {
               <span class="badge-text">Solved</span>
             </div>
           `;
+          elapsedIndicator = `<div class="tile-time-elapsed tile-elapsed-solved">Solved</div>`;
         } else if (isFailed) {
           statusClass = 'status-failed';
           statusBadgeHtml = `
@@ -593,6 +596,13 @@ export const Screens = {
               <span class="badge-icon">${ICONS.cross}</span>
               <span class="badge-text">Failed</span>
             </div>
+          `;
+          elapsedIndicator = `<div class="tile-time-elapsed tile-elapsed-failed">Failed</div>`;
+          failedCrossOverlay = `
+            <svg class="tile-failed-cross-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <line x1="0" y1="0" x2="100" y2="100" vector-effect="non-scaling-stroke" />
+              <line x1="100" y1="0" x2="0" y2="100" vector-effect="non-scaling-stroke" />
+            </svg>
           `;
           isClickable = false; // Failed tiles are locked for good
         }
@@ -622,6 +632,7 @@ export const Screens = {
             ${!isClickable ? 'disabled aria-disabled="true"' : ''}
             aria-label="Task ${tileNumber}, Difficulty: ${puzzleDiff}, Status: ${statusHumanLabel}"
           >
+            ${failedCrossOverlay}
             <div class="tile-top-row">
               <span class="tile-task-tag">Task ${tileNumber}</span>
               ${foodBadgeHtml}
@@ -721,6 +732,7 @@ export const Screens = {
 
       gridEl.querySelectorAll('.tile-puzzle').forEach(tile => {
         tile.addEventListener('mousemove', (e) => {
+          if (tile.classList.contains('status-failed') || tile.disabled) return;
           if (document.body.classList.contains('lite-mode')) return;
           const rect = tile.getBoundingClientRect();
           const x = (e.clientX - rect.left) / rect.width - 0.5;
