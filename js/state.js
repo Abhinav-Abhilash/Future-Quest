@@ -61,10 +61,14 @@ class StateManager {
       if (!serialized) return null;
       const parsed = JSON.parse(serialized);
       if (parsed && parsed.teamName && parsed.gridOrder) {
-        // Sanitize gridOrder: preserve only valid quest puzzles and append vault_12 strictly once
-        const validQuestIds = new Set(Object.keys(CONFIG.PUZZLES));
-        const cleanQuestOrder = parsed.gridOrder.filter(id => validQuestIds.has(id));
-        parsed.gridOrder = [...cleanQuestOrder, 'vault_12'];
+        // Sanitize gridOrder: preserve canonical sequential order when SHUFFLE_TILES is false
+        if (!CONFIG.SHUFFLE_TILES) {
+          parsed.gridOrder = [...Object.keys(CONFIG.PUZZLES), 'vault_12'];
+        } else {
+          const validQuestIds = new Set(Object.keys(CONFIG.PUZZLES));
+          const cleanQuestOrder = parsed.gridOrder.filter(id => validQuestIds.has(id));
+          parsed.gridOrder = [...cleanQuestOrder, 'vault_12'];
+        }
         if (parsed.blocks) {
           delete parsed.blocks['puzzle_11'];
           for (const bid in parsed.blocks) {
@@ -142,7 +146,12 @@ class StateManager {
       });
 
       // Always fix vault_12 as the single last tile
-      gridOrder.push('vault_12');
+      if (!CONFIG.SHUFFLE_TILES) {
+        gridOrder.length = 0;
+        gridOrder.push(...Object.keys(CONFIG.PUZZLES), 'vault_12');
+      } else {
+        gridOrder.push('vault_12');
+      }
 
       this.state = {
         teamName: team.teamName,

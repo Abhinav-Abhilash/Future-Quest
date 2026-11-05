@@ -393,7 +393,9 @@ export const Screens = {
     const isVaultEntered = state.vaultEntered;
     const rawGridOrder = state.gridOrder || [];
     const validQuestIds = new Set(Object.keys(CONFIG.PUZZLES));
-    const questIds = rawGridOrder.filter(id => validQuestIds.has(id));
+    const questIds = !CONFIG.SHUFFLE_TILES
+      ? Object.keys(CONFIG.PUZZLES)
+      : rawGridOrder.filter(id => validQuestIds.has(id));
     const gridOrder = [...questIds, 'vault_12'];
 
     // Calculate solved, failed, and progress
@@ -785,8 +787,11 @@ export const Screens = {
     const totalPuzzleSec = block.timeLimitSeconds || (difficulty === 'easy' ? 600 : difficulty === 'medium' ? 900 : 1200);
     const isNoHint = !!(CONFIG.NO_HINT_PUZZLES && CONFIG.NO_HINT_PUZZLES.includes(puzzleId));
 
-    // Find tile index in gridOrder for display and determine tile label
-    const tileIndex = (state.gridOrder || []).filter(id => id !== 'vault_12').indexOf(puzzleId);
+    // Find tile index for display and determine tile label
+    const questPuzzles = !CONFIG.SHUFFLE_TILES
+      ? Object.keys(CONFIG.PUZZLES)
+      : (state.gridOrder || []).filter(id => id !== 'vault_12');
+    const tileIndex = questPuzzles.indexOf(puzzleId);
     const tileNumber = tileIndex !== -1 ? String(tileIndex + 1).padStart(2, '0') : '00';
     const tileLabel = getTileLabel(tileIndex);
 
@@ -1475,7 +1480,9 @@ export const Screens = {
     // Assemble Clue Inventory
     const rawGridOrder = state.gridOrder || [];
     const validQuestIds = new Set(Object.keys(CONFIG.PUZZLES));
-    const gridOrder = rawGridOrder.filter(id => validQuestIds.has(id));
+    const gridOrder = !CONFIG.SHUFFLE_TILES
+      ? Object.keys(CONFIG.PUZZLES)
+      : rawGridOrder.filter(id => validQuestIds.has(id));
     let inventoryHtml = '';
     const allClueTexts = [];
 
