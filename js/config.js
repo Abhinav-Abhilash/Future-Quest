@@ -23,7 +23,7 @@ export const CONFIG = {
   // DEV-ONLY: Development helpers & UI toggle
   DEV_MODE: true,
 
-  // DEV-ONLY: Style test flag for fixed tile order (false = sequential 1..11, true = randomized)
+  // DEV-ONLY: Style test flag for fixed tile order (false = sequential 1..10, true = randomized)
   SHUFFLE_TILES: false,
 
   // Event branding and promotional content configuration
@@ -62,7 +62,7 @@ export const CONFIG = {
     registrationFree: "Registration free",
     eligibility: "Higher Secondary Students (Grades 11 & 12)",
     duration: "2 hours",
-    format: "11 puzzles + submission",
+    format: "10 puzzles + submission",
     website: "www.jainsoft.co.in",
     websiteUrl: "https://www.jainsoft.co.in",
     queriesPhone: "7034065252",

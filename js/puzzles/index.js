@@ -10,14 +10,11 @@ import * as bodmas from './bodmas.js';
 import * as coords from './coords.js';
 import * as wordsearch from './wordsearch.js';
 import * as riddle from './riddle.js';
-import * as snake from './snake.js';
 
 export const PUZZLE_REGISTRY = {
   ascii,
   bodmas,
   coords,
   wordsearch,
-  riddle,
-  snake
+  riddle
 };
-

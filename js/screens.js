@@ -393,10 +393,10 @@ export const Screens = {
     const isVaultEntered = state.vaultEntered;
     const gridOrder = state.gridOrder || [];
 
-    // Calculate solved, failed, and progress (excluding bonus puzzles)
+    // Calculate solved, failed, and progress
     let solvedCount = 0;
     let failedCount = 0;
-    const questIds = gridOrder.filter(id => id !== 'vault_12' && !CONFIG.PUZZLES[id]?.bonus);
+    const questIds = gridOrder.filter(id => id !== 'vault_12');
     const totalQuestCount = questIds.length;
 
     questIds.forEach(id => {
@@ -424,7 +424,7 @@ export const Screens = {
     const routePct = Math.max(0, Math.min(1, solvedCount / totalQuestCount));
     const routeDashOffset = 960 * (1 - routePct);
 
-    // Build Clue Pouch 10-slot strip (excluding bonus puzzles)
+    // Build Clue Pouch 10-slot strip
     let pouchSlotsHtml = '';
     questIds.forEach((itemId, idx) => {
       const tileNum = idx + 1;
@@ -471,7 +471,7 @@ export const Screens = {
 
     // NOTE: Difficulty is a mystery. The grid and the nav bar never show or hint at
     // difficulty or time limits before a puzzle is opened. No difficulty in tile labels,
-    // CSS classes, data attributes, tooltips, or aria-labels. Tile IDs (puzzle_1..11)
+    // CSS classes, data attributes, tooltips, or aria-labels. Tile IDs (puzzle_1..10)
     // are opaque and do not reveal difficulty.
     let tilesHtml = '';
 
@@ -489,7 +489,7 @@ export const Screens = {
       const staggerClass = isFirstLoad ? 'tile-deal-in' : '';
       const staggerDelay = isFirstLoad ? `style="animation-delay: ${index * 40}ms;"` : '';
 
-      if (itemId === 'vault_12' || index === 10 || index === 11) {
+      if (itemId === 'vault_12' || index === 10) {
         // Submit Button (static until ready, then ONE gentle pulse)
         tilesHtml += `
           <button 
@@ -507,70 +507,50 @@ export const Screens = {
         `;
       } else {
         // Tiles 1..10
-        const isBonus = !!(CONFIG.PUZZLES[itemId]?.bonus);
         const block = state.blocks[itemId] || { status: 'UNOPENED' };
         const status = block.status; // UNOPENED, OPENED_IN_PROGRESS, SOLVED, FAILED
 
-        let statusClass = isBonus ? 'status-bonus' : 'status-unopened';
+        let statusClass = 'status-unopened';
         let statusBadgeHtml = '';
-        let isClickable = true;
+        let isClickable = !isVaultEntered;
         let elapsedIndicator = '';
 
-        if (!isBonus) {
-          if (status === 'OPENED_IN_PROGRESS') {
-            statusClass = 'status-in-progress';
-            statusBadgeHtml = `
-              <div class="tile-corner-badge badge-in-progress" aria-label="Status: In progress">
-                <span class="badge-icon">${ICONS.clock}</span>
-                <span class="badge-text">In progress</span>
-              </div>
-            `;
-            elapsedIndicator = `<div class="tile-time-elapsed">In progress</div>`;
-          } else if (status === 'SOLVED') {
-            statusClass = 'status-solved';
-            statusBadgeHtml = `
-              <div class="tile-corner-badge badge-solved" aria-label="Status: Solved">
-                <span class="badge-icon">${ICONS.check}</span>
-                <span class="badge-text">Solved</span>
-              </div>
-            `;
-          } else if (status === 'FAILED') {
-            statusClass = 'status-failed';
-            statusBadgeHtml = `
-              <div class="tile-corner-badge badge-failed" aria-label="Status: Failed">
-                <span class="badge-icon">${ICONS.cross}</span>
-                <span class="badge-text">Failed</span>
-              </div>
-            `;
-            isClickable = false; // Failed tiles are locked for good
-          }
-        }
-
-        if (isVaultEntered && !isBonus) {
-          isClickable = false; // All quest tiles read-only once vault entered
+        if (status === 'OPENED_IN_PROGRESS') {
+          statusClass = 'status-in-progress';
+          statusBadgeHtml = `
+            <div class="tile-corner-badge badge-in-progress" aria-label="Status: In progress">
+              <span class="badge-icon">${ICONS.clock}</span>
+              <span class="badge-text">In progress</span>
+            </div>
+          `;
+          elapsedIndicator = `<div class="tile-time-elapsed">In progress</div>`;
+        } else if (status === 'SOLVED') {
+          statusClass = 'status-solved';
+          statusBadgeHtml = `
+            <div class="tile-corner-badge badge-solved" aria-label="Status: Solved">
+              <span class="badge-icon">${ICONS.check}</span>
+              <span class="badge-text">Solved</span>
+            </div>
+          `;
+        } else if (status === 'FAILED') {
+          statusClass = 'status-failed';
+          statusBadgeHtml = `
+            <div class="tile-corner-badge badge-failed" aria-label="Status: Failed">
+              <span class="badge-icon">${ICONS.cross}</span>
+              <span class="badge-text">Failed</span>
+            </div>
+          `;
+          isClickable = false; // Failed tiles are locked for good
         }
 
         let statusHumanLabel = 'Unopened';
-        if (isBonus) {
-          statusHumanLabel = 'Bonus Arcade';
-        } else if (status === 'OPENED_IN_PROGRESS') {
+        if (status === 'OPENED_IN_PROGRESS') {
           statusHumanLabel = 'In progress';
         } else if (status === 'SOLVED') {
           statusHumanLabel = 'Solved';
         } else if (status === 'FAILED') {
           statusHumanLabel = 'Failed';
         }
-
-        const diff = CONFIG.TILE_DIFFICULTY[itemId] || 'easy';
-        const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1);
-        const foodBadgeHtml = isBonus ? '' : `
-            <div class="tile-food-badge">
-              <span class="food-badge food-badge-${diff}" aria-label="Difficulty: ${diffLabel}">
-                <span class="food-badge-icon" aria-hidden="true"><span class="food-badge-dot"></span></span>
-                <span class="food-badge-label">${diff}</span>
-              </span>
-            </div>
-        `;
 
         tilesHtml += `
           <button 
@@ -581,13 +561,12 @@ export const Screens = {
             data-tile-num="${tileNumber}"
             ${staggerDelay}
             ${!isClickable ? 'disabled aria-disabled="true"' : ''}
-            aria-label="Task ${tileNumber}${isBonus ? ', Bonus Arcade Mini-game' : `, Difficulty: ${diffLabel}, Status: ${statusHumanLabel}`}"
+            aria-label="Task ${tileNumber}, Status: ${statusHumanLabel}"
           >
             <div class="tile-task-tag">Task ${tileNumber}</div>
             <div class="tile-gradient-number mono">${formattedNum}</div>
             ${elapsedIndicator}
             ${statusBadgeHtml}
-            ${foodBadgeHtml}
           </button>
         `;
       }
@@ -663,8 +642,8 @@ export const Screens = {
           </div>
         </div>
 
-        <!-- 12 Tiles Grid -->
-        <div class="puzzle-grid" role="region" aria-label="Puzzle Grid of 12 Tiles">
+        <!-- 11 Tiles Grid (10 Puzzles + 1 Submit) -->
+        <div class="puzzle-grid" role="region" aria-label="Puzzle Grid of 11 Tiles">
           ${tilesHtml}
         </div>
       </section>
@@ -715,7 +694,7 @@ export const Screens = {
       });
     });
 
-    // Bind click to Vault tile (Tile 12)
+    // Bind click to Vault tile (Submit)
     const vaultBtn = container.querySelector('#tile-vault-btn');
     if (vaultBtn) {
       vaultBtn.addEventListener('click', () => {
@@ -780,26 +759,36 @@ export const Screens = {
     }
 
     // Register puzzle open (starts activeSince if unopened/in-progress)
-    // NOTE: Difficulty is a mystery until opened. In production, difficulty and time
-    // limits must come from the server later, since anything in client code can be read with DevTools.
-    // They appear only on the puzzle screen after the tile has been opened and stay visible afterwards.
-    const isBonus = !!(puzzleConfig && puzzleConfig.bonus);
-    const block = GameState.openPuzzle(puzzleId);
-    const difficulty = CONFIG.TILE_DIFFICULTY[puzzleId] || 'easy';
-    const hasTimeOverride = !!(CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE[puzzleId]);
-    const totalPuzzleSec = hasTimeOverride
-      ? CONFIG.PUZZLE_TIME_OVERRIDE[puzzleId]
-      : (CONFIG.DIFFICULTY_TIME[difficulty] || 600);
-    const isNoHint = isBonus || !!(CONFIG.NO_HINT_PUZZLES && CONFIG.NO_HINT_PUZZLES.includes(puzzleId));
+    // NOTE: Difficulty is a mystery until opened. Difficulty and time limits
+    // come from the server and appear only on this puzzle screen once opened.
+    GameState.openPuzzle(puzzleId).then(() => {
+      const updatedBlock = GameState.state?.blocks?.[puzzleId];
+      if (updatedBlock && updatedBlock.difficulty) {
+        const badgeEl = container.querySelector('.difficulty-badge');
+        if (badgeEl) {
+          const diff = updatedBlock.difficulty;
+          const mins = Math.floor((updatedBlock.timeLimitSeconds || 600) / 60);
+          badgeEl.className = `difficulty-badge difficulty-${diff}`;
+          badgeEl.textContent = `${diff.toUpperCase()} (${mins} MIN)`;
+        }
+      }
+    }).catch(err => {
+      console.warn('Could not open puzzle on server:', err);
+    });
+
+    const block = state.blocks?.[puzzleId] || {};
+    const difficulty = block.difficulty || (block.timeLimitSeconds <= 600 ? 'easy' : block.timeLimitSeconds <= 900 ? 'medium' : 'hard');
+    const totalPuzzleSec = block.timeLimitSeconds || (difficulty === 'easy' ? 600 : difficulty === 'medium' ? 900 : 1200);
+    const isNoHint = !!(CONFIG.NO_HINT_PUZZLES && CONFIG.NO_HINT_PUZZLES.includes(puzzleId));
 
     // Find tile index in gridOrder for display and determine tile label
     const tileIndex = (state.gridOrder || []).indexOf(puzzleId);
     const tileNumber = tileIndex !== -1 ? String(tileIndex + 1).padStart(2, '0') : '00';
     const tileLabel = getTileLabel(tileIndex);
 
-    // Initial check for puzzle timer expiration (skip for bonus puzzles)
-    const initialRemainingSec = isBonus ? 0 : GameState.getPuzzleRemainingSeconds(puzzleId);
-    if (!isBonus && initialRemainingSec <= 0 && block.status === 'OPENED_IN_PROGRESS') {
+    // Initial check for puzzle timer expiration
+    const initialRemainingSec = GameState.getPuzzleRemainingSeconds(puzzleId);
+    if (initialRemainingSec <= 0 && block.status === 'OPENED_IN_PROGRESS') {
       GameState.failPuzzle(puzzleId, 'TIMEOUT');
       this.showNotice(`Time expired for ${tileLabel}. The puzzle has failed.`, 'danger');
       router.navigate('/grid');
@@ -835,11 +824,6 @@ export const Screens = {
         { num: '1', title: 'ANALYZE RIDDLE', text: 'Carefully read the cryptic clues, tech specs, and wordplay in the riddle card.' },
         { num: '2', title: 'TYPE KEYCAPS', text: 'Type letters into the character slots or use backspace to edit your deduction.' },
         { num: '3', title: 'VERIFY & UNLOCK', text: 'Click Check Answer or complete the phrase to lock in your solution and reveal the secret clue.' }
-      ],
-      snake: [
-        { num: '1', title: 'STEER APPLE', text: 'Steer the apple with arrow keys, WASD or swipe.' },
-        { num: '2', title: 'CHOMP BODY', text: "Chomp the snake's body to shrink it." },
-        { num: '3', title: 'AVOID HEAD', text: 'Avoid its head, then eat it to win.' }
       ]
     };
 
@@ -897,38 +881,30 @@ export const Screens = {
               </button>
               <div class="puzzle-header-task-info">
                 <span id="puzzle-band-task-heading" class="puzzle-band-task-label mono">TASK ${tileNumber}</span>
-                ${isBonus ? `
-                  <span class="bonus-tag keycap">Bonus: just for fun</span>
-                ` : `
-                  <div class="difficulty-badge ${hasTimeOverride ? 'difficulty-override' : `difficulty-${difficulty}`}">
-                    ${hasTimeOverride ? `${Math.floor(totalPuzzleSec / 60)} MIN` : `${difficulty.toUpperCase()} (${Math.floor(totalPuzzleSec / 60)} MIN)`}
-                  </div>
-                `}
+                <div class="difficulty-badge difficulty-${difficulty}">
+                  ${difficulty.toUpperCase()} (${Math.floor(totalPuzzleSec / 60)} MIN)
+                </div>
                 <div class="puzzle-category-tag mono">${puzzleConfig.category}</div>
               </div>
             </div>
             
             <div class="puzzle-header-right">
-              ${!isBonus ? `
-                <div class="puzzle-timer-badge ${initialRemainingSec < 120 && block.status === 'OPENED_IN_PROGRESS' ? 'timer-low' : ''}">
-                  <span class="timer-icon">${ICONS.clock}</span>
-                  <span class="timer-value mono" id="puzzle-countdown">${this.formatTime(initialRemainingSec)}</span>
-                </div>
-              ` : ''}
+              <div class="puzzle-timer-badge ${initialRemainingSec < 120 && block.status === 'OPENED_IN_PROGRESS' ? 'timer-low' : ''}">
+                <span class="timer-icon">${ICONS.clock}</span>
+                <span class="timer-value mono" id="puzzle-countdown">${this.formatTime(initialRemainingSec)}</span>
+              </div>
               <div class="puzzle-band-big-num mono" aria-hidden="true">${tileNumber}</div>
             </div>
           </div>
 
-          ${!isBonus ? `
-            <!-- Per-puzzle Timer Progress Scale Bar -->
-            <div class="puzzle-timer-track">
-              <div 
-                class="puzzle-timer-scale-bar ${initialRemainingSec < 120 ? 'timer-amber' : ''}" 
-                id="puzzle-timer-scale" 
-                style="transform: scaleX(${initialScalePct});"
-              ></div>
-            </div>
-          ` : ''}
+          <!-- Per-puzzle Timer Progress Scale Bar -->
+          <div class="puzzle-timer-track">
+            <div 
+              class="puzzle-timer-scale-bar ${initialRemainingSec < 120 ? 'timer-amber' : ''}" 
+              id="puzzle-timer-scale" 
+              style="transform: scaleX(${initialScalePct});"
+            ></div>
+          </div>
         </header>
 
         <!-- Status Notification Banner -->
@@ -984,7 +960,7 @@ export const Screens = {
         ` : ''}
 
         <!-- DEV-ONLY: Puzzle Testing Toolbar -->
-        ${CONFIG.DEV_MODE && !isBonus ? `
+        ${CONFIG.DEV_MODE ? `
           <div class="dev-toolbar dev-only" style="margin: 12px 16px; padding: 8px 14px; background: rgba(255, 153, 0, 0.08); border: 1px dashed #FF9900; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
             <span class="mono" style="font-size: 11px; color: #FFB340;">/* DEV-ONLY */ Puzzle Shortcuts:</span>
             <div style="display: flex; gap: 8px;">
@@ -995,75 +971,58 @@ export const Screens = {
           </div>
         ` : ''}
 
-        ${isBonus ? `
-          <!-- Sticky Bottom Action Bar for Bonus Game -->
-          <footer class="puzzle-sticky-action-bar bonus-action-bar" id="puzzle-sticky-action-bar" role="region" aria-label="Bonus Game Actions">
-            <div class="action-bar-inner bonus-bar-inner">
-              <div class="action-bar-left" style="display: flex; align-items: center; gap: 10px;">
-                <span class="bonus-tag keycap">Bonus: just for fun</span>
-                <span class="bonus-sub-note">No timer, no clues, no score impact.</span>
+        <!-- 5. Sticky Bottom Action Bar -->
+        <footer class="puzzle-sticky-action-bar" id="puzzle-sticky-action-bar" role="region" aria-label="Puzzle Actions">
+          <div class="action-bar-inner">
+            <div class="action-bar-left">
+              <!-- Attempts Display (Unlimited) -->
+              <div class="action-bar-attempts" id="action-attempts-box" title="Unlimited attempts allowed">
+                <span class="action-bar-label mono">ATTEMPTS</span>
+                <div class="key-pips-row mono" id="action-attempts-pips" style="font-size: 12px; font-weight: 600; color: #F0EDF6; display: flex; align-items: center; gap: 5px;">
+                  <span style="color: #60A5FA;">✦</span>
+                  <span id="action-attempts-count">Unlimited (${block.attemptsUsed || 0} tried)</span>
+                </div>
               </div>
-              <div class="action-bar-right">
-                <button type="button" class="btn btn-primary keycap" id="btn-back-grid-bottom">
-                  Back to Grid
+              
+              <!-- Hints with Lantern Icon Button -->
+              <div class="action-bar-hints" id="action-hints-box">
+                <button 
+                  type="button" 
+                  class="btn btn-secondary btn-sm keycap action-hint-btn" 
+                  id="btn-use-hint"
+                  ${isNoHint || state.hintsRemaining <= 0 || block.hintUsed || block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled aria-disabled="true"' : ''}
+                >
+                  <span class="btn-hint-lantern ${isNoHint || block.hintUsed ? 'lantern-dark' : 'lantern-lit'}">${isNoHint || block.hintUsed ? ICONS.lanternDark : ICONS.lanternLit}</span>
+                  <span>${isNoHint ? 'No hints here' : (block.hintUsed ? 'Hint Used' : 'Hint')}</span>
+                  ${!isNoHint ? `
+                    <span class="hint-mini-pips" id="action-hint-pips">
+                      ${Array.from({ length: 3 }, (_, i) => `
+                        <span class="hint-mini-pip ${i < state.hintsRemaining ? 'pip-active' : 'pip-used'}">${i < state.hintsRemaining ? PUZZLE_ART.pipFilled : PUZZLE_ART.pipHollow}</span>
+                      `).join('')}
+                    </span>
+                  ` : ''}
                 </button>
               </div>
             </div>
-          </footer>
-        ` : `
-          <!-- 5. Sticky Bottom Action Bar -->
-          <footer class="puzzle-sticky-action-bar" id="puzzle-sticky-action-bar" role="region" aria-label="Puzzle Actions">
-            <div class="action-bar-inner">
-              <div class="action-bar-left">
-                <!-- Attempts Display (Unlimited) -->
-                <div class="action-bar-attempts" id="action-attempts-box" title="Unlimited attempts allowed">
-                  <span class="action-bar-label mono">ATTEMPTS</span>
-                  <div class="key-pips-row mono" id="action-attempts-pips" style="font-size: 12px; font-weight: 600; color: #F0EDF6; display: flex; align-items: center; gap: 5px;">
-                    <span style="color: #60A5FA;">✦</span>
-                    <span id="action-attempts-count">Unlimited (${block.attemptsUsed || 0} tried)</span>
-                  </div>
-                </div>
-                
-                <!-- Hints with Lantern Icon Button -->
-                <div class="action-bar-hints" id="action-hints-box">
-                  <button 
-                    type="button" 
-                    class="btn btn-secondary btn-sm keycap action-hint-btn" 
-                    id="btn-use-hint"
-                    ${isNoHint || state.hintsRemaining <= 0 || block.hintUsed || block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled aria-disabled="true"' : ''}
-                  >
-                    <span class="btn-hint-lantern ${isNoHint || block.hintUsed ? 'lantern-dark' : 'lantern-lit'}">${isNoHint || block.hintUsed ? ICONS.lanternDark : ICONS.lanternLit}</span>
-                    <span>${isNoHint ? 'No hints here' : (block.hintUsed ? 'Hint Used' : 'Hint')}</span>
-                    ${!isNoHint ? `
-                      <span class="hint-mini-pips" id="action-hint-pips">
-                        ${Array.from({ length: 3 }, (_, i) => `
-                          <span class="hint-mini-pip ${i < state.hintsRemaining ? 'pip-active' : 'pip-used'}">${i < state.hintsRemaining ? PUZZLE_ART.pipFilled : PUZZLE_ART.pipHollow}</span>
-                        `).join('')}
-                      </span>
-                    ` : ''}
-                  </button>
-                </div>
-              </div>
 
-              <div class="action-bar-center" id="action-notice-center">
-                <span class="action-bar-notice" id="action-bar-notice-text"></span>
-              </div>
-
-              <div class="action-bar-right">
-                ${puzzleType !== 'wordsearch' ? `
-                  <button 
-                    type="button" 
-                    class="btn btn-primary keycap action-check-btn" 
-                    id="btn-check-main"
-                    ${block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled' : ''}
-                  >
-                    Check Answer
-                  </button>
-                ` : ''}
-              </div>
+            <div class="action-bar-center" id="action-notice-center">
+              <span class="action-bar-notice" id="action-bar-notice-text"></span>
             </div>
-          </footer>
-        `}
+
+            <div class="action-bar-right">
+              ${puzzleType !== 'wordsearch' ? `
+                <button 
+                  type="button" 
+                  class="btn btn-primary keycap action-check-btn" 
+                  id="btn-check-main"
+                  ${block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled' : ''}
+                >
+                  Check Answer
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </footer>
       </section>
     `;
 
@@ -1415,8 +1374,8 @@ export const Screens = {
       });
     }
 
-    // 1-second interval to update puzzle countdown display smoothly (skip for bonus puzzles)
-    if (!isBonus && block.status === 'OPENED_IN_PROGRESS') {
+    // 1-second interval to update puzzle countdown display smoothly
+    if (block.status === 'OPENED_IN_PROGRESS') {
       this.activePuzzleInterval = setInterval(() => {
         const remainingSec = GameState.getPuzzleRemainingSeconds(puzzleId);
         const timerEl = document.getElementById('puzzle-countdown');
@@ -1514,7 +1473,7 @@ export const Screens = {
     const allClueTexts = [];
 
     gridOrder.forEach((itemId, idx) => {
-      if (itemId === 'vault_12' || CONFIG.PUZZLES[itemId]?.bonus) return;
+      if (itemId === 'vault_12') return;
 
       const tileNum = idx + 1;
       const formattedNum = String(tileNum).padStart(2, '0');
@@ -1611,7 +1570,7 @@ export const Screens = {
           <div class="alert alert-danger" role="alert">
             <span class="alert-icon">${ICONS.clock}</span>
             <div class="alert-content">
-              <strong>Time is up:</strong> The 2-hour contest duration has ended. The vault has locked your final score.
+              <strong>Time is up:</strong> The 2-hour contest duration has ended. The vault has locked all remaining tasks and finalized your unlocked clues.
             </div>
           </div>
         ` : ''}
@@ -1828,7 +1787,7 @@ export const Screens = {
               <li><a href="#rule-4" class="rules-toc-link">4. Grid & Attempts</a></li>
               <li><a href="#rule-5" class="rules-toc-link">5. Hint Policy</a></li>
               <li><a href="#rule-6" class="rules-toc-link">6. Submission Vault</a></li>
-              <li><a href="#rule-7" class="rules-toc-link">7. Scoring Rubric</a></li>
+              <li><a href="#rule-7" class="rules-toc-link">7. Final Submission & Evaluation</a></li>
             </ul>
           </nav>
 
@@ -1896,11 +1855,14 @@ export const Screens = {
               </p>
             </details>
 
-            <details class="rules-accordion" id="rule-7">
-              <summary>7. Scoring & Evaluation Rubric</summary>
+            <details class="rules-accordion" id="rule-7" open>
+              <summary>7. Final Poster Submission & Evaluation</summary>
               <div class="rule-text">
                 <p>
-                  Teams are ranked primarily by total puzzles solved (100 points per puzzle), secondarily by lowest total time taken across solved challenges. Ties are broken by fewer hint requests and fewer incorrect attempts.
+                  This web terminal does not use a points system. The platform is designed solely to present the 10 puzzle challenges and unlock your team's secret clues, text fragments, color palettes, and layout specifications.
+                </p>
+                <p>
+                  Upon entering the Submission Vault, your team reviews all unlocked specifications and confirms readiness. Clicking the submission button redirects your team to the official Google Form where you submit your final poster design. The evaluation is based on your final poster entry and how accurately it incorporates the unlocked puzzle specifications.
                 </p>
               </div>
             </details>

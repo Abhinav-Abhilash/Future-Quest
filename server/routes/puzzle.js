@@ -75,12 +75,11 @@ router.post('/puzzle/:id/open', requireAuth, async (req, res) => {
     }
 
     // 2. Handle the requested puzzle block
-    const isBonus = !!puz.bonus;
     const isSolved = block.status === 'SOLVED';
 
     let timeRemainingSeconds = null;
 
-    if (!isBonus && !isSolved) {
+    if (!isSolved) {
       const timeLimitMs = puz.timeLimit * 1000;
       const currentSpentMs = block.timeSpentMs || 0;
 
@@ -237,8 +236,7 @@ router.post('/puzzle/:id/check', requireAuth, answerLimiter, async (req, res) =>
     }
 
     // Verify time limit has not expired
-    const isBonus = !!puz.bonus;
-    if (!isBonus && puz.timeLimit) {
+    if (puz.timeLimit) {
       const activeElapsed = block.activeSince ? now - block.activeSince : 0;
       const totalSpentMs = (block.timeSpentMs || 0) + activeElapsed;
       if (totalSpentMs >= puz.timeLimit * 1000) {
@@ -258,16 +256,6 @@ router.post('/puzzle/:id/check', requireAuth, answerLimiter, async (req, res) =>
           status: 'FAILED',
         });
       }
-    }
-
-    // Bonus puzzle check (purely for fun)
-    if (isBonus) {
-      return res.status(200).json({
-        success: true,
-        correct: true,
-        bonus: true,
-        message: 'Great job! Bonus completed.',
-      });
     }
 
     // Server-side answer verification
@@ -358,10 +346,6 @@ router.post('/puzzle/:id/hint', requireAuth, async (req, res) => {
     const puz = PUZZLES[id];
     if (!puz) {
       return res.status(404).json({ error: `Puzzle "${id}" not found.` });
-    }
-
-    if (puz.bonus) {
-      return res.status(400).json({ error: 'Bonus puzzles do not have hints.' });
     }
 
     if (!puz.hint) {

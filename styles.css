@@ -1482,7 +1482,7 @@ input, select, textarea {
 }
 
 /* --------------------------------------------------------------------------
-   PUZZLE TILES: Tiles 1 to 11 (Unified Purple Gradient Tile)
+   PUZZLE TILES: Tiles 1 to 10 (Unified Purple Gradient Tile)
    Diagonal gradient: linear-gradient(135deg, #A57EF0 0%, #5A3792 40%, #3A2166 70%, #24133F 100%)
    Top-left: Small white label "Task N" (12px, font-weight 600)
    Bottom-left: Large white monospace number (01 to 11)
@@ -1527,11 +1527,12 @@ input, select, textarea {
 }
 
 /* --------------------------------------------------------------------------
-   SUBMIT BUTTON: Tile 12 (Red Submit button)
+   SUBMIT BUTTON: Tile 11 (Red Submit button)
    Solid flat red button, full tile size, with label "Submit" and small lock icon.
    Always in last slot. No gradient, no glow.
    -------------------------------------------------------------------------- */
 .tile-style-submit {
+  grid-column: span 2;
   background-color: #dc2626;
   border: 1px solid #b91c1c;
   flex-direction: row;
@@ -1571,7 +1572,7 @@ input, select, textarea {
 }
 
 /* --------------------------------------------------------------------------
-   Corner Badges for Tiles 1 to 11 (All 4 styles supported)
+   Corner Badges for Tiles 1 to 10 (All 4 styles supported)
    UNOPENED: default look
    OPENED_IN_PROGRESS: amber corner badge with clock icon + "In progress"
    SOLVED: green corner badge with check icon + "Solved", tile locked

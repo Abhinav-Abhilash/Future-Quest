@@ -12,8 +12,8 @@ Built as an immersive, highly performant competition terminal and interactive tr
 
 ### 1. Global / Competition Screens (`styles.css`)
 - **Theme:** Dark graphite (`--bg-page: #0d1117`, `--bg-surface: #161b22`, `--bg-card: #1c2128`) with engineer blue (`--accent: #388bfd`).
-- **Unified Purple Gradient Tiles (Tiles 1 to 11):** High-contrast diagonal gradient (`linear-gradient(135deg, #9068DB 0%, #5A3792 40%, #3A2166 70%, #24133F 100%)`) with a thin lavender border, `"Task N"` label, large mono number, and status badge.
-- **Submit Tile (Tile 12):** Flat solid red (`#DC2626`) button with lock icon + `"Submit"`.
+- **Unified Purple Gradient Tiles (Tiles 1 to 10):** High-contrast diagonal gradient (`linear-gradient(135deg, #9068DB 0%, #5A3792 40%, #3A2166 70%, #24133F 100%)`) with a thin lavender border, `"Task N"` label, large mono number, and status badge.
+- **Submit Tile (Tile 11):** Flat solid red (`#DC2626`) button with lock icon + `"Submit"` (spans 2 columns).
 - **Status Colors:** Green (`#3fb950`) solved, Red (`#f85149`) failed, Amber (`#d29922`) in progress or low time.
 - **Typography:** Body and UI in IBM Plex Sans / system stack; countdown timers in self-hosted **IBM Plex Mono** (500 weight).
 
@@ -90,7 +90,7 @@ npx http-server -p 8000
 ## Competition Rules & Logic (Strictly Preserved)
 
 1. **Master Countdown:** 2 hours (7,200 seconds) continuous timer stored against `timerStartedAt`. Automatically terminates puzzle access and enters the vault at 0 seconds.
-2. **Mystery Difficulty:** Puzzles carry independent limits (Easy 10m, Medium 15m, Hard 20m) with distribution (2 easy, 5 medium, 4 hard). Difficulty and time limits are never revealed or hinted at on the grid or nav before opening.
-3. **Attempts & Hints:** Maximum 3 attempts per puzzle (3 incorrect attempts permanently fail the puzzle). Shared allocation of 3 hints total for the team.
+2. **Mystery Difficulty:** Puzzles carry independent limits (Easy 10m, Medium 15m, Hard 20m) with distribution (2 easy, 5 medium, 3 hard). Difficulty and time limits are never revealed or hinted at on the grid or nav before opening.
+3. **Attempts & Hints:** Unlimited attempts per puzzle (no lockout). Shared allocation of 3 hints total for the team.
 4. **Submission Vault (`#/vault`):** Freezes timer, locks tiles into read-only mode, displays clue inventory, and provides team submission instructions.
 5. **Developer Reset System (`DEV_MODE = true`):** Fixed bottom-right bar with "Reset all progress" button clears all state and resets to `#/landing`. Set `CONFIG.DEV_MODE = false` for live production.

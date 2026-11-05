@@ -77,10 +77,10 @@ async function runTests() {
     console.log(`[PASS] 4a. Initialized ${initResult.insertedCount} puzzle blocks for team`);
 
     const blocks = await getTeamBlocks(team._id);
-    if (blocks.length !== 11) {
-      throw new Error(`Expected 11 blocks, got ${blocks.length}`);
+    if (blocks.length !== 10) {
+      throw new Error(`Expected 10 blocks, got ${blocks.length}`);
     }
-    console.log(`[PASS] 4b. Retrieved 11 blocks for team, all initialized to AVAILABLE`);
+    console.log(`[PASS] 4b. Retrieved 10 blocks for team, all initialized to AVAILABLE`);
 
     // Test compound uniqueness: inserting duplicate block for same team and puzzle_1
     let compoundRejected = false;

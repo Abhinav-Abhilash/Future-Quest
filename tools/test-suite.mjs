@@ -20,7 +20,7 @@ function assert(name, condition, extra = '') {
 
 // 1. Module Registry Verification
 assert('PUZZLE_REGISTRY exists', typeof PUZZLE_REGISTRY === 'object');
-['ascii', 'bodmas', 'coords', 'wordsearch', 'riddle', 'snake'].forEach(type => {
+['ascii', 'bodmas', 'coords', 'wordsearch', 'riddle'].forEach(type => {
   assert(`Registry contains ${type}`, !!PUZZLE_REGISTRY[type]);
   assert(`${type} exports mount`, typeof PUZZLE_REGISTRY[type].mount === 'function');
   assert(`${type} exports unmount`, typeof PUZZLE_REGISTRY[type].unmount === 'function');
@@ -38,7 +38,7 @@ for (let i = 1; i <= 10; i++) {
   const p = CONFIG.PUZZLES[pid];
   const sp = SERVER_PUZZLES[pid];
   assert(`${pid} is defined in client`, !!p);
-  assert(`${pid} has valid type in client`, ['ascii', 'bodmas', 'coords', 'wordsearch', 'riddle', 'snake'].includes(p.type));
+  assert(`${pid} has valid type in client`, ['ascii', 'bodmas', 'coords', 'wordsearch', 'riddle'].includes(p.type));
   assert(`${pid} client has no embedded answers/solutions`, !p.solution && !p.solutions && !p.mockAnswer);
   assert(`${pid} client has no unsealed hints or clues`, !p.hint && !p.clue);
 

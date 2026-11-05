@@ -51,16 +51,14 @@ router.post('/vault/enter', requireAuth, async (req, res) => {
     let hintsUsedCount = 0;
 
     for (const b of allBlocks) {
-      const isBonus = PUZZLES[b.puzzleId]?.bonus;
+      if (!PUZZLES[b.puzzleId]) continue;
       if (b.hintUsed) hintsUsedCount++;
 
-      if (!isBonus) {
-        if (b.status === 'SOLVED') {
-          solvedQuestBlocks.push(b.puzzleId);
-          if (b.unlockedClue) unlockedClues.push(b.unlockedClue);
-        } else if (b.status === 'FAILED') {
-          failedQuestBlocks.push(b.puzzleId);
-        }
+      if (b.status === 'SOLVED') {
+        solvedQuestBlocks.push(b.puzzleId);
+        if (b.unlockedClue) unlockedClues.push(b.unlockedClue);
+      } else if (b.status === 'FAILED') {
+        failedQuestBlocks.push(b.puzzleId);
       }
     }
 

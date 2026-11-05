@@ -227,7 +227,6 @@ class StateManager {
    */
   getPuzzleRemainingSeconds(id) {
     if (!this.state || !this.state.blocks?.[id]) return 0;
-    if (CONFIG.PUZZLES[id]?.bonus) return 0;
 
     const block = this.state.blocks[id];
     if (block.status === 'SOLVED' || block.status === 'FAILED') return 0;
@@ -248,7 +247,6 @@ class StateManager {
   checkExpiredPuzzles() {
     if (!this.state || !this.state.blocks) return;
     for (const id in this.state.blocks) {
-      if (CONFIG.PUZZLES[id]?.bonus) continue;
       const block = this.state.blocks[id];
       if (block.status === 'OPENED' || block.status === 'OPENED_IN_PROGRESS') {
         const remaining = this.getPuzzleRemainingSeconds(id);
@@ -266,11 +264,6 @@ class StateManager {
    */
   async openPuzzle(id) {
     if (!this.state) return null;
-
-    // Bonus arcade puzzle: purely client-side, does not start a timer or change status
-    if (CONFIG.PUZZLES[id]?.bonus) {
-      return this.state.blocks[id];
-    }
 
     try {
       const res = await Api.openPuzzle(id);
@@ -295,6 +288,7 @@ class StateManager {
       block.attemptsUsed = res.attemptsUsed || 0;
       block.attemptsRemaining = res.attemptsRemaining;
       block.hintUsed = !!res.hintUsed;
+      block.difficulty = res.puzzle?.difficulty || (res.puzzle?.timeLimit <= 600 ? 'easy' : res.puzzle?.timeLimit <= 900 ? 'medium' : 'hard');
       block.timeLimitSeconds = res.puzzle?.timeLimit || 600;
       block.timeRemainingSeconds = res.timeRemainingSeconds;
       block.activeSince = res.status === 'OPENED' ? getServerNow() : null;
@@ -319,14 +313,6 @@ class StateManager {
     const targetId = id || this.state.activeBlock;
     if (!targetId) return;
 
-    if (CONFIG.PUZZLES[targetId]?.bonus) {
-      if (this.state.activeBlock === targetId) {
-        this.state.activeBlock = null;
-        this.saveState();
-      }
-      return;
-    }
-
     try {
       if (this.state.blocks?.[targetId]?.activeSince) {
         this.state.blocks[targetId].activeSince = null;
@@ -348,10 +334,6 @@ class StateManager {
   async submitAnswer(id, rawAnswerOrPayload) {
     if (!this.state || !this.state.blocks?.[id]) {
       return { error: 'Invalid puzzle' };
-    }
-
-    if (CONFIG.PUZZLES[id]?.bonus) {
-      return { success: true, correct: true, bonus: true };
     }
 
     try {
@@ -408,7 +390,6 @@ class StateManager {
    */
   async useHint(id) {
     if (!this.state || !this.state.blocks?.[id]) return false;
-    if (CONFIG.PUZZLES[id]?.bonus) return false;
 
     try {
       const res = await Api.useHint(id);
@@ -438,7 +419,6 @@ class StateManager {
    */
   saveProgress(id, progressObj) {
     if (!this.state || !this.state.blocks?.[id]) return;
-    if (CONFIG.PUZZLES[id]?.bonus) return;
 
     this.state.blocks[id].progress = {
       ...(this.state.blocks[id].progress || {}),
@@ -490,7 +470,7 @@ class StateManager {
    * Get contest summary statistics.
    */
   getSummary() {
-    const questPuzzleIds = Object.keys(CONFIG.PUZZLES).filter((id) => !CONFIG.PUZZLES[id]?.bonus);
+    const questPuzzleIds = Object.keys(CONFIG.PUZZLES);
     const totalQuestPuzzles = questPuzzleIds.length;
 
     if (!this.state) {
@@ -523,22 +503,20 @@ class StateManager {
   }
 
   /**
-   * Mark puzzle solved (dev/test helper; ignores bonus).
+   * Mark puzzle solved (dev/test helper).
    */
   markSolved(id) {
     if (!this.state || !this.state.blocks?.[id]) return;
-    if (CONFIG.PUZZLES[id]?.bonus) return;
     this.state.blocks[id].status = 'SOLVED';
     this.state.blocks[id].activeSince = null;
     this.saveState();
   }
 
   /**
-   * Mark puzzle failed (dev/test helper; ignores bonus).
+   * Mark puzzle failed (dev/test helper).
    */
   failPuzzle(id, reason = 'TIMEOUT') {
     if (!this.state || !this.state.blocks?.[id]) return;
-    if (CONFIG.PUZZLES[id]?.bonus) return;
     this.state.blocks[id].status = 'FAILED';
     this.state.blocks[id].activeSince = null;
     this.saveState();

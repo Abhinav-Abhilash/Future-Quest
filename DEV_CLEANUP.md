@@ -29,7 +29,7 @@ This document catalogs every developer, testing, and mock feature implemented ac
 | **Mock Puzzles & Answers** | [`js/config.js`](file:///c:/Users/user/Downloads/Future%20Quest/js/config.js)<br>[`js/puzzles/`](file:///c:/Users/user/Downloads/Future%20Quest/js/puzzles/) | `CONFIG.PUZZLES`<br>`CONFIG.TILE_DIFFICULTY`<br>`tools/verify-puzzles.mjs`<br>`tools/test-suite.mjs`<br>`tools/check-sizes.mjs` | 10 interactive puzzle definitions with client-side verification data, hints, and clue specifications.<br>**Action:** In production, puzzle questions, math expressions, and validation hashes must be validated on the backend API server to prevent client-side inspection via browser DevTools. Remove DEV test scripts in `tools/` before deployment. |
 | **Submission Form Placeholder** | [`js/config.js`](file:///c:/Users/user/Downloads/Future%20Quest/js/config.js)<br>[`js/screens.js`](file:///c:/Users/user/Downloads/Future%20Quest/js/screens.js) | `CONFIG.POSTER_FORM_URL` | Placeholder Google Forms endpoint for poster submissions.<br>**Action:** Update URL to the official Jain University SFT submission form. |
 | **Server Audit Logging & Security** | [`server/routes/vault.js`](file:///c:/Users/user/Downloads/Future%20Quest/server/routes/vault.js) | Server-side vault logging | Client-side verification hash UI and copy buttons have been completely removed. Server records team solve counts, hints used, and timestamps for judge verification.<br>**Action:** Retain server audit log and timestamp recording in production. |
-| **Scoring Rubric Notice** | [`js/screens.js`](file:///c:/Users/user/Downloads/Future%20Quest/js/screens.js) | `.scoring-placeholder-block.dev-only` | Notice box on the Rules screen indicating that official weighted scoring rules are pending committee publication.<br>**Action:** Replace placeholder block with finalized scoring rubric text. |
+| **Final Submission Notice** | [`js/screens.js`](file:///c:/Users/user/Downloads/Future%20Quest/js/screens.js) | `#rule-7` | Section on the Rules screen confirming that the contest does not use a points system; teams solve tasks to unlock clues, and then submit their final poster design via the official Google Form.<br>**Action:** Verify Google Form submission URL in `CONFIG.POSTER_FORM_URL`. |
 | **Backend & Integration Tests** | [`tools/test-phase3-e2e.mjs`](file:///c:/Users/user/Downloads/Future%20Quest/tools/test-phase3-e2e.mjs)<br>[`server/routes/test-routes.js`](file:///c:/Users/user/Downloads/Future%20Quest/server/routes/test-routes.js)<br>[`server/db/test-connection.js`](file:///c:/Users/user/Downloads/Future%20Quest/server/db/test-connection.js) | CLI test scripts | Automated test suites that verify MongoDB Atlas connection, API endpoints, and full client integration.<br>**Action:** Dev/CI tools only. |
 | **Server Admin Token & Environment** | [`server/.env`](file:///c:/Users/user/Downloads/Future%20Quest/server/.env)<br>[`.gitignore`](file:///c:/Users/user/Downloads/Future%20Quest/.gitignore) | `ADMIN_TOKEN`, `HMAC_SECRET`, `ATLAS_PUBLIC_KEY`, `ATLAS_PRIVATE_KEY` | Server secrets stored strictly in gitignored `.env`.<br>**Action:** Rotate tokens and verify Atlas IP access list before public contest launch. |
 
@@ -86,7 +86,7 @@ Four real puzzle challenges and their corresponding submission fragment clues ha
 
 ---
 
-## 4. Full Competition Puzzle & Clue Spec Inventory (All 11 Tasks)
+## 4. Full Competition Puzzle & Clue Spec Inventory (All 10 Tasks)
 
 Every puzzle tile corresponds to a specific element of the final competition poster:
 

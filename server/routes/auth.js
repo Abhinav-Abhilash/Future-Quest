@@ -56,7 +56,7 @@ router.post('/register', registerLimiter, async (req, res) => {
     const { teams } = (await import('../db/connection.js')).getCollections();
     await teams.updateOne({ _id: team._id }, { $set: { tokenHash } });
 
-    // 6. Initialize all 11 puzzle blocks for this team
+    // 6. Initialize all 10 puzzle blocks for this team
     await initBlocksForTeam(team._id);
 
     // 7. Audit log event

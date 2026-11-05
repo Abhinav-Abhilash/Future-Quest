@@ -522,9 +522,9 @@ export function getClientPuzzlePayload(puzzleId) {
     type: puz.type,
     title: puz.title,
     category: puz.category,
+    difficulty: puz.difficulty,
     whatToDo: puz.whatToDo,
     prompt: puz.prompt,
-    bonus: !!puz.bonus,
     timeLimit: puz.timeLimit, // issued only when opened!
     data: puz.clientData,
   };

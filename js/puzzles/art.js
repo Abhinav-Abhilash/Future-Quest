@@ -67,32 +67,6 @@ export const PUZZLE_ART = {
 
   arrowDown: `<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M8 2v10m-3.5-3.5 3.5 3.5 3.5-3.5"/>
-  </svg>`,
-
-  // Apple Eats Snake Arcade Characters
-  apple: `<svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true">
-    <path d="M31 16 C31 10 35 5 40 4 C39 8 36 12 33 16 Z" fill="#78350F" />
-    <path d="M34 11 C40 7 47 8 49 13 C44 16 37 15 34 11 Z" fill="#16A34A" stroke="#15803D" stroke-width="1" />
-    <path d="M32 15 C44 15 54 19 58 25 L34 37 L58 49 C54 54 44 59 32 58 C20 59 6 52 6 37 C6 21 20 15 32 15 Z" fill="#DC2626" />
-    <path d="M32 15 C20 15 6 21 6 37 C6 46 12 53 18 57 C13 52 10 44 10 37 C10 23 20 17 32 15 Z" fill="#B91C1C" />
-    <circle cx="36" cy="25" r="3.5" fill="#0F172A" />
-    <circle cx="37.2" cy="24" r="1.2" fill="#FFFFFF" />
-  </svg>`,
-
-  snakeHead: `<svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true">
-    <path d="M48 32 H55 L59 28 M55 32 L59 36" stroke="#DC2626" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-    <rect x="4" y="4" width="48" height="56" rx="14" fill="#16A34A" stroke="#15803D" stroke-width="4" />
-    <polygon points="18,32 25,25 32,32 25,39" fill="#15803D" />
-    <circle cx="30" cy="22" r="7" fill="#FFFFFF" />
-    <circle cx="32" cy="22" r="3.5" fill="#0F172A" />
-    <circle cx="30" cy="42" r="7" fill="#FFFFFF" />
-    <circle cx="32" cy="42" r="3.5" fill="#0F172A" />
-  </svg>`,
-
-  snakeBody: `<svg viewBox="0 0 64 64" width="24" height="24" aria-hidden="true">
-    <rect x="4" y="4" width="56" height="56" rx="14" fill="#16A34A" stroke="#15803D" stroke-width="4" />
-    <polygon points="32,12 52,32 32,52 12,32" fill="#15803D" />
-    <polygon points="32,20 44,32 32,44 20,32" fill="#4ADE80" />
   </svg>`
 };
 

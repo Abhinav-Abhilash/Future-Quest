@@ -45,12 +45,11 @@ router.get('/state', requireAuth, async (req, res) => {
         activeSince: null,
       };
 
-      const isBonus = !!puz.bonus;
       const isSolved = block.status === 'SOLVED';
       const isFailed = block.status === 'FAILED';
       const isOpened = block.status === 'OPENED';
 
-      if (!isBonus && isSolved) {
+      if (isSolved) {
         solvedCount += 1;
       }
 
@@ -67,7 +66,6 @@ router.get('/state', requireAuth, async (req, res) => {
         attemptsUsed: block.attemptsUsed || 0,
         attemptsRemaining: null,
         hintUsed: !!block.hintUsed,
-        bonus: isBonus,
       };
 
       // Only include unlocked clue if solved
@@ -76,7 +74,7 @@ router.get('/state', requireAuth, async (req, res) => {
       }
 
       // For currently OPENED puzzles, compute active time remaining on the fly
-      if (isOpened && !isBonus && puz.timeLimit) {
+      if (isOpened && puz.timeLimit) {
         const totalSpentMs =
           (block.timeSpentMs || 0) + (block.activeSince ? now - block.activeSince : 0);
         const timeLimitMs = puz.timeLimit * 1000;
