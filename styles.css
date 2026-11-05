@@ -1969,31 +1969,56 @@ input, select, textarea {
   color: var(--text-muted);
 }
 
+.puzzle-hint-display {
+  margin: 0 0 var(--space-4) 0;
+  display: none;
+}
+
+.puzzle-hint-display.hint-visible {
+  display: block;
+  animation: fadeInHint 240ms ease-out;
+}
+
 .revealed-hint-box {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-default);
-  border-left: 3px solid var(--accent);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(20, 15, 30, 0.95) 100%);
+  border: 1px solid #d29922;
+  border-left: 4px solid #f59e0b;
   border-radius: var(--radius-sm);
-  padding: var(--space-3) var(--space-4);
-}
-
-.hint-title-row {
+  padding: 14px 18px;
   display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--text-primary);
-  margin-bottom: var(--space-1);
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
-.hint-icon {
-  display: flex;
-  color: var(--accent);
+.revealed-hint-box .hint-icon {
+  color: #f59e0b;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
-.hint-text {
-  font-size: 13px;
-  color: var(--text-secondary);
+.revealed-hint-box .hint-content {
+  flex: 1;
+}
+
+.revealed-hint-box .hint-content strong {
+  color: #fbbf24;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.revealed-hint-box .hint-text {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #f0edf6;
+  margin: 0;
+}
+
+@keyframes fadeInHint {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Answer Submission Section */

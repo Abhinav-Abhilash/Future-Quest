@@ -229,6 +229,7 @@ class StateManager {
           status,
           attemptsUsed: Math.max(localBlock.attemptsUsed || 0, t.attemptsUsed || 0),
           hintUsed: localBlock.hintUsed || !!t.hintUsed,
+          revealedHint: localBlock.revealedHint || t.revealedHint || null,
           timeSpentMs,
           activeSince,
           unlockedClue,
@@ -241,6 +242,9 @@ class StateManager {
         // Cache any unlocked clue into client config
         if (unlockedClue && CONFIG.PUZZLES[t.puzzleId]) {
           CONFIG.PUZZLES[t.puzzleId].clue = unlockedClue;
+        }
+        if (t.revealedHint && CONFIG.PUZZLES[t.puzzleId]) {
+          CONFIG.PUZZLES[t.puzzleId].hint = t.revealedHint;
         }
       });
 

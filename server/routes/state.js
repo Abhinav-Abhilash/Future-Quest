@@ -83,6 +83,11 @@ async function buildStateResponse(team, masterTimeRemainingMs) {
       timeSpentMs: block.timeSpentMs || 0,
     };
 
+    // If hint was spent on this tile, include the revealed hint
+    if (block.hintUsed && puz.hint) {
+      tile.revealedHint = puz.hint;
+    }
+
     // Only include unlocked clue if solved
     if (isSolved && (block.unlockedClue || puz.clue)) {
       tile.unlockedClue = block.unlockedClue || puz.clue;

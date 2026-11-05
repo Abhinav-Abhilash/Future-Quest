@@ -580,19 +580,6 @@ class App {
         hudTimerEl.textContent = Screens.formatTime(remainingSec, true);
       }
 
-      // Live update for in-progress puzzle tiles on grid
-      const inProgressTiles = document.querySelectorAll('.tile-elapsed-inprogress[data-puzzle-id]');
-      inProgressTiles.forEach(el => {
-        const pid = el.dataset.puzzleId;
-        if (pid) {
-          const rem = GameState.getPuzzleRemainingSeconds(pid);
-          const txt = el.querySelector('.tile-time-left-text');
-          if (txt) {
-            txt.textContent = `${Screens.formatTime(rem)} left`;
-          }
-        }
-      });
-
       const totalSec = (CONFIG.TOTAL_TIME_MINUTES ? CONFIG.TOTAL_TIME_MINUTES * 60 : CONFIG.MASTER_TIME) || 7200;
       const pct = Math.max(0, Math.min(1, remainingSec / totalSec));
 
