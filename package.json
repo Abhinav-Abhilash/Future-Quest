@@ -10,7 +10,8 @@
     "test:db": "npm --prefix server run test:db",
     "test:routes": "npm --prefix server run test:routes",
     "test:e2e": "node tools/test-phase3-e2e.mjs",
-    "test": "npm run test:puzzles && npm run test:routes && npm run test:e2e"
+    "test:reload": "node tools/test-reload-persistence.mjs",
+    "test": "npm run test:puzzles && npm run test:routes && npm run test:e2e && npm run test:reload"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",

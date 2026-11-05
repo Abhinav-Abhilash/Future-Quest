@@ -635,7 +635,7 @@ export const Screens = {
 
             <div class="hud-stat-item">
               <span class="hud-stat-label">Time Remaining</span>
-              <span class="hud-stat-value mono">${this.formatTime(masterRemaining, true)}</span>
+              <span class="hud-stat-value mono" id="hud-master-timer">${this.formatTime(masterRemaining, true)}</span>
             </div>
 
             <div class="hud-stat-item">

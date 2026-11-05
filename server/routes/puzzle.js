@@ -42,7 +42,12 @@ router.post('/puzzle/:id/open', requireAuth, async (req, res) => {
     }
 
     const { blocks } = getCollections();
-    const block = await blocks.findOne({ teamId: team._id, puzzleId: id });
+    let block = await blocks.findOne({ teamId: team._id, puzzleId: id });
+    if (!block) {
+      const { initBlocksForTeam } = await import('../models/block.js');
+      await initBlocksForTeam(team._id);
+      block = await blocks.findOne({ teamId: team._id, puzzleId: id });
+    }
     if (!block) {
       return res.status(404).json({ error: 'Puzzle block not initialized for team.' });
     }
@@ -142,7 +147,12 @@ router.post('/puzzle/:id/leave', requireAuth, async (req, res) => {
     const now = Date.now();
 
     const { blocks } = getCollections();
-    const block = await blocks.findOne({ teamId: team._id, puzzleId: id });
+    let block = await blocks.findOne({ teamId: team._id, puzzleId: id });
+    if (!block) {
+      const { initBlocksForTeam } = await import('../models/block.js');
+      await initBlocksForTeam(team._id);
+      block = await blocks.findOne({ teamId: team._id, puzzleId: id });
+    }
     if (!block) {
       return res.status(404).json({ error: 'Block not found.' });
     }
@@ -213,7 +223,12 @@ router.post('/puzzle/:id/check', requireAuth, answerLimiter, async (req, res) =>
     }
 
     const { blocks } = getCollections();
-    const block = await blocks.findOne({ teamId: team._id, puzzleId: id });
+    let block = await blocks.findOne({ teamId: team._id, puzzleId: id });
+    if (!block) {
+      const { initBlocksForTeam } = await import('../models/block.js');
+      await initBlocksForTeam(team._id);
+      block = await blocks.findOne({ teamId: team._id, puzzleId: id });
+    }
     if (!block) {
       return res.status(404).json({ error: 'Puzzle block not found.' });
     }
@@ -353,7 +368,12 @@ router.post('/puzzle/:id/hint', requireAuth, async (req, res) => {
     }
 
     const { blocks, teams } = getCollections();
-    const block = await blocks.findOne({ teamId: team._id, puzzleId: id });
+    let block = await blocks.findOne({ teamId: team._id, puzzleId: id });
+    if (!block) {
+      const { initBlocksForTeam } = await import('../models/block.js');
+      await initBlocksForTeam(team._id);
+      block = await blocks.findOne({ teamId: team._id, puzzleId: id });
+    }
     if (!block) {
       return res.status(404).json({ error: 'Puzzle block not found.' });
     }

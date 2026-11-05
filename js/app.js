@@ -575,6 +575,11 @@ class App {
         clockEl.textContent = Screens.formatTime(remainingSec, true);
       }
 
+      const hudTimerEl = document.getElementById('hud-master-timer');
+      if (hudTimerEl) {
+        hudTimerEl.textContent = Screens.formatTime(remainingSec, true);
+      }
+
       const totalSec = CONFIG.TOTAL_TIME_MINUTES * 60;
       const pct = Math.max(0, Math.min(1, remainingSec / totalSec));
 

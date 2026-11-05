@@ -109,6 +109,27 @@ export async function fetchApi(endpoint, options = {}) {
     ...(options.headers || {}),
   };
 
+  // Attach persistent session token and team context from localStorage if present
+  if (typeof localStorage !== 'undefined') {
+    const token = localStorage.getItem('future_quest_token');
+    if (token && !headers['Authorization'] && !headers['authorization']) {
+      headers['Authorization'] = `Bearer ${token}`;
+      headers['x-team-token'] = token;
+    }
+    const teamStateStr = localStorage.getItem('future_quest_2026_state');
+    if (teamStateStr) {
+      try {
+        const teamState = JSON.parse(teamStateStr);
+        if (teamState?.teamName && !headers['x-team-name']) {
+          headers['x-team-name'] = encodeURIComponent(teamState.teamName);
+        }
+        if (teamState?.schoolName && !headers['x-school-name']) {
+          headers['x-school-name'] = encodeURIComponent(teamState.schoolName);
+        }
+      } catch (_e) {}
+    }
+  }
+
   const config = {
     ...options,
     headers,
@@ -187,6 +208,12 @@ export const Api = {
 
   /** Get complete contest state */
   getState: () => fetchApi('/state', { method: 'GET' }),
+
+  /** Re-synchronize client state with server */
+  syncState: (payload) => fetchApi('/state/sync', {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  }),
 
   /** Open a puzzle tile (starts timer, returns data) */
   openPuzzle: (id) => fetchApi(`/puzzle/${id}/open`, { method: 'POST' }),

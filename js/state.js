@@ -29,6 +29,21 @@ class StateManager {
 
       // Initial server sync in background on script load
       this.syncWithServer().catch(() => {});
+
+      // Preserve active puzzle timer and progress before window unloads / refreshes
+      window.addEventListener('beforeunload', () => {
+        if (this.state && this.state.blocks) {
+          const now = Date.now();
+          for (const bid in this.state.blocks) {
+            const b = this.state.blocks[bid];
+            if (b.activeSince && (b.status === 'OPENED' || b.status === 'OPENED_IN_PROGRESS')) {
+              b.timeSpentMs = (b.timeSpentMs || 0) + Math.max(0, now - b.activeSince);
+              b.activeSince = now;
+            }
+          }
+          this.saveState();
+        }
+      });
     }
   }
 
@@ -102,46 +117,92 @@ class StateManager {
   }
 
   /**
-   * Re-sync state with MongoDB Atlas backend truth.
+   * Re-sync state with MongoDB Atlas backend truth while preserving
+   * client-side solved blocks, pouch clues, and timer progression.
    */
   async syncWithServer() {
     if (this.syncInProgress) return this.state;
     this.syncInProgress = true;
 
     try {
-      const data = await Api.getState();
+      // Gather any locally solved puzzles to keep backend synchronized
+      const solvedPayload = {};
+      if (this.state && this.state.blocks) {
+        for (const [bid, b] of Object.entries(this.state.blocks)) {
+          if (b && b.status === 'SOLVED') {
+            solvedPayload[bid] = {
+              status: 'SOLVED',
+              unlockedClue: b.unlockedClue,
+            };
+          }
+        }
+      }
+
+      let data;
+      if (Object.keys(solvedPayload).length > 0) {
+        data = await Api.syncState({ blocks: solvedPayload }).catch(() => Api.getState());
+      } else {
+        data = await Api.getState();
+      }
+
       if (!data || !data.team) {
-        this.state = null;
-        this.saveState();
-        return null;
+        // Under no circumstances wipe existing local progress if server returns null/empty
+        return this.state;
       }
 
       const team = data.team;
       const tiles = data.tiles || [];
 
-      // Reconstruct local blocks map from server tiles
-      const blocks = {};
+      // Reconstruct blocks map from server tiles while merging local truths
+      const blocks = { ...(this.state?.blocks || {}) };
       const gridOrder = [];
 
       const validQuestIds = new Set(Object.keys(CONFIG.PUZZLES));
       tiles.forEach((t) => {
         if (!validQuestIds.has(t.puzzleId)) return; // skip legacy or invalid puzzles like puzzle_11
         gridOrder.push(t.puzzleId);
+
+        const localBlock = this.state?.blocks?.[t.puzzleId] || {};
+
+        // Status rule: SOLVED is permanent! Never downgrade a SOLVED puzzle to AVAILABLE or OPENED
+        let status = t.status;
+        if (localBlock.status === 'SOLVED') {
+          status = 'SOLVED';
+        } else if (localBlock.status === 'FAILED' && status !== 'SOLVED') {
+          status = 'FAILED';
+        }
+
+        // Time spent: preserve local accumulated time spent
+        let timeSpentMs = localBlock.timeSpentMs || 0;
+        if (typeof t.timeSpentMs === 'number' && t.timeSpentMs > timeSpentMs) {
+          timeSpentMs = t.timeSpentMs;
+        }
+
+        // Active since:
+        let activeSince = localBlock.activeSince || null;
+        if (status === 'OPENED' && !activeSince) {
+          activeSince = t.status === 'OPENED' ? getServerNow() : null;
+        } else if (status === 'SOLVED' || status === 'FAILED') {
+          activeSince = null;
+        }
+
+        const unlockedClue = localBlock.unlockedClue || t.unlockedClue || null;
+
         blocks[t.puzzleId] = {
-          status: t.status, // AVAILABLE, OPENED, SOLVED, FAILED
-          attemptsUsed: t.attemptsUsed || 0,
-          hintUsed: !!t.hintUsed,
-          timeSpentMs: 0,
-          activeSince: t.status === 'OPENED' ? getServerNow() : null,
-          unlockedClue: t.unlockedClue || null,
-          timeLimitSeconds: t.timeLimitSeconds || null,
-          timeRemainingSeconds: t.timeRemainingSeconds ?? null,
-          progress: (this.state?.blocks?.[t.puzzleId]?.progress) || {},
+          status,
+          attemptsUsed: Math.max(localBlock.attemptsUsed || 0, t.attemptsUsed || 0),
+          hintUsed: localBlock.hintUsed || !!t.hintUsed,
+          timeSpentMs,
+          activeSince,
+          unlockedClue,
+          timeLimitSeconds: t.timeLimitSeconds || localBlock.timeLimitSeconds || (CONFIG.PUZZLES[t.puzzleId]?.timeLimit) || 600,
+          timeRemainingSeconds: t.timeRemainingSeconds ?? localBlock.timeRemainingSeconds ?? null,
+          progress: localBlock.progress || {},
         };
 
         // Cache any unlocked clue into client config
-        if (t.unlockedClue && CONFIG.PUZZLES[t.puzzleId]) {
-          CONFIG.PUZZLES[t.puzzleId].clue = t.unlockedClue;
+        if (unlockedClue && CONFIG.PUZZLES[t.puzzleId]) {
+          CONFIG.PUZZLES[t.puzzleId].clue = unlockedClue;
         }
       });
 
@@ -154,30 +215,28 @@ class StateManager {
       }
 
       this.state = {
-        teamName: team.teamName,
-        schoolName: team.schoolName,
-        timerStartedAt: team.timerStartedAt,
-        timerLockedAt: team.timerLockedAt,
-        vaultEntered: !!team.isVaultLocked,
-        hintsRemaining: team.hintsLeft ?? 3,
-        gridOrder,
+        teamName: team.teamName || this.state?.teamName,
+        schoolName: team.schoolName || this.state?.schoolName,
+        timerStartedAt: this.state?.timerStartedAt || team.timerStartedAt,
+        timerLockedAt: team.timerLockedAt || this.state?.timerLockedAt || null,
+        vaultEntered: !!team.isVaultLocked || !!this.state?.vaultEntered,
+        hintsRemaining: Math.min(this.state?.hintsRemaining ?? 3, team.hintsLeft ?? 3),
+        gridOrder: gridOrder.length ? gridOrder : (this.state?.gridOrder || [...Object.keys(CONFIG.PUZZLES), 'vault_12']),
         activeBlock: this.state?.activeBlock || null,
         blocks,
         verificationHash: this.state?.verificationHash || null,
+        isLocalFallback: this.state?.isLocalFallback || false,
       };
 
       this.saveState();
       return this.state;
     } catch (err) {
       if (err.status === 401) {
-        // No active session on server
-        if (!this.state?.isLocalFallback) {
-          this.state = null;
-          this.saveState();
-        }
+        // Backend returned 401: preserve local state cache so contestant progress is never lost
+        console.warn('Backend returned 401 during sync. Preserving local state cache.');
         return this.state;
       }
-      // Offline / network failure: keep existing cache
+      // Offline / network failure: keep existing cache intact
       return this.state;
     } finally {
       this.syncInProgress = false;
@@ -196,7 +255,12 @@ class StateManager {
    */
   resetSession() {
     this.state = null;
-    this.saveState();
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('future_quest_token');
+      localStorage.removeItem('future_quest_team_id');
+    }
+    this.notify();
   }
 
   /**
@@ -213,6 +277,11 @@ class StateManager {
 
       if (!res || !res.team) {
         throw new Error(res?.error || 'Registration failed');
+      }
+
+      if (res.token && typeof localStorage !== 'undefined') {
+        localStorage.setItem('future_quest_token', res.token);
+        localStorage.setItem('future_quest_team_id', res.team.id);
       }
 
       // Immediately sync state to load seeded grid order and initialized blocks
@@ -269,8 +338,8 @@ class StateManager {
 
     const start = this.state.timerStartedAt;
     const end = this.state.timerLockedAt || getServerNow();
-    const elapsedSec = Math.floor((end - start) / 1000);
-    return Math.max(0, CONFIG.MASTER_TIME - elapsedSec);
+    const elapsedSec = Math.max(0, Math.floor((end - start) / 1000));
+    return Math.min(CONFIG.MASTER_TIME, Math.max(0, CONFIG.MASTER_TIME - elapsedSec));
   }
 
   /**
@@ -386,7 +455,10 @@ class StateManager {
 
     try {
       if (this.state.blocks?.[targetId]?.activeSince) {
-        this.state.blocks[targetId].activeSince = null;
+        const now = getServerNow();
+        const block = this.state.blocks[targetId];
+        block.timeSpentMs = (block.timeSpentMs || 0) + Math.max(0, now - block.activeSince);
+        block.activeSince = null;
       }
       this.state.activeBlock = null;
       this.saveState();
