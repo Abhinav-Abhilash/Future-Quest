@@ -175,20 +175,22 @@ export const CONFIG = {
     puzzle_6: {
       id: "puzzle_6",
       type: "riddle",
-      title: "Visual Clue Riddle",
-      category: "Institutional Identity",
-      whatToDo: "Inspect the cosmic illustration to identify the host institution and department. Deduce the 6 words and type the letters into the keycaps.",
-      prompt: "Examine the visual clues in the artwork to deduce the 6-word hosting institution and school.",
+      title: "Visual Cryptogram",
+      category: "Visual Deduction",
+      whatToDo: "Analyze the symbolic motifs in the artwork to decipher the hidden 6-word phrase. Type the letters into the keycaps.",
+      prompt: "Examine the visual clues in the artwork to deduce the 6-word phrase.",
       data: {
         id: "puzzle_6",
-        categoryTag: "HOST INSTITUTION & DEPARTMENT",
+        categoryTag: "SYMBOLIC VISUAL CIPHER",
         formatBadge: "6 WORDS (4 + 10 + 6 + 2 + 6 + 10 LETTERS)",
         imageUrl: "assets/jain_future_tech.jpg",
         riddleLines: [
-          "Deduce the 6 words illustrated across this futuristic cosmic artwork:",
-          "• Heritage: The revered meditative figure seated at center",
-          "• Education: The illuminated book of learning and wisdom",
-          "• Innovation: The cybernetic campus, neural brain, and robotic arm"
+          "Decipher the 6 words encoded across the symbols of this cosmic artwork:",
+          "• Word 1 (4 letters): The serene spiritual figure seated in meditative padmasana at the radiant center.",
+          "• Word 2 (10 letters): The illuminated open tome resting at the base, shining with universal knowledge.",
+          "• Word 3 & 4 (6 + 2 letters): The sacred sanctuary of higher study.",
+          "• Word 5 (6 letters): The celestial vista—galaxies, orbital planets, and soaring spires of tomorrow.",
+          "• Word 6 (10 letters): The synthesis of neural brains, cybernetic circuits, and robotic automation."
         ],
         words: [
           { name: "Word 1", length: 4 },
