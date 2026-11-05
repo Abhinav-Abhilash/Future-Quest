@@ -111,7 +111,7 @@ When preparing the platform for live competition:
 
 1. [ ] Open [`js/config.js`](file:///c:/Users/user/Downloads/Future%20Quest/js/config.js) and set `DEV_MODE: false`.
 2. [ ] Open [`js/config.js`](file:///c:/Users/user/Downloads/Future%20Quest/js/config.js) and set `SHUFFLE_TILES: true`.
-3. [ ] Update `POSTER_FORM_URL` in [`js/config.js`](file:///c:/Users/user/Downloads/Future%20Quest/js/config.js) with the finalized live Google Form link.
+3. [x] Update `POSTER_FORM_URL` in [`js/config.js`](file:///c:/Users/user/Downloads/Future%20Quest/js/config.js) with the finalized live Google Form link (`https://forms.gle/38P9x5TpBw4URK2N8`).
 4. [ ] Connect real puzzle and clue definitions from the secure server API endpoint (ensuring mystery difficulty is preserved until puzzle opening).
 5. [ ] Confirm server-side timer validation and audit logging.
 6. [ ] Confirm that no `.dev-only` elements or dev toolbars are visible on desktop or mobile viewports.

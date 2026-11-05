@@ -1890,7 +1890,7 @@ export const Screens = {
                 </label>
                 <label class="ready-check-item">
                   <input type="checkbox" id="chk-vault-ready" class="vault-pre-check" />
-                  <span class="ready-check-text">Our poster design is finalized and ready for judging evaluation.</span>
+                  <span class="ready-check-text">I / We agree to submit our final poster entry to the official evaluation portal.</span>
                 </label>
               </div>
             </div>
@@ -1905,7 +1905,7 @@ export const Screens = {
                 </div>
                 <div class="cta-actions">
                   <a 
-                    href="${CONFIG.POSTER_FORM_URL}" 
+                    href="${CONFIG.POSTER_FORM_URL || 'https://forms.gle/38P9x5TpBw4URK2N8'}" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     class="btn btn-primary btn-lg btn-vault-submit"
@@ -1915,7 +1915,7 @@ export const Screens = {
                     Submit Your Poster &rarr;
                   </a>
                 </div>
-                <p class="cta-note">Check both readiness items to unlock submission. Form opens in a secure new tab.</p>
+                <p class="cta-note">Tick the agreement box above to unlock submission. Redirects to the official Google Form in a new tab.</p>
               </div>
             </div>
           </div>
@@ -1950,17 +1950,33 @@ export const Screens = {
     const vaultChecks = container.querySelectorAll('.vault-pre-check');
     const finalSubmitLink = container.querySelector('#btn-vault-final-submit');
     if (finalSubmitLink) {
+      const updateSubmitState = () => {
+        const chkReady = container.querySelector('#chk-vault-ready');
+        const isReady = chkReady && chkReady.checked;
+        const allOk = vaultChecks.length > 0 && Array.from(vaultChecks).every(c => c.checked);
+        if (isReady || allOk) {
+          finalSubmitLink.style.pointerEvents = 'auto';
+          finalSubmitLink.style.opacity = '1';
+          finalSubmitLink.removeAttribute('aria-disabled');
+        } else {
+          finalSubmitLink.style.pointerEvents = 'none';
+          finalSubmitLink.style.opacity = '0.5';
+          finalSubmitLink.setAttribute('aria-disabled', 'true');
+        }
+      };
+
       vaultChecks.forEach(chk => {
-        chk.addEventListener('change', () => {
-          const allOk = Array.from(vaultChecks).every(c => c.checked);
-          if (allOk) {
-            finalSubmitLink.style.pointerEvents = 'auto';
-            finalSubmitLink.style.opacity = '1';
-          } else {
-            finalSubmitLink.style.pointerEvents = 'none';
-            finalSubmitLink.style.opacity = '0.5';
-          }
-        });
+        chk.addEventListener('change', updateSubmitState);
+      });
+
+      // When final submit is clicked, record submission on server in background
+      finalSubmitLink.addEventListener('click', () => {
+        const formUrl = CONFIG.POSTER_FORM_URL || 'https://forms.gle/38P9x5TpBw4URK2N8';
+        try {
+          GameState.submitVault(formUrl);
+        } catch (err) {
+          console.warn('[VAULT] Could not record submit on server:', err);
+        }
       });
     }
   },

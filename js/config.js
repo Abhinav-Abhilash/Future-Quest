@@ -13,6 +13,9 @@ export const CONFIG = {
     ? 'http://localhost:3001/api'
     : '/api',
 
+  // Official Google Form submission portal for final poster submission
+  POSTER_FORM_URL: 'https://forms.gle/38P9x5TpBw4URK2N8',
+
   // Competition timing
   MASTER_TIME: 7200, // 2 hours in seconds (7200 seconds)
   TOTAL_TIME_MINUTES: 120,
