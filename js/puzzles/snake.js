@@ -844,3 +844,4 @@ export function mount(root, data, ctx) {
     dpadHandlers.forEach(({ el, fn }) => el.removeEventListener('pointerdown', fn));
   };
 }
+

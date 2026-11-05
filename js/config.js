@@ -18,6 +18,14 @@ export const CONFIG = {
     hard: 1200     // 20 minutes (1200 seconds)
   },
 
+  // Per-puzzle custom time limits in seconds (overrides DIFFICULTY_TIME)
+  PUZZLE_TIME_OVERRIDE: {
+    puzzle_11: 480 // 8 minutes (480 seconds)
+  },
+
+  // Puzzles where hints are disallowed
+  NO_HINT_PUZZLES: ['puzzle_11'],
+
   // Game rules configuration
   MAX_ATTEMPTS: 3,
   TOTAL_HINTS: 3,
@@ -585,7 +593,6 @@ export const CONFIG = {
       category: "Reverse Arcade Dynamics",
       whatToDo: "Guide the apple to eat the snake's segments in the right order to spell the secret word.",
       prompt: "Guide the hungry red apple to consume the wandering snake's body segments in the exact sequence of the secret word.",
-      hint: "Think of an iconic sleek open-top two-seater sports car engineered to cruise both highway tarmac and deep space.",
       clueType: "text",
       clue: {
         title: "Word for your poster",

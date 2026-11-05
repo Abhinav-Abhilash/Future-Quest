@@ -39,7 +39,12 @@ for (let i = 1; i <= 11; i++) {
   assert(`${pid} has data object`, typeof p.data === 'object');
   assert(`${pid} has prompt`, typeof p.prompt === 'string' && p.prompt.length > 0);
   assert(`${pid} has whatToDo`, typeof p.whatToDo === 'string' && p.whatToDo.length > 0);
-  assert(`${pid} has hint`, typeof p.hint === 'string' && p.hint.length > 0);
+  const isNoHint = Array.isArray(CONFIG.NO_HINT_PUZZLES) && CONFIG.NO_HINT_PUZZLES.includes(pid);
+  if (isNoHint) {
+    assert(`${pid} correctly has no hint configured`, !p.hint);
+  } else {
+    assert(`${pid} has hint`, typeof p.hint === 'string' && p.hint.length > 0);
+  }
   assert(`${pid} has clue`, typeof p.clue === 'object' && !!p.clue.title);
   assert(`${pid} difficulty is mapped`, ['easy', 'medium', 'hard'].includes(CONFIG.TILE_DIFFICULTY[pid]));
 }

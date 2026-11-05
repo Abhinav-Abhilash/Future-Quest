@@ -176,7 +176,7 @@ class StateManager {
     if (!this.state || !this.state.blocks[id]) return 0;
     const block = this.state.blocks[id];
     const difficulty = CONFIG.TILE_DIFFICULTY[id] || 'easy';
-    const maxSec = CONFIG.DIFFICULTY_TIME[difficulty] || 600;
+    const maxSec = (CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE[id]) || CONFIG.DIFFICULTY_TIME[difficulty] || 600;
 
     let totalSpentMs = block.timeSpentMs || 0;
     if (block.activeSince && !this.state.vaultEntered && block.status === 'OPENED_IN_PROGRESS') {
@@ -411,6 +411,7 @@ class StateManager {
    */
   useHint(id) {
     if (!this.state || !this.state.blocks[id]) return false;
+    if (CONFIG.NO_HINT_PUZZLES && CONFIG.NO_HINT_PUZZLES.includes(id)) return false;
     const block = this.state.blocks[id];
 
     if (this.state.vaultEntered || this.isMasterExpired()) return false;
@@ -433,10 +434,27 @@ class StateManager {
 
     // Freeze spent time at max
     const difficulty = CONFIG.TILE_DIFFICULTY[id] || 'easy';
-    const maxSec = CONFIG.DIFFICULTY_TIME[difficulty] || 600;
+    const maxSec = (CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE[id]) || CONFIG.DIFFICULTY_TIME[difficulty] || 600;
     block.timeSpentMs = maxSec * 1000;
     block.activeSince = null;
     block.status = 'FAILED';
+    this.saveState();
+  }
+
+  /**
+   * DEV-ONLY: Fast-forward spent time so only secondsLeft remain on puzzle countdown.
+   */
+  devSkipTimer(id, secondsLeft = 10) {
+    if (!CONFIG.DEV_MODE) return;
+    if (!this.state || !this.state.blocks[id]) return;
+    const block = this.state.blocks[id];
+    const difficulty = CONFIG.TILE_DIFFICULTY[id] || 'easy';
+    const maxSec = (CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE[id]) || CONFIG.DIFFICULTY_TIME[difficulty] || 600;
+    const targetSpentMs = Math.max(0, (maxSec - secondsLeft)) * 1000;
+    block.timeSpentMs = targetSpentMs;
+    if (block.activeSince) {
+      block.activeSince = Date.now();
+    }
     this.saveState();
   }
 

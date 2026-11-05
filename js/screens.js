@@ -761,7 +761,11 @@ export const Screens = {
     // They appear only on the puzzle screen after the tile has been opened and stay visible afterwards.
     const block = GameState.openPuzzle(puzzleId);
     const difficulty = CONFIG.TILE_DIFFICULTY[puzzleId] || 'easy';
-    const totalPuzzleSec = CONFIG.DIFFICULTY_TIME[difficulty] || 600;
+    const hasTimeOverride = !!(CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE[puzzleId]);
+    const totalPuzzleSec = hasTimeOverride
+      ? CONFIG.PUZZLE_TIME_OVERRIDE[puzzleId]
+      : (CONFIG.DIFFICULTY_TIME[difficulty] || 600);
+    const isNoHint = !!(CONFIG.NO_HINT_PUZZLES && CONFIG.NO_HINT_PUZZLES.includes(puzzleId));
 
     // Find tile index in gridOrder for display and determine tile label
     const tileIndex = (state.gridOrder || []).indexOf(puzzleId);
@@ -868,8 +872,8 @@ export const Screens = {
               </button>
               <div class="puzzle-header-task-info">
                 <span id="puzzle-band-task-heading" class="puzzle-band-task-label mono">TASK ${tileNumber}</span>
-                <div class="difficulty-badge difficulty-${difficulty}">
-                  ${difficulty.toUpperCase()} (${Math.floor(totalPuzzleSec / 60)} MIN)
+                <div class="difficulty-badge ${hasTimeOverride ? 'difficulty-override' : `difficulty-${difficulty}`}">
+                  ${hasTimeOverride ? `${Math.floor(totalPuzzleSec / 60)} MIN` : `${difficulty.toUpperCase()} (${Math.floor(totalPuzzleSec / 60)} MIN)`}
                 </div>
                 <div class="puzzle-category-tag mono">${puzzleConfig.category}</div>
               </div>
@@ -976,15 +980,17 @@ export const Screens = {
                   type="button" 
                   class="btn btn-secondary btn-sm keycap action-hint-btn" 
                   id="btn-use-hint"
-                  ${state.hintsRemaining <= 0 || block.hintUsed || block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled aria-disabled="true"' : ''}
+                  ${isNoHint || state.hintsRemaining <= 0 || block.hintUsed || block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled aria-disabled="true"' : ''}
                 >
-                  <span class="btn-hint-lantern ${block.hintUsed ? 'lantern-dark' : 'lantern-lit'}">${block.hintUsed ? ICONS.lanternDark : ICONS.lanternLit}</span>
-                  <span>${block.hintUsed ? 'Hint Used' : 'Hint'}</span>
-                  <span class="hint-mini-pips" id="action-hint-pips">
-                    ${Array.from({ length: 3 }, (_, i) => `
-                      <span class="hint-mini-pip ${i < state.hintsRemaining ? 'pip-active' : 'pip-used'}">${i < state.hintsRemaining ? PUZZLE_ART.pipFilled : PUZZLE_ART.pipHollow}</span>
-                    `).join('')}
-                  </span>
+                  <span class="btn-hint-lantern ${isNoHint || block.hintUsed ? 'lantern-dark' : 'lantern-lit'}">${isNoHint || block.hintUsed ? ICONS.lanternDark : ICONS.lanternLit}</span>
+                  <span>${isNoHint ? 'No hints here' : (block.hintUsed ? 'Hint Used' : 'Hint')}</span>
+                  ${!isNoHint ? `
+                    <span class="hint-mini-pips" id="action-hint-pips">
+                      ${Array.from({ length: 3 }, (_, i) => `
+                        <span class="hint-mini-pip ${i < state.hintsRemaining ? 'pip-active' : 'pip-used'}">${i < state.hintsRemaining ? PUZZLE_ART.pipFilled : PUZZLE_ART.pipHollow}</span>
+                      `).join('')}
+                    </span>
+                  ` : ''}
                 </button>
               </div>
             </div>
@@ -1038,6 +1044,10 @@ export const Screens = {
       const actionNotice = container.querySelector('#action-bar-notice-text');
       const checkBtnMain = container.querySelector('#btn-check-main');
       const hintBtn = container.querySelector('#btn-use-hint');
+      if (hintBtn && isNoHint) {
+        hintBtn.disabled = true;
+        hintBtn.setAttribute('aria-disabled', 'true');
+      }
 
       const remAttempts = Math.max(0, CONFIG.MAX_ATTEMPTS - (currentBlock.attemptsUsed || 0));
       if (attemptsPipsEl) {
@@ -1292,7 +1302,7 @@ export const Screens = {
     }
 
     const hintBtn = container.querySelector('#btn-use-hint');
-    if (hintBtn) {
+    if (hintBtn && !isNoHint) {
       hintBtn.addEventListener('click', () => {
         Modal.showHintConfirmation(state.hintsRemaining, () => {
           GameState.useHint(puzzleId);
@@ -1842,6 +1852,9 @@ export const Screens = {
               <summary>5. Hint Allocation</summary>
               <p class="rule-text">
                 Each team is allocated exactly <strong>3 hints total</strong> for the entire 2-hour competition (shared across all 11 puzzles). Spending a hint permanently reveals a clue for that puzzle. Hints are non-refundable and cannot be re-assigned.
+              </p>
+              <p class="rule-text">
+                A few special puzzles have their own time limit and do not allow hints.
               </p>
             </details>
 

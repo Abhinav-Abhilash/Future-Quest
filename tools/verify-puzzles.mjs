@@ -182,14 +182,20 @@ const t11 = CONFIG.PUZZLES.puzzle_11;
 const t11_data = t11.data;
 const t11_targetWord = t11_data.targetWord;
 const t11_letters = t11_targetWord.split('');
+const t11_hasOverride = CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE.puzzle_11 === 480;
+const t11_noHint = Array.isArray(CONFIG.NO_HINT_PUZZLES) && CONFIG.NO_HINT_PUZZLES.includes('puzzle_11');
+const t11_hasNoHintConfig = !t11.hint;
 const t11_ok = t11.type === 'snake' &&
   typeof t11_targetWord === 'string' &&
   t11_targetWord === 'ROADSTER' &&
   t11_letters.length === 8 &&
   t11_letters.join('') === 'ROADSTER' &&
   t11.clue.type === 'text' &&
-  t11.clue.content === t11_targetWord;
-report('T11 Apple Eats Snake Dynamic Check (ROADSTER)', t11_ok, `Word: ${t11_targetWord}, Length: ${t11_letters.length}`);
+  t11.clue.content === t11_targetWord &&
+  t11_hasOverride &&
+  t11_noHint &&
+  t11_hasNoHintConfig;
+report('T11 Apple Eats Snake Dynamic Check (ROADSTER, 480s override, no-hint)', t11_ok, `Override: ${t11_hasOverride}, NoHint: ${t11_noHint}, NoHintText: ${t11_hasNoHintConfig}`);
 
 console.log('=============================================================');
 if (allPassed) {

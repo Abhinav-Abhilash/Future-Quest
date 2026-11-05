@@ -1,6 +1,7 @@
 // /* DEV-ONLY */ Apple Eats Snake Verification & Integration Test
 
 import { CONFIG } from '../js/config.js';
+import { GameState } from '../js/state.js';
 import { PUZZLE_REGISTRY } from '../js/puzzles/index.js';
 import * as snakeModule from '../js/puzzles/snake.js';
 
@@ -29,6 +30,9 @@ assert('puzzle_11 type is snake', p11.type === 'snake');
 assert('puzzle_11 targetWord is ROADSTER', p11.data.targetWord === 'ROADSTER');
 assert('puzzle_11 clue type is text', p11.clue.type === 'text');
 assert('puzzle_11 clue content is ROADSTER', p11.clue.content === 'ROADSTER');
+assert('puzzle_11 has 480s time override in config', CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE.puzzle_11 === 480);
+assert('puzzle_11 is listed in CONFIG.NO_HINT_PUZZLES', Array.isArray(CONFIG.NO_HINT_PUZZLES) && CONFIG.NO_HINT_PUZZLES.includes('puzzle_11'));
+assert('puzzle_11 config has no hint string', !p11.hint);
 assert('puzzle_11 difficulty is hard', CONFIG.TILE_DIFFICULTY.puzzle_11 === 'hard');
 assert('puzzle_10 difficulty is medium', CONFIG.TILE_DIFFICULTY.puzzle_10 === 'medium');
 
@@ -92,6 +96,14 @@ class MockElement {
   }
 }
 
+const store = {};
+global.localStorage = {
+  getItem: (k) => store[k] || null,
+  setItem: (k, v) => { store[k] = String(v); },
+  removeItem: (k) => { delete store[k]; },
+  clear: () => { for (const k in store) delete store[k]; }
+};
+
 global.window = {
   addEventListener() {},
   removeEventListener() {},
@@ -140,6 +152,20 @@ snakeModule.mount(root, p11.data, mockCtx);
 assert('Mounts cleanly with lite-mode class', true);
 snakeModule.unmount();
 global.document.body.classList.remove('lite-mode');
+
+// 5. State Timer Override & No-Hint Tests
+GameState.initSession('Test Team', 'Test School');
+GameState.openPuzzle('puzzle_11');
+assert('puzzle_11 starts with 480 seconds (8 min)', GameState.getPuzzleRemainingSeconds('puzzle_11') === 480);
+assert('GameState.useHint returns false for puzzle_11', GameState.useHint('puzzle_11') === false);
+assert('GameState.state.hintsRemaining remains 3', GameState.state.hintsRemaining === 3);
+
+GameState.devSkipTimer('puzzle_11', 10);
+assert('puzzle_11 has <= 10 seconds remaining after devSkipTimer', GameState.getPuzzleRemainingSeconds('puzzle_11') <= 10);
+
+GameState.failPuzzle('puzzle_11');
+assert('puzzle_11 status is FAILED', GameState.state.blocks.puzzle_11.status === 'FAILED');
+assert('puzzle_11 spent time frozen at 480000ms (8 min)', GameState.state.blocks.puzzle_11.timeSpentMs === 480000);
 
 console.log(`=============================================`);
 console.log(`ALL APPLE EATS SNAKE TESTS PASSED (${passCount}/${passCount})!`);
