@@ -1,0 +1,12 @@
+{
+  "name": "future-quest-2026",
+  "version": "1.0.0",
+  "description": "Future Quest 2026 - Online Tech Treasure Hunt",
+  "type": "module",
+  "scripts": {
+    "start": "npm --prefix server start",
+    "dev": "npm --prefix server run dev",
+    "test:puzzles": "node tools/verify-puzzles.mjs && node tools/test-suite.mjs && node tools/test-snake-puzzle.mjs",
+    "test:db": "npm --prefix server run test:db"
+  }
+}

@@ -9,3 +9,19 @@ Thumbs.db
 # Logs & temp
 *.log
 
+# Environment variables & secrets
+.env
+.env.*
+*.env
+server/.env
+server/.env.*
+!server/.env.example
+!.env.example
+
+# Dependencies
+node_modules/
+server/node_modules/
+dist/
+build/
+
+
