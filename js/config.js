@@ -110,7 +110,17 @@ export const CONFIG = {
       prompt: "Translate the 8-word quote encoded in standard ASCII numbers below.",
       data: {
         id: "puzzle_1",
-        groups: ["Word 1", "Word 2", "Word 3", "Word 4", "Word 5", "Word 6", "Word 7", "Word 8"]
+        groups: ["Word 1", "Word 2", "Word 3", "Word 4", "Word 5", "Word 6", "Word 7", "Word 8"],
+        words: [
+          { codes: [84, 111, 109, 111, 114, 114, 111, 119] },
+          { codes: [115, 116, 97, 114, 116, 115] },
+          { codes: [119, 105, 116, 104] },
+          { codes: [116, 104, 101] },
+          { codes: [99, 111, 100, 101] },
+          { codes: [121, 111, 117] },
+          { codes: [119, 114, 105, 116, 101] },
+          { codes: [116, 111, 100, 97, 121] },
+        ],
       }
     },
     puzzle_2: {
@@ -122,7 +132,21 @@ export const CONFIG = {
       prompt: "Read the cells at the designated coordinates to uncover the three mission keywords.",
       data: {
         id: "puzzle_2",
-        groups: ["Word 1", "Word 2", "Word 3"]
+        groups: ["Word 1", "Word 2", "Word 3"],
+        grid: [
+          ["Q", "L", "V", "J", "C", "U", "N"],
+          ["C", "S", "A", "P", "P", "K", "F"],
+          ["H", "M", "T", "B", "O", "J", "E"],
+          ["Q", "N", "X", "B", "Z", "L", "Z"],
+          ["R", "H", "D", "X", "M", "K", "I"],
+          ["M", "L", "F", "O", "O", "A", "Z"],
+          ["Z", "S", "N", "E", "R", "X", "D"],
+        ],
+        groupedChips: [
+          { name: "Word 1", coords: [[2, 1], [7, 3], [3, 2], [1, 5], [2, 4]] },
+          { name: "Word 2", coords: [[4, 3], [6, 1], [7, 5], [6, 4], [3, 5]] },
+          { name: "Word 3", coords: [[2, 6], [4, 7], [6, 6], [7, 7]] },
+        ],
       }
     },
     puzzle_3: {
@@ -134,7 +158,37 @@ export const CONFIG = {
       prompt: "Calculate the 13 mathematical expressions to reveal the 3-word slogan.",
       data: {
         id: "puzzle_3",
-        groups: ["Word 1", "Word 2", "Word 3"]
+        groups: ["Word 1", "Word 2", "Word 3"],
+        groupedEquations: [
+          {
+            name: "Word 1",
+            equations: [
+              { expr: "20 - 4 * 5 + 3", display: "20 - 4 * 5 + 3" },
+              { expr: "3^2 + 18 / 3", display: "3^2 + 18 / 3" },
+              { expr: "24 / (2 * 3)", display: "24 / (2 * 3)" },
+              { expr: "2 + 3 * (9 - 7) - 3", display: "2 + 3 * (9 - 7) - 3" },
+            ],
+          },
+          {
+            name: "Word 2",
+            equations: [
+              { expr: "4^2 + 12 / 3", display: "4^2 + 12 / 3" },
+              { expr: "2^3 + 6 - 3 * 2", display: "2^3 + 6 - 3 * 2" },
+              { expr: "(10 - 4) * 2 - 7", display: "(10 - 4) * 2 - 7" },
+            ],
+          },
+          {
+            name: "Word 3",
+            equations: [
+              { expr: "3 * (4 + 4) / 4", display: "3 * (4 + 4) / 4" },
+              { expr: "5^2 - 12 / 3", display: "5^2 - 12 / 3" },
+              { expr: "100 / (2 * 5) * 2", display: "100 / (2 * 5) * 2" },
+              { expr: "6 + 3 * 5", display: "6 + 3 * 5" },
+              { expr: "(12 - 3) * 4 / 2", display: "(12 - 3) * 4 / 2" },
+              { expr: "4^2 / 2 - 3", display: "4^2 / 2 - 3" },
+            ],
+          },
+        ],
       }
     },
     puzzle_4: {
@@ -169,7 +223,13 @@ export const CONFIG = {
       data: {
         id: "puzzle_5",
         isAtbash: true,
-        groups: ["Word 1", "Word 2", "Word 3", "Word 4"]
+        groups: ["Word 1", "Word 2", "Word 3", "Word 4"],
+        words: [
+          { codes: [4, 19, 22, 9, 22] },
+          { codes: [19, 6, 14, 26, 13] },
+          { codes: [14, 22, 22, 7, 8] },
+          { codes: [26, 18] },
+        ],
       }
     },
     puzzle_6: {
@@ -210,7 +270,30 @@ export const CONFIG = {
       whatToDo: "Locate all 20 tech terms from the word list in the 15×15 matrix. Words can go in any of 8 directions (horizontal, vertical, diagonal, forward, or backward).",
       prompt: "Find the 20 technology words listed in the checklist below.",
       data: {
-        id: "puzzle_7"
+        id: "puzzle_7",
+        grid: [
+          ['D','P','Y','M','A','F','A','A','R','S','P','V','O','M','J'],
+          ['N','X','G','E','N','S','L','R','E','U','M','E','F','I','L'],
+          ['U','K','O','D','E','N','K','T','S','S','A','K','Y','K','M'],
+          ['O','A','L','D','C','O','G','I','H','T','W','A','X','C','J'],
+          ['R','T','O','E','N','I','I','F','A','A','L','C','Y','E','M'],
+          ['A','A','N','G','E','T','M','I','P','I','S','R','T','N','C'],
+          ['L','D','H','D','I','A','N','C','E','N','G','O','I','T','Q'],
+          ['Y','I','C','E','C','V','B','I','F','A','N','B','L','E','U'],
+          ['I','D','E','B','S','O','V','A','U','B','I','O','A','R','A'],
+          ['J','U','T','E','H','N','I','L','T','L','T','T','E','E','N'],
+          ['D','I','P','A','R','N','N','Q','U','E','U','I','R','D','T'],
+          ['D','A','I','L','Y','I','K','G','R','Y','P','C','L','Z','U'],
+          ['V','I','R','T','U','A','L','N','E','A','M','S','Z','Y','M'],
+          ['U','I','N','T','E','G','R','A','T','I','O','N','M','R','R'],
+          ['G','X','C','B','X','N','O','T','Y','E','C','U','J','P','B'],
+        ],
+        words: [
+          'AROUND', 'ARTIFICIAL', 'CENTERED', 'COMPUTING', 'DAILY',
+          'DATA', 'EDGE', 'FUTURE', 'INNOVATIONS', 'INTEGRATION',
+          'LIFE', 'QUANTUM', 'RAPID', 'REALITY', 'RESHAPE',
+          'ROBOTICS', 'SCIENCE', 'SUSTAINABLE', 'TECHNOLOGY', 'VIRTUAL',
+        ],
       }
     },
     puzzle_8: {
@@ -270,7 +353,39 @@ export const CONFIG = {
       prompt: "Read the cells at the designated coordinates to uncover the event title.",
       data: {
         id: "puzzle_10",
-        groups: ["Word 1", "Word 2"]
+        groups: ["Word 1", "Word 2"],
+        grid: [
+          ['M', 'P', 'F', 'I', 'X', 'B', 'K'],
+          ['J', 'L', 'W', 'D', 'N', 'U', 'E'],
+          ['A', 'N', 'G', 'R', 'C', 'P', 'Z'],
+          ['O', 'T', 'Y', 'L', 'V', 'D', 'H'],
+          ['U', 'B', 'S', 'M', 'K', 'A', 'U'],
+          ['H', 'X', 'K', 'Q', 'E', 'W', 'N'],
+          ['Z', 'C', 'P', 'L', 'R', 'T', 'O'],
+        ],
+        groupedChips: [
+          {
+            name: 'Word 1',
+            coords: [
+              [3, 1],
+              [6, 2],
+              [2, 4],
+              [7, 5],
+              [4, 3],
+              [5, 6],
+            ],
+          },
+          {
+            name: 'Word 2',
+            coords: [
+              [4, 6],
+              [1, 5],
+              [7, 2],
+              [3, 5],
+              [6, 7],
+            ],
+          },
+        ],
       }
     }
   }

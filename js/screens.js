@@ -743,6 +743,8 @@ export const Screens = {
       this.activePuzzleInterval = null;
     }
 
+    const isBonus = false;
+
     const state = GameState.state;
     if (!state || !state.blocks[puzzleId]) {
       router.navigate('/grid');
@@ -935,20 +937,18 @@ export const Screens = {
           </div>
         </div>
 
-        ${!isBonus ? `
-          <!-- Revealed Hint Box (if used) -->
-          <div id="puzzle-hint-display" class="puzzle-hint-display ${block.hintUsed ? 'hint-visible' : ''}">
-            ${block.hintUsed ? `
-              <div class="revealed-hint-box keycap" role="region" aria-label="Revealed Hint">
-                <span class="hint-icon">${ICONS.hint}</span>
-                <div class="hint-content">
-                  <strong class="mono">PUZZLE HINT:</strong>
-                  <p class="hint-text">${puzzleConfig.hint}</p>
-                </div>
+        <!-- Revealed Hint Box (if used) -->
+        <div id="puzzle-hint-display" class="puzzle-hint-display ${block.hintUsed ? 'hint-visible' : ''}">
+          ${block.hintUsed ? `
+            <div class="revealed-hint-box keycap" role="region" aria-label="Revealed Hint">
+              <span class="hint-icon">${ICONS.hint}</span>
+              <div class="hint-content">
+                <strong class="mono">PUZZLE HINT:</strong>
+                <p class="hint-text">${block.revealedHint || puzzleConfig.hint || ''}</p>
               </div>
-            ` : ''}
-          </div>
-        ` : ''}
+            </div>
+          ` : ''}
+        </div>
 
         <!-- 3. Puzzle Stage: Flat full-width surface -->
         <main id="puzzle-stage" class="puzzle-stage-surface theme-${puzzleType}" data-puzzle-type="${puzzleType}">
@@ -956,10 +956,8 @@ export const Screens = {
           <div id="puzzle-interactive-container"></div>
         </main>
 
-        ${!isBonus ? `
-          <!-- 4. Unlocked Technical Clue Container (slides in below stage when solved) -->
-          <div id="puzzle-clue-container" class="puzzle-clue-container"></div>
-        ` : ''}
+        <!-- 4. Unlocked Technical Clue Container (slides in below stage when solved) -->
+        <div id="puzzle-clue-container" class="puzzle-clue-container"></div>
 
         <!-- DEV-ONLY: Puzzle Testing Toolbar -->
         ${CONFIG.DEV_MODE ? `
@@ -1049,7 +1047,6 @@ export const Screens = {
 
     // Helper: Update status banner, action bar notice, and unlocked clue view
     const renderStatusAndClue = () => {
-      if (isBonus) return;
       const currentBlock = GameState.state?.blocks[puzzleId] || block;
       const statusBanner = container.querySelector('#puzzle-status-banner');
       const clueContainer = container.querySelector('#puzzle-clue-container');
@@ -1311,36 +1308,42 @@ export const Screens = {
     const hintBtn = container.querySelector('#btn-use-hint');
     if (hintBtn && !isNoHint) {
       hintBtn.addEventListener('click', () => {
-        Modal.showHintConfirmation(state.hintsRemaining, () => {
-          GameState.useHint(puzzleId);
-          const hintDisplay = container.querySelector('#puzzle-hint-display');
-          if (hintDisplay && puzzleConfig.hint) {
-            hintDisplay.innerHTML = `
-              <div class="revealed-hint-box keycap" role="region" aria-label="Revealed Hint">
-                <span class="hint-icon">${ICONS.hint}</span>
-                <div class="hint-content">
-                  <strong class="mono">PUZZLE HINT:</strong>
-                  <p class="hint-text">${puzzleConfig.hint}</p>
+        Modal.showHintConfirmation(state.hintsRemaining, async () => {
+          try {
+            const res = await GameState.useHint(puzzleId);
+            const hintText = (res && res.hint) || block.revealedHint || puzzleConfig.hint || '';
+            const hintDisplay = container.querySelector('#puzzle-hint-display');
+            if (hintDisplay && hintText) {
+              hintDisplay.innerHTML = `
+                <div class="revealed-hint-box keycap" role="region" aria-label="Revealed Hint">
+                  <span class="hint-icon">${ICONS.hint}</span>
+                  <div class="hint-content">
+                    <strong class="mono">PUZZLE HINT:</strong>
+                    <p class="hint-text">${hintText}</p>
+                  </div>
                 </div>
-              </div>
-            `;
-            hintDisplay.classList.add('hint-visible');
+              `;
+              hintDisplay.classList.add('hint-visible');
+            }
+            const hintPipsEl = container.querySelector('#action-hint-pips');
+            if (hintPipsEl) {
+              hintPipsEl.innerHTML = Array.from({ length: 3 }, (_, i) => `
+                <span class="hint-mini-pip ${i < state.hintsRemaining ? 'pip-active' : 'pip-used'}">${i < state.hintsRemaining ? PUZZLE_ART.pipFilled : PUZZLE_ART.pipHollow}</span>
+              `).join('');
+            }
+            hintBtn.disabled = true;
+            const lanternIcon = hintBtn.querySelector('.btn-hint-lantern');
+            if (lanternIcon) {
+              lanternIcon.className = 'btn-hint-lantern lantern-dark';
+              lanternIcon.innerHTML = ICONS.lanternDark;
+            }
+            const hintSpan = hintBtn.querySelector('span:nth-child(2)');
+            if (hintSpan) hintSpan.textContent = 'Hint Used';
+            showToast('Hint unlocked for this puzzle.', 'info');
+          } catch (err) {
+            console.error('Failed to use hint:', err);
+            showToast('Could not fetch hint from server. Please try again.', 'danger');
           }
-          const hintPipsEl = container.querySelector('#action-hint-pips');
-          if (hintPipsEl) {
-            hintPipsEl.innerHTML = Array.from({ length: 3 }, (_, i) => `
-              <span class="hint-mini-pip ${i < state.hintsRemaining ? 'pip-active' : 'pip-used'}">${i < state.hintsRemaining ? PUZZLE_ART.pipFilled : PUZZLE_ART.pipHollow}</span>
-            `).join('');
-          }
-          hintBtn.disabled = true;
-          const lanternIcon = hintBtn.querySelector('.btn-hint-lantern');
-          if (lanternIcon) {
-            lanternIcon.className = 'btn-hint-lantern lantern-dark';
-            lanternIcon.innerHTML = ICONS.lanternDark;
-          }
-          const hintSpan = hintBtn.querySelector('span:nth-child(2)');
-          if (hintSpan) hintSpan.textContent = 'Hint Used';
-          showToast('Hint unlocked for this puzzle.', 'info');
         });
       });
     }
