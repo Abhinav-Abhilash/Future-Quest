@@ -44,3 +44,4 @@ export async function getSubmissionByTeamId(teamId) {
   const id = typeof teamId === 'string' ? new ObjectId(teamId) : teamId;
   return submissions.findOne({ teamId: id });
 }
+

@@ -51,3 +51,4 @@ export async function getTeamEvents(teamId, limit = 100) {
   const id = typeof teamId === 'string' ? new ObjectId(teamId) : teamId;
   return events.find({ teamId: id }).sort({ createdAt: -1 }).limit(limit).toArray();
 }
+

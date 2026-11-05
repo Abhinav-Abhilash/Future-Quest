@@ -104,3 +104,4 @@ export async function updateBlock(teamId, puzzleId, updates) {
     { returnDocument: 'after' }
   );
 }
+

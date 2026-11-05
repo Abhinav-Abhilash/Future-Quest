@@ -7,6 +7,7 @@
     "start": "npm --prefix server start",
     "dev": "npm --prefix server run dev",
     "test:puzzles": "node tools/verify-puzzles.mjs && node tools/test-suite.mjs && node tools/test-snake-puzzle.mjs",
-    "test:db": "npm --prefix server run test:db"
+    "test:db": "npm --prefix server run test:db",
+    "test:routes": "npm --prefix server run test:routes"
   }
 }

@@ -93,3 +93,4 @@ export async function updateTeamToken(teamId, tokenHash) {
     { $set: { tokenHash, updatedAt: Date.now() } }
   );
 }
+

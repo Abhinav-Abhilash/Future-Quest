@@ -89,3 +89,4 @@ export async function ensureIndexes(db) {
 
   console.log('[DB] Indexes verified successfully.');
 }
+

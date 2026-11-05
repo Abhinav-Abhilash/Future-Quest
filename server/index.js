@@ -2,7 +2,7 @@
  * Future Quest 2026 - Backend Server Entrypoint
  * Node.js + Express + MongoDB Atlas
  *
- * Phase 1: Server and Database Foundation
+ * Phase 2: API Routes Foundation
  */
 
 import express from 'express';
@@ -18,6 +18,13 @@ import {
   corsMiddleware,
   generalLimiter,
 } from './middleware/security.js';
+
+// Route imports
+import authRoutes from './routes/auth.js';
+import stateRoutes from './routes/state.js';
+import puzzleRoutes from './routes/puzzle.js';
+import vaultRoutes from './routes/vault.js';
+import devRoutes from './routes/dev.js';
 
 // Resolve directory path & load environment
 const __filename = fileURLToPath(import.meta.url);
@@ -61,12 +68,19 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// 4. Global 404 handler for unknown routes
+// 4. API Routes
+app.use('/api', authRoutes);
+app.use('/api', stateRoutes);
+app.use('/api', puzzleRoutes);
+app.use('/api', vaultRoutes);
+app.use('/api', devRoutes);
+
+// 5. Global 404 handler for unknown routes
 app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
-// 5. Global error handling middleware
+// 6. Global error handling middleware
 app.use((err, req, res, _next) => {
   console.error('[SERVER ERROR]', err);
   const status = err.status || 500;
