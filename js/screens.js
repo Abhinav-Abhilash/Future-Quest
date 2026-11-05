@@ -873,7 +873,7 @@ export const Screens = {
       || puzzleConfig.difficulty
       || block.difficulty
       || 'medium';
-    const totalPuzzleSec = block.timeLimitSeconds
+    let totalPuzzleSec = block.timeLimitSeconds
       || puzzleConfig.timeLimit
       || (CONFIG.DIFFICULTY_TIME && CONFIG.DIFFICULTY_TIME[difficulty])
       || (difficulty === 'easy' ? 600 : difficulty === 'medium' ? 900 : 1200);
@@ -882,7 +882,8 @@ export const Screens = {
     GameState.openPuzzle(puzzleId).then(() => {
       const updatedBlock = GameState.state?.blocks?.[puzzleId];
       const curDiff = updatedBlock?.difficulty || difficulty;
-      const curLimit = updatedBlock?.timeLimitSeconds || totalPuzzleSec;
+      const curLimit = updatedBlock?.timeLimitSeconds || GameState.getPuzzleTimeLimit(puzzleId) || totalPuzzleSec;
+      totalPuzzleSec = curLimit;
       const mins = Math.floor(curLimit / 60);
 
       const badgeEl = container.querySelector('.difficulty-badge');
@@ -1532,7 +1533,8 @@ export const Screens = {
         }
 
         if (scaleBar) {
-          const pct = Math.max(0, Math.min(1, remainingSec / totalPuzzleSec));
+          const curLimit = GameState.getPuzzleTimeLimit(puzzleId) || totalPuzzleSec;
+          const pct = Math.max(0, Math.min(1, remainingSec / curLimit));
           scaleBar.style.transform = `scaleX(${pct})`;
           if (remainingSec < 120) {
             scaleBar.classList.add('timer-amber');

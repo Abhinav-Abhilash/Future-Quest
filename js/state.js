@@ -472,9 +472,10 @@ class StateManager {
       block.attemptsUsed = res.attemptsUsed || 0;
       block.attemptsRemaining = res.attemptsRemaining;
       block.hintUsed = !!res.hintUsed;
-      block.difficulty = res.puzzle?.difficulty || (res.puzzle?.timeLimit <= 600 ? 'easy' : res.puzzle?.timeLimit <= 900 ? 'medium' : 'hard');
-      block.timeLimitSeconds = res.puzzle?.timeLimit || 600;
-      block.timeRemainingSeconds = res.timeRemainingSeconds;
+      const authoritativeLimit = res.puzzle?.timeLimit || this.getPuzzleTimeLimit(id);
+      block.difficulty = res.puzzle?.difficulty || (authoritativeLimit <= 600 ? 'easy' : authoritativeLimit <= 900 ? 'medium' : 'hard');
+      block.timeLimitSeconds = authoritativeLimit;
+      block.timeRemainingSeconds = res.timeRemainingSeconds ?? this.getPuzzleRemainingSeconds(id);
       block.activeSince = res.status === 'OPENED' ? getServerNow() : null;
       block.unlockedClue = res.unlockedClue || null;
 
@@ -493,7 +494,7 @@ class StateManager {
         block.status = 'OPENED';
       }
       block.attemptsUsed = block.attemptsUsed || 0;
-      block.timeLimitSeconds = block.timeLimitSeconds || (CONFIG.PUZZLES[id]?.timeLimit) || 600;
+      block.timeLimitSeconds = block.timeLimitSeconds || this.getPuzzleTimeLimit(id);
       block.timeRemainingSeconds = block.timeRemainingSeconds ?? block.timeLimitSeconds;
       block.activeSince = block.status === 'OPENED' ? (block.activeSince || getServerNow()) : null;
       this.state.activeBlock = id;

@@ -593,7 +593,7 @@ class App {
         }
       });
 
-      const totalSec = CONFIG.TOTAL_TIME_MINUTES * 60;
+      const totalSec = (CONFIG.TOTAL_TIME_MINUTES ? CONFIG.TOTAL_TIME_MINUTES * 60 : CONFIG.MASTER_TIME) || 7200;
       const pct = Math.max(0, Math.min(1, remainingSec / totalSec));
 
       if (progressBar) {

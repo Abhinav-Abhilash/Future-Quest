@@ -15,6 +15,7 @@ export const CONFIG = {
 
   // Competition timing
   MASTER_TIME: 7200, // 2 hours in seconds (7200 seconds)
+  TOTAL_TIME_MINUTES: 120,
   
   // Game rules configuration
   MAX_ATTEMPTS: null, // Unlimited attempts (teams can try as much as needed)
@@ -148,6 +149,7 @@ export const CONFIG = {
     },
     puzzle_2: {
       id: "puzzle_2",
+      timeLimit: 600,
       type: "coords",
       difficulty: "easy",
       title: "Coordinates Grid",
@@ -219,6 +221,7 @@ export const CONFIG = {
     },
     puzzle_4: {
       id: "puzzle_4",
+      timeLimit: 900,
       type: "riddle",
       difficulty: "medium",
       title: "System Riddle",
@@ -242,6 +245,7 @@ export const CONFIG = {
     },
     puzzle_5: {
       id: "puzzle_5",
+      timeLimit: 900,
       type: "ascii",
       difficulty: "medium",
       title: "Reverse-Index Cipher",
@@ -262,6 +266,7 @@ export const CONFIG = {
     },
     puzzle_6: {
       id: "puzzle_6",
+      timeLimit: 900,
       type: "riddle",
       difficulty: "medium",
       title: "Visual Cryptogram",
@@ -329,6 +334,7 @@ export const CONFIG = {
     },
     puzzle_8: {
       id: "puzzle_8",
+      timeLimit: 1200,
       type: "riddle",
       difficulty: "hard",
       title: "Aerospace Riddle",
@@ -351,6 +357,7 @@ export const CONFIG = {
     },
     puzzle_9: {
       id: "puzzle_9",
+      timeLimit: 1200,
       type: "riddle",
       difficulty: "hard",
       title: "Color Palette Riddle",
@@ -381,6 +388,7 @@ export const CONFIG = {
     },
     puzzle_10: {
       id: "puzzle_10",
+      timeLimit: 900,
       type: "coords",
       difficulty: "medium",
       title: "Cartesian Coordinates Grid",
