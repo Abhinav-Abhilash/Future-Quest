@@ -134,7 +134,7 @@ export const CONFIG = {
       prompt: "Calculate the 13 mathematical expressions to reveal the 3-word slogan.",
       data: {
         id: "puzzle_3",
-        groups: ["Word 1", "Word 2", "Word 3"]
+        groups: ["First Word", "Second Word", "Third Word"]
       }
     },
     puzzle_4: {

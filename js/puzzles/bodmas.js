@@ -90,8 +90,10 @@ export function mount(root, data, ctx) {
 
   if (data.groupedEquations) {
     // T3: 3 Words (CODE, THE, FUTURE)
+    const ORDINAL_LABELS = ['First Word', 'Second Word', 'Third Word', 'Fourth Word', 'Fifth Word', 'Sixth Word'];
     equationsHtml = data.groupedEquations.map((group, gIdx) => {
       const isGrpSolved = solvedGroups.has(gIdx);
+      const groupTitle = `${ORDINAL_LABELS[gIdx] || `Word ${gIdx + 1}`} (${group.equations.length} letters)`;
       const cards = group.equations.map((eq, eIdx) => {
         const key = `g${gIdx}_e${eIdx}`;
         const val = entries[key] || '';
@@ -128,7 +130,7 @@ export function mount(root, data, ctx) {
       return `
         <div class="bodmas-group-panel ${isGrpSolved ? 'group-locked' : ''}" id="bodmas-group-${gIdx}">
           <div class="bodmas-panel-header">
-            <span class="bodmas-panel-title mono">Word ${gIdx + 1} (${group.equations.length} letters)</span>
+            <span class="bodmas-panel-title mono">${groupTitle}</span>
             ${!isGrpSolved && !isLocked ? `
               <button type="button" class="btn-group-clear keycap-btn" data-group="${gIdx}">Clear</button>
             ` : ''}

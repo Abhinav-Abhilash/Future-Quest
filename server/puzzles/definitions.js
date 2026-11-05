@@ -123,10 +123,10 @@ export const PUZZLES = {
     },
     clientData: {
       id: 'puzzle_3',
-      groups: ['Word 1', 'Word 2', 'Word 3'],
+      groups: ['First Word', 'Second Word', 'Third Word'],
       groupedEquations: [
         {
-          name: 'Word 1',
+          name: 'First Word',
           equations: [
             { expr: '20 - 4 * 5 + 3', display: '20 - 4 * 5 + 3' },
             { expr: '3^2 + 18 / 3', display: '3^2 + 18 / 3' },
@@ -135,7 +135,7 @@ export const PUZZLES = {
           ],
         },
         {
-          name: 'Word 2',
+          name: 'Second Word',
           equations: [
             { expr: '4^2 + 12 / 3', display: '4^2 + 12 / 3' },
             { expr: '2^3 + 6 - 3 * 2', display: '2^3 + 6 - 3 * 2' },
@@ -143,7 +143,7 @@ export const PUZZLES = {
           ],
         },
         {
-          name: 'Word 3',
+          name: 'Third Word',
           equations: [
             { expr: '3 * (4 + 4) / 4', display: '3 * (4 + 4) / 4' },
             { expr: '5^2 - 12 / 3', display: '5^2 - 12 / 3' },

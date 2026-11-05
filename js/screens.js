@@ -1668,36 +1668,10 @@ export const Screens = {
           </div>
         </div>
 
-        <!-- STEP 3: Verification Hash -->
-        <div class="vault-step-card verification-section" role="region" aria-label="Step 3: Verification Hash">
+        <!-- STEP 3: Submission Checklist & Call to Action -->
+        <div class="vault-step-card submission-cta-section" role="region" aria-label="Step 3: Pre-submission Checklist">
           <div class="vault-step-header">
             <span class="vault-step-badge">STEP 3</span>
-            <h2 class="vault-step-title">Submission Verification Hash</h2>
-            <p class="section-subtitle">
-              Copy this verification code and paste it into the submission form. It cryptographically locks your solve count, timestamps, and identity.
-            </p>
-          </div>
-
-          <!--
-            NOTE: This verification hash is generated client-side as a prototype placeholder.
-            In production, this verification hash must be cryptographically generated and signed
-            on the server (e.g. HMAC-SHA256) so it cannot be forged by client manipulation.
-          -->
-          <div class="hash-box-row">
-            <div class="hash-display">
-              <span class="hash-label">VERIFICATION HASH:</span>
-              <code class="hash-code" id="verification-hash-val">${verificationHash}</code>
-            </div>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-hash">
-              ${ICONS.copy} <span>Copy Hash</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- STEP 4: Submission Checklist & Call to Action -->
-        <div class="vault-step-card submission-cta-section" role="region" aria-label="Step 4: Pre-submission Checklist">
-          <div class="vault-step-header">
-            <span class="vault-step-badge">STEP 4</span>
             <h2 class="vault-step-title">Final Submission Checklist</h2>
             <p class="section-subtitle">Confirm readiness before proceeding to the external submission form.</p>
           </div>
@@ -1706,10 +1680,6 @@ export const Screens = {
             <label class="ready-check-item">
               <input type="checkbox" id="chk-vault-specs" class="vault-pre-check" />
               <span class="ready-check-text">We incorporated all unlocked specifications into our final entry.</span>
-            </label>
-            <label class="ready-check-item">
-              <input type="checkbox" id="chk-vault-hash" class="vault-pre-check" />
-              <span class="ready-check-text">We copied the verification hash and prepared our submission files.</span>
             </label>
             <label class="ready-check-item">
               <input type="checkbox" id="chk-vault-ready" class="vault-pre-check" />
@@ -1736,20 +1706,13 @@ export const Screens = {
                 Submit Your Final Entry &rarr;
               </a>
             </div>
-            <p class="cta-note">Check all 3 items above to enable the submission button. The form opens in a secure new tab.</p>
+            <p class="cta-note">Check both items above to enable the submission button. The form opens in a secure new tab.</p>
           </div>
         </div>
       </section>
     `;
 
     // Bind copy and download handlers in vault
-    const copyHashBtn = container.querySelector('#btn-copy-hash');
-    if (copyHashBtn) {
-      copyHashBtn.addEventListener('click', () => {
-        this.copyToClipboard(verificationHash, copyHashBtn);
-      });
-    }
-
     const copyAllBtn = container.querySelector('#btn-copy-all-clues');
     if (copyAllBtn) {
       copyAllBtn.addEventListener('click', () => {
