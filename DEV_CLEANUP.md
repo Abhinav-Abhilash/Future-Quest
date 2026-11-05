@@ -102,7 +102,7 @@ Every puzzle tile corresponds to a specific element of the final competition pos
 | **Task 8** | `puzzle_8` | `riddle` | 🔴 Hard | `"ROADSTER"` | **Vehicle Spec** (Tesla Roadster / Aerospace Telemetry) |
 | **Task 9** | `puzzle_9` | `riddle` | 🔴 Hard | `"DARK BLUE AND LIGHT STEEL BLUE"` | **Canvas Background Asset** (`assets/poster_background_palette.png`, gradient) |
 | **Task 10** | `puzzle_10` | `coords` | 🟡 Medium | `"FUTURE QUEST"` | **Geometric Grid Alignment Spec** (Concentric Circles & Rule of Thirds Grid) |
-| **Task 11** | `puzzle_11` | `snake` | 🟣 Bonus | `"CHOMP"` | **Bonus Mini-Game** (Apple Eats Snake arcade; pure fun, no clue, no timer, no score impact) |
+| **Task 11** | `puzzle_11` | `snake` | 🟣 Bonus | *None (Arcade)* | **Bonus Mini-Game** (Apple Eats Snake reversed arcade; player controls apple to devour wandering snake, pure fun, no letters, no clue, no timer, no score impact) |
 
 ---
 

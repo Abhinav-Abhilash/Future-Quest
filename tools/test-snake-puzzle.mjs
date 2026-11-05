@@ -29,7 +29,7 @@ assert('PUZZLE_REGISTRY.snake is registered', PUZZLE_REGISTRY.snake === snakeMod
 const p11 = CONFIG.PUZZLES.puzzle_11;
 assert('puzzle_11 type is snake', p11.type === 'snake');
 assert('puzzle_11 bonus is true', p11.bonus === true);
-assert('puzzle_11 targetWord is CHOMP', p11.data.targetWord === 'CHOMP');
+assert('puzzle_11 has no targetWord', !p11.data.targetWord);
 assert('puzzle_11 has no clue', !p11.clue && !p11.clueType);
 assert('puzzle_11 has no hint', !p11.hint);
 assert('puzzle_11 is not in CONFIG.TILE_DIFFICULTY', !CONFIG.TILE_DIFFICULTY);
@@ -70,6 +70,7 @@ class MockElement {
     };
     this.attributes = {};
     this.listeners = {};
+    this.style = {};
   }
   setAttribute(k, v) { this.attributes[k] = String(v); }
   getAttribute(k) { return this.attributes[k] || null; }
@@ -139,7 +140,8 @@ const mockCtx = {
 // Mount in regular mode
 snakeModule.mount(root, p11.data, mockCtx);
 assert('Mount executed and populated innerHTML', root.innerHTML.includes('snake-canvas'));
-assert('Root innerHTML contains TARGET WORD: CHOMP', root.innerHTML.includes('CHOMP'));
+assert('Root innerHTML contains SCORE display', root.innerHTML.includes('SCORE: 0'));
+assert('Root innerHTML contains SNAKE: 8 SEGMENTS', root.innerHTML.includes('SNAKE: 8 SEGMENTS'));
 assert('Root innerHTML contains D-pad', root.innerHTML.includes('snake-dpad'));
 assert('Root innerHTML contains start banner', root.innerHTML.includes('snake-start-banner'));
 assert('Root innerHTML contains New Snake button', root.innerHTML.includes('New Snake'));

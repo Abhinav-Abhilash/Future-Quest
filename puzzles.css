@@ -3419,11 +3419,17 @@ body.lite-mode .cell-correct-pop {
 }
 
 .snake-dpad {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  margin-top: 4px;
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .snake-dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+  }
 }
 
 .snake-dpad .dpad-row {
@@ -3534,12 +3540,6 @@ body.lite-mode .cell-correct-pop {
 .snake-start-banner.hidden {
   opacity: 0;
   visibility: hidden;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .snake-dpad {
-    display: none;
-  }
 }
 
 

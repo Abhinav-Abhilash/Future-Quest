@@ -837,9 +837,9 @@ export const Screens = {
         { num: '3', title: 'VERIFY & UNLOCK', text: 'Click Check Answer or complete the phrase to lock in your solution and reveal the secret clue.' }
       ],
       snake: [
-        { num: '1', title: 'NAVIGATE APPLE', text: 'Use Arrow keys, WASD, touch swipe or on-screen D-pad to steer the hungry red apple.' },
-        { num: '2', title: 'CHOMP IN ORDER', text: 'Eat the snake body segments one-by-one in the exact letter sequence of CHOMP.' },
-        { num: '3', title: 'JUST FOR FUN', text: 'No timer, no lives, no score impact. Relax and enjoy the bonus arcade challenge!' }
+        { num: '1', title: 'STEER APPLE', text: 'Steer the apple with arrow keys, WASD or swipe.' },
+        { num: '2', title: 'CHOMP BODY', text: "Chomp the snake's body to shrink it." },
+        { num: '3', title: 'AVOID HEAD', text: 'Avoid its head, then eat it to win.' }
       ]
     };
 

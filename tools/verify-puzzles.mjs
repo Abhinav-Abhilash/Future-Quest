@@ -158,7 +158,7 @@ const t10_ok = checkPuzzleAnswer('puzzle_10', t10_words) && t10_words === 'FUTUR
 report('T10 COORDS Dynamic Check (FUTURE QUEST)', t10_ok, t10_words);
 
 // -------------------------------------------------------------
-// T11: Apple Eats Snake (Pure Bonus Mini-Game: CHOMP)
+// T11: Apple Eats Snake (Pure Bonus Mini-Game)
 // -------------------------------------------------------------
 const t11 = PUZZLES.puzzle_11;
 const t11_ok = t11.bonus === true &&
@@ -166,8 +166,10 @@ const t11_ok = t11.bonus === true &&
   t11.timeLimit === null &&
   t11.hint === null &&
   t11.clue === null &&
-  t11.clientData.targetWord === 'CHOMP';
-report('T11 Apple Eats Snake Bonus Check (CHOMP, purely client-side bonus)', t11_ok);
+  !t11.clientData.targetWord &&
+  Array.isArray(t11.acceptedAnswers) &&
+  t11.acceptedAnswers.length === 0;
+report('T11 Apple Eats Snake Bonus Check (pure bonus, no clue, no answer, no targetWord)', t11_ok);
 
 console.log('=============================================================');
 if (allPassed) {

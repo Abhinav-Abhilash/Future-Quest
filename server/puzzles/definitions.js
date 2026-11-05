@@ -482,16 +482,15 @@ export const PUZZLES = {
     difficulty: null,
     timeLimit: null,
     bonus: true,
-    whatToDo: "Guide the apple to eat the wandering snake's segments in order to spell CHOMP.",
-    prompt: "Guide the hungry red apple to consume the wandering snake's body segments in order to spell CHOMP.",
+    whatToDo: "Guide the apple to eat the whole snake. Mind its head!",
+    prompt: "Guide the apple to eat the whole snake. Mind its head!",
     hint: null,
     clue: null,
     clientData: {
       id: 'puzzle_11',
-      targetWord: 'CHOMP',
       gridSize: 15,
     },
-    acceptedAnswers: ['CHOMP'],
+    acceptedAnswers: [],
   },
 };
 
