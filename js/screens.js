@@ -398,21 +398,36 @@ export const Screens = {
       this.activePuzzleInterval = null;
     }
 
-    const state = GameState.state;
+    let state = GameState.state;
     if (!state) {
+      state = GameState.loadState();
+      GameState.state = state;
+    }
+    if (!state && !GameState.hasSession()) {
       router.navigate('/landing');
       return;
+    }
+    if (!state) {
+      state = GameState.state;
     }
 
     // Check all OPENED_IN_PROGRESS puzzles so any expired puzzle becomes FAILED immediately
     GameState.checkExpiredPuzzles();
 
     const isVaultEntered = state.vaultEntered;
-    const rawGridOrder = state.gridOrder || [];
-    const validQuestIds = new Set(Object.keys(CONFIG.PUZZLES));
-    const questIds = !CONFIG.SHUFFLE_TILES
-      ? Object.keys(CONFIG.PUZZLES)
-      : rawGridOrder.filter(id => validQuestIds.has(id));
+    // Canonical sequential order: Task 1 (puzzle_1) through Task 10 (puzzle_10)
+    const questIds = [
+      'puzzle_1',
+      'puzzle_2',
+      'puzzle_3',
+      'puzzle_4',
+      'puzzle_5',
+      'puzzle_6',
+      'puzzle_7',
+      'puzzle_8',
+      'puzzle_9',
+      'puzzle_10'
+    ];
     const gridOrder = [...questIds, 'vault_12'];
 
     // Calculate solved, failed, and progress
@@ -1388,7 +1403,11 @@ export const Screens = {
     // Event Listeners
     const backBtn = container.querySelector('#btn-back-grid');
     if (backBtn) {
-      backBtn.addEventListener('click', () => {
+      backBtn.addEventListener('click', (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
         this.unmountCurrentPuzzle();
         GameState.leavePuzzle(puzzleId);
         router.navigate('/grid');
@@ -1480,7 +1499,11 @@ export const Screens = {
 
     const backGridBottom = container.querySelector('#btn-back-grid-bottom');
     if (backGridBottom) {
-      backGridBottom.addEventListener('click', () => {
+      backGridBottom.addEventListener('click', (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
         this.unmountCurrentPuzzle();
         GameState.leavePuzzle(puzzleId);
         router.navigate('/grid');

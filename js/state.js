@@ -73,26 +73,51 @@ class StateManager {
     try {
       if (typeof localStorage === 'undefined') return null;
       const serialized = localStorage.getItem(STORAGE_KEY);
-      if (!serialized) return null;
-      const parsed = JSON.parse(serialized);
-      if (parsed && parsed.teamName && parsed.gridOrder) {
-        // Sanitize gridOrder: preserve canonical sequential order when SHUFFLE_TILES is false
-        if (!CONFIG.SHUFFLE_TILES) {
-          parsed.gridOrder = [...Object.keys(CONFIG.PUZZLES), 'vault_12'];
-        } else {
-          const validQuestIds = new Set(Object.keys(CONFIG.PUZZLES));
-          const cleanQuestOrder = parsed.gridOrder.filter(id => validQuestIds.has(id));
-          parsed.gridOrder = [...cleanQuestOrder, 'vault_12'];
-        }
-        if (parsed.blocks) {
-          delete parsed.blocks['puzzle_11'];
-          for (const bid in parsed.blocks) {
-            parsed.blocks[bid].progress = parsed.blocks[bid].progress || {};
-          }
-        }
-        return parsed;
+      let parsed = null;
+      if (serialized) {
+        try { parsed = JSON.parse(serialized); } catch (_e) {}
       }
-      return null;
+
+      const token = localStorage.getItem('future_quest_token');
+      const teamId = localStorage.getItem('future_quest_team_id');
+
+      // If no stored state and no session token, user is not logged in
+      if (!parsed && !token && !teamId) return null;
+
+      if (!parsed) {
+        parsed = {
+          teamName: 'Team',
+          schoolName: '',
+          timerStartedAt: Date.now(),
+          timerLockedAt: null,
+          vaultEntered: false,
+          hintsRemaining: 3,
+          gridOrder: [...Object.keys(CONFIG.PUZZLES), 'vault_12'],
+          blocks: {},
+        };
+      }
+
+      parsed.teamName = parsed.teamName || 'Team';
+      parsed.timerStartedAt = parsed.timerStartedAt || Date.now();
+      parsed.gridOrder = [...Object.keys(CONFIG.PUZZLES), 'vault_12'];
+      parsed.blocks = parsed.blocks || {};
+
+      // Ensure all 10 canonical puzzle blocks exist
+      for (const id of Object.keys(CONFIG.PUZZLES)) {
+        if (!parsed.blocks[id]) {
+          parsed.blocks[id] = {
+            status: 'AVAILABLE',
+            attemptsUsed: 0,
+            hintUsed: false,
+            timeSpentMs: 0,
+            activeSince: null,
+            progress: {},
+          };
+        }
+      }
+      delete parsed.blocks['puzzle_11'];
+
+      return parsed;
     } catch (e) {
       console.warn('Failed to parse localStorage cache:', e);
       return null;
@@ -260,7 +285,12 @@ class StateManager {
    * Check if a valid session exists.
    */
   hasSession() {
-    return !!(this.state && this.state.teamName && this.state.timerStartedAt);
+    if (!this.state) {
+      this.state = this.loadState();
+    }
+    const hasToken = (typeof localStorage !== 'undefined' && !!localStorage.getItem('future_quest_token'));
+    const hasTeam = !!(this.state && (this.state.teamName || this.state.teamId));
+    return hasTeam || hasToken;
   }
 
   /**

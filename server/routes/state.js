@@ -32,8 +32,19 @@ async function buildStateResponse(team, masterTimeRemainingMs) {
   const blockMap = new Map();
   blocks.forEach((b) => blockMap.set(b.puzzleId, b));
 
-  // Get deterministic shuffled tile order for this team
-  const orderedPuzzleIds = getTeamPuzzleOrder(team.shuffleSeed || 12345);
+  // Maintain exact sequential order 1 to 10
+  const orderedPuzzleIds = [
+    'puzzle_1',
+    'puzzle_2',
+    'puzzle_3',
+    'puzzle_4',
+    'puzzle_5',
+    'puzzle_6',
+    'puzzle_7',
+    'puzzle_8',
+    'puzzle_9',
+    'puzzle_10',
+  ];
 
   let solvedCount = 0;
   const unlockedClues = [];

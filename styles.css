@@ -3525,7 +3525,8 @@ body:not(.dev-mode) .dev-only {
 .pouch-route-container {
   position: absolute;
   left: 140px;
-  right: 20px;
+  width: 512px;
+  max-width: calc(100% - 160px);
   top: 50%;
   transform: translateY(-50%);
   height: 12px;

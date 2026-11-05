@@ -4,6 +4,7 @@
  * Manages client-side hash navigation, route guarding, and cleanup when leaving screens.
  */
 
+import { CONFIG } from './config.js';
 import { GameState } from './state.js';
 
 export class Router {
@@ -29,10 +30,13 @@ export class Router {
     }
 
     if (parts[0] === 'puzzle' && parts[1]) {
+      let rawId = decodeURIComponent(parts.slice(1).join('_')).trim().toLowerCase().replace(/[\s\-]+/g, '_');
+      if (/^\d+$/.test(rawId)) rawId = `puzzle_${rawId}`;
+      if (rawId.startsWith('task_')) rawId = rawId.replace('task_', 'puzzle_');
       return {
         path: cleanHash,
         route: 'puzzle',
-        params: { id: parts[1] }
+        params: { id: rawId }
       };
     }
 
@@ -94,16 +98,36 @@ export class Router {
 
       // Puzzle guard: if vaultEntered is true, puzzle screens are locked
       if (targetRoute === 'puzzle') {
-        if (state.vaultEntered) {
+        if (state && state.vaultEntered) {
           this.navigate('/vault');
           return;
         }
 
-        // Validate puzzle ID
-        const puzzleId = targetParams.id;
-        if (!state.blocks || !state.blocks[puzzleId]) {
-          this.navigate('/grid');
-          return;
+        // Validate and normalize puzzle ID
+        let puzzleId = targetParams.id;
+        if (puzzleId) {
+          puzzleId = decodeURIComponent(puzzleId).trim().toLowerCase().replace(/[\s\-]+/g, '_');
+          if (/^\d+$/.test(puzzleId)) puzzleId = `puzzle_${puzzleId}`;
+          if (puzzleId.startsWith('task_')) puzzleId = puzzleId.replace('task_', 'puzzle_');
+          targetParams.id = puzzleId;
+        }
+
+        if (!state || !state.blocks || !state.blocks[puzzleId]) {
+          // If block doesn't exist yet but it's a valid puzzle in CONFIG, initialize it safely
+          if (state && puzzleId && CONFIG.PUZZLES && CONFIG.PUZZLES[puzzleId]) {
+            state.blocks = state.blocks || {};
+            state.blocks[puzzleId] = {
+              status: 'AVAILABLE',
+              attemptsUsed: 0,
+              hintUsed: false,
+              timeSpentMs: 0,
+              activeSince: null,
+              progress: {},
+            };
+          } else {
+            this.navigate('/grid');
+            return;
+          }
         }
       }
     }
