@@ -117,13 +117,13 @@ const t5_expected = t5.groupSolutions.join(' ');
 report('T5 Reverse-Index Cipher Dynamic Check (WHERE HUMAN MEETS AI)', t5_decoded === t5_expected && t5_decoded === 'WHERE HUMAN MEETS AI', t5_decoded);
 
 // -------------------------------------------------------------
-// T6: Visual Cryptic Inspection (SCHOOL OF FUTURE TECHNOLOGY)
+// T6: Visual Cryptic Inspection (JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY)
 // -------------------------------------------------------------
 const t6 = CONFIG.PUZZLES.puzzle_6.data;
-const t6_ok = t6.solution === 'SCHOOL OF FUTURE TECHNOLOGY' &&
-  t6.acceptedSolutions.includes('SCHOOL OF FUTURE TECHNOLOGY') &&
+const t6_ok = t6.solution === 'JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY' &&
+  t6.acceptedSolutions.includes('JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY') &&
   t6.imageUrl === 'assets/institution_clue.jpg';
-report('T6 Visual Clue Dynamic Check (SCHOOL OF FUTURE TECHNOLOGY)', t6_ok);
+report('T6 Visual Clue Dynamic Check (JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY)', t6_ok);
 
 // -------------------------------------------------------------
 // T7: Word Search (20 Words)

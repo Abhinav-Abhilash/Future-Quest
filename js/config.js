@@ -134,7 +134,7 @@ export const CONFIG = {
     puzzle_3: "CODE THE FUTURE",
     puzzle_4: "CINNAMON BUN",
     puzzle_5: "WHERE HUMAN MEETS AI",
-    puzzle_6: "SCHOOL OF FUTURE TECHNOLOGY",
+    puzzle_6: "JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY",
     puzzle_7: "AROUND",
     puzzle_8: "ROADSTER",
     puzzle_9: "DARK BLUE AND LIGHT STEEL BLUE",
@@ -352,8 +352,8 @@ export const CONFIG = {
       type: "riddle",
       title: "Visual Cryptic Inspection: Institution Name",
       category: "Visual Cryptography & Institutional Identity",
-      whatToDo: "Examine the visual elements in the cryptic artwork (Lord Mahavira, cosmic universe, circuit halo, robotics) and deduce the institution department.",
-      prompt: "Identify the hosting institution department from the visual clues.",
+      whatToDo: "Examine the visual elements in the cryptic artwork (Lord Mahavira, cosmic universe, circuit halo, robotics) and deduce the complete institution name.",
+      prompt: "Identify the hosting institution name from the visual clues.",
       hint: "Mahavira signifies 'JAIN', the cosmos signifies 'UNIVERSITY', and the neural circuits/robotics signify 'SCHOOL OF FUTURE TECHNOLOGY'.",
       clueType: "spec",
       clue: {
@@ -371,24 +371,25 @@ export const CONFIG = {
       data: {
         id: "puzzle_6",
         categoryTag: "VISUAL INSTITUTIONAL CRYPTOGRAM",
-        formatBadge: "4 WORDS (6 + 2 + 6 + 10 LETTERS)",
+        formatBadge: "6 WORDS (4 + 10 + 6 + 2 + 6 + 10 LETTERS)",
         imageUrl: "assets/institution_clue.jpg",
         riddleLines: [
           "Behold the ancient sage of non-violence and victory (Mahavira),",
-          "Surrounded by cosmic constellations, neural circuits, and cyber robotics.",
-          "Synthesize these symbols: What department and school hosts this quest?"
+          "Surrounded by cosmic constellations, neural circuits, and cyber robotics."
         ],
-        solution: "SCHOOL OF FUTURE TECHNOLOGY",
+        solution: "JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY",
         acceptedSolutions: [
-          "SCHOOL OF FUTURE TECHNOLOGY",
           "JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY",
-          "JAIN UNIVERSITY"
+          "SCHOOL OF FUTURE TECHNOLOGY",
+          "JAIN UNIVERSITY SCHOOL OF FUTURE TECH"
         ],
         words: [
-          { name: "Word 1", length: 6 },
-          { name: "Word 2", length: 2 },
+          { name: "Word 1", length: 4 },
+          { name: "Word 2", length: 10 },
           { name: "Word 3", length: 6 },
-          { name: "Word 4", length: 10 }
+          { name: "Word 4", length: 2 },
+          { name: "Word 5", length: 6 },
+          { name: "Word 6", length: 10 }
         ]
       }
     },
