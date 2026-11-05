@@ -123,8 +123,8 @@ export const CONFIG = {
     puzzle_7: "hard",
     puzzle_8: "hard",
     puzzle_9: "hard",
-    puzzle_10: "hard",
-    puzzle_11: "medium"
+    puzzle_10: "medium",
+    puzzle_11: "hard"
   },
 
   // Mock answers (validated case-insensitively with whitespace trimmed)
@@ -139,7 +139,7 @@ export const CONFIG = {
     puzzle_8: "ROADSTER",
     puzzle_9: "DARK BLUE AND LIGHT STEEL BLUE",
     puzzle_10: "FUTURE QUEST",
-    puzzle_11: "FUTURE QUEST 2026"
+    puzzle_11: "ROADSTER"
   },
 
   // Interactive puzzle configurations with type, prompt, data, and technical clues
@@ -582,42 +582,23 @@ export const CONFIG = {
     },
     puzzle_11: {
       id: "puzzle_11",
-      type: "riddle",
-      title: "The Main Title Cipher: FUTURE QUEST 2026",
-      category: "Event Identity & Typography",
-      whatToDo: "Solve the grand event identity riddle to reveal the primary hero headline for your poster.",
-      prompt: "Deduce the 3-part event headline and launch year.",
-      hint: "Observe the event branding shown across the competition portal and navigation header. It unites what lies ahead, a grand journey, and this year's date.",
-      clueType: "spec",
+      type: "snake",
+      title: "Apple Eats Snake",
+      category: "Reverse Arcade Dynamics",
+      whatToDo: "Guide the apple to eat the snake's segments in the right order to spell the secret word.",
+      prompt: "Guide the hungry red apple to consume the wandering snake's body segments in the exact sequence of the secret word.",
+      hint: "Think of an iconic sleek open-top two-seater sports car engineered to cruise both highway tarmac and deep space.",
+      clueType: "text",
       clue: {
-        title: "Clue Fragment 11: Hero Headline Typography Spec",
-        type: "spec",
-        specs: [
-          { label: "Fragment", value: "Fragment 11" },
-          { label: "Main Headline", value: "FUTURE QUEST 2026" },
-          { label: "Font Family", value: "Montserrat ExtraBold / Arial Black" },
-          { label: "Font Size", value: "36pt (Primary Hero Banner)" },
-          { label: "Color", value: "Solid White (#FFFFFF)" },
-          { label: "Position", value: "Upper-center, directly above centerpiece graphic" }
-        ]
+        title: "Word for your poster",
+        label: "Word for your poster",
+        type: "text",
+        content: "ROADSTER"
       },
       data: {
         id: "puzzle_11",
-        categoryTag: "PRIMARY EVENT HERO HEADLINE",
-        formatBadge: "3 WORDS (6 + 5 + 4 CHARS)",
-        riddleLines: [
-          "I bridge the years from now to then,",
-          "A grand expedition for young builders and men.",
-          "Add the year when edge computing takes flight:",
-          "What is the official 3-part title of this competition night?"
-        ],
-        solution: "FUTURE QUEST 2026",
-        acceptedSolutions: ["FUTURE QUEST 2026"],
-        words: [
-          { name: "Word 1", length: 6 },
-          { name: "Word 2", length: 5 },
-          { name: "Year", length: 4 }
-        ]
+        targetWord: "ROADSTER",
+        gridSize: 15
       }
     }
   }

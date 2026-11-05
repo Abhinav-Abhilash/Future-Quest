@@ -176,13 +176,20 @@ const t10_full = t10_spelledWords.join(' ');
 report('T10 COORDS Dynamic Check (FUTURE QUEST)', t10_ok && t10_full === 'FUTURE QUEST', t10_full);
 
 // -------------------------------------------------------------
-// T11: Hero Headline Title (FUTURE QUEST 2026)
+// T11: Apple Eats Snake (ROADSTER)
 // -------------------------------------------------------------
-const t11 = CONFIG.PUZZLES.puzzle_11.data;
-const t11_ok = t11.solution === 'FUTURE QUEST 2026' &&
-  t11.acceptedSolutions.includes('FUTURE QUEST 2026') &&
-  t11.words.map(w => w.length).reduce((a, b) => a + b, 0) === 15;
-report('T11 Hero Headline Dynamic Check (FUTURE QUEST 2026)', t11_ok);
+const t11 = CONFIG.PUZZLES.puzzle_11;
+const t11_data = t11.data;
+const t11_targetWord = t11_data.targetWord;
+const t11_letters = t11_targetWord.split('');
+const t11_ok = t11.type === 'snake' &&
+  typeof t11_targetWord === 'string' &&
+  t11_targetWord === 'ROADSTER' &&
+  t11_letters.length === 8 &&
+  t11_letters.join('') === 'ROADSTER' &&
+  t11.clue.type === 'text' &&
+  t11.clue.content === t11_targetWord;
+report('T11 Apple Eats Snake Dynamic Check (ROADSTER)', t11_ok, `Word: ${t11_targetWord}, Length: ${t11_letters.length}`);
 
 console.log('=============================================================');
 if (allPassed) {

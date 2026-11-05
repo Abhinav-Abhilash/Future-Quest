@@ -806,6 +806,11 @@ export const Screens = {
         { num: '1', title: 'ANALYZE RIDDLE', text: 'Carefully read the cryptic clues, tech specs, and wordplay in the riddle card.' },
         { num: '2', title: 'TYPE KEYCAPS', text: 'Type letters into the character slots or use backspace to edit your deduction.' },
         { num: '3', title: 'VERIFY & UNLOCK', text: 'Click Check Answer or complete the phrase to lock in your solution and reveal the secret clue.' }
+      ],
+      snake: [
+        { num: '1', title: 'NAVIGATE APPLE', text: 'Use Arrow keys, WASD, touch swipe or the on-screen D-pad to steer the hungry red apple.' },
+        { num: '2', title: 'CHOMP IN ORDER', text: 'Eat the snake body segments one-by-one in the exact letter sequence of the secret word.' },
+        { num: '3', title: 'PRESERVE LIVES', text: 'Avoid out-of-order segments or walls; lose 3 lives and you restart. Consume the full word to win!' }
       ]
     };
 
@@ -936,6 +941,18 @@ export const Screens = {
 
         <!-- 4. Unlocked Technical Clue Container (slides in below stage when solved) -->
         <div id="puzzle-clue-container" class="puzzle-clue-container"></div>
+
+        <!-- DEV-ONLY: Puzzle Testing Toolbar -->
+        ${CONFIG.DEV_MODE ? `
+          <div class="dev-toolbar dev-only" style="margin: 12px 16px; padding: 8px 14px; background: rgba(255, 153, 0, 0.08); border: 1px dashed #FF9900; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+            <span class="mono" style="font-size: 11px; color: #FFB340;">/* DEV-ONLY */ Puzzle Shortcuts:</span>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary btn-sm keycap dev-only" id="btn-dev-solve" style="font-size: 11px; border-color: #3FB950; color: #3FB950;">
+                Mark Solved (dev)
+              </button>
+            </div>
+          </div>
+        ` : ''}
 
         <!-- 5. Sticky Bottom Action Bar -->
         <footer class="puzzle-sticky-action-bar" id="puzzle-sticky-action-bar" role="region" aria-label="Puzzle Actions">
@@ -1318,6 +1335,19 @@ export const Screens = {
           this.activePuzzleModule.checkAnswer();
         }
       });
+    }
+
+    // /* DEV-ONLY */ Test solver button
+    if (CONFIG.DEV_MODE) {
+      const devSolveBtn = container.querySelector('#btn-dev-solve');
+      if (devSolveBtn) {
+        devSolveBtn.addEventListener('click', () => {
+          GameState.markSolved(puzzleId);
+          triggerSolveBurst();
+          showToast(`[DEV] Task ${tileNumber} marked solved!`, 'success');
+          renderStatusAndClue();
+        });
+      }
     }
 
     // 1-second interval to update puzzle countdown display smoothly
