@@ -27,6 +27,13 @@ export const CONFIG = {
   SHUFFLE_TILES: false,
 
   // Food difficulty badges (circle in square: green=easy, yellow=medium, red=hard)
+  // Time allocated per puzzle hardness
+  DIFFICULTY_TIME: {
+    easy: 600,     // 10 minutes (600s)
+    medium: 900,   // 15 minutes (900s)
+    hard: 1200,    // 20 minutes (1200s)
+  },
+
   TILE_DIFFICULTY: {
     puzzle_1: "easy",
     puzzle_2: "easy",
@@ -117,6 +124,7 @@ export const CONFIG = {
   PUZZLES: {
     puzzle_1: {
       id: "puzzle_1",
+      timeLimit: 600,
       type: "ascii",
       difficulty: "easy",
       title: "ASCII Decoder",
@@ -167,6 +175,7 @@ export const CONFIG = {
     },
     puzzle_3: {
       id: "puzzle_3",
+      timeLimit: 900,
       type: "bodmas",
       difficulty: "medium",
       title: "BODMAS Decoder",
@@ -284,6 +293,7 @@ export const CONFIG = {
     },
     puzzle_7: {
       id: "puzzle_7",
+      timeLimit: 1200,
       type: "wordsearch",
       difficulty: "hard",
       title: "Word Search",

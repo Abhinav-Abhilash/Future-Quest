@@ -83,6 +83,7 @@ async function buildStateResponse(team, masterTimeRemainingMs) {
         (block.timeSpentMs || 0) + (block.activeSince ? now - block.activeSince : 0);
       const timeLimitMs = puz.timeLimit * 1000;
       tile.timeLimitSeconds = puz.timeLimit;
+      tile.difficulty = puz.difficulty;
       tile.timeRemainingSeconds = Math.max(0, Math.floor((timeLimitMs - totalSpentMs) / 1000));
       tile.timeSpentMs = totalSpentMs;
     }

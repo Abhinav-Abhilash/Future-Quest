@@ -49,6 +49,10 @@ export const Screens = {
    * Safely unmount active interactive puzzle module.
    */
   unmountCurrentPuzzle() {
+    if (this.activePuzzleInterval) {
+      clearInterval(this.activePuzzleInterval);
+      this.activePuzzleInterval = null;
+    }
     if (this.activePuzzleModule && typeof this.activePuzzleModule.unmount === 'function') {
       try {
         this.activePuzzleModule.unmount();
@@ -620,6 +624,19 @@ export const Screens = {
           || (CONFIG.PUZZLES[itemId] && CONFIG.PUZZLES[itemId].difficulty)
           || 'medium';
         const foodBadgeHtml = getFoodBadgeSvg(puzzleDiff);
+        const timeLimitSec = (CONFIG.DIFFICULTY_TIME && CONFIG.DIFFICULTY_TIME[puzzleDiff])
+          || (puzzleDiff === 'easy' ? 600 : puzzleDiff === 'medium' ? 900 : 1200);
+        const timeLimitMin = Math.round(timeLimitSec / 60);
+
+        if (isInProgress) {
+          const remSec = GameState.getPuzzleRemainingSeconds(itemId);
+          elapsedIndicator = `
+            <div class="tile-time-elapsed tile-elapsed-inprogress" data-puzzle-id="${itemId}">
+              <span class="tile-clock-icon">${ICONS.clock}</span>
+              <span class="tile-time-left-text">${this.formatTime(remSec)} left</span>
+            </div>
+          `;
+        }
 
         tilesHtml += `
           <button 
@@ -630,12 +647,13 @@ export const Screens = {
             data-tile-num="${tileNumber}"
             ${staggerDelay}
             ${!isClickable ? 'disabled aria-disabled="true"' : ''}
-            aria-label="Task ${tileNumber}, Difficulty: ${puzzleDiff}, Status: ${statusHumanLabel}"
+            aria-label="Task ${tileNumber}, Difficulty: ${puzzleDiff}, Time Limit: ${timeLimitMin} minutes, Status: ${statusHumanLabel}"
           >
             ${failedCrossOverlay}
             <div class="tile-top-row">
               <span class="tile-task-tag">Task ${tileNumber}</span>
               ${foodBadgeHtml}
+              <span class="tile-duration-pill" title="Allocated Time: ${timeLimitMin} minutes">${timeLimitMin}m</span>
             </div>
             <div class="tile-gradient-number mono">${formattedNum}</div>
             ${elapsedIndicator}
@@ -835,27 +853,38 @@ export const Screens = {
       return;
     }
 
-    // Register puzzle open (starts activeSince if unopened/in-progress)
-    // NOTE: Difficulty is a mystery until opened. Difficulty and time limits
-    // come from the server and appear only on this puzzle screen once opened.
+    const block = state.blocks?.[puzzleId] || {};
+    const difficulty = (CONFIG.TILE_DIFFICULTY && CONFIG.TILE_DIFFICULTY[puzzleId])
+      || puzzleConfig.difficulty
+      || block.difficulty
+      || 'medium';
+    const totalPuzzleSec = block.timeLimitSeconds
+      || puzzleConfig.timeLimit
+      || (CONFIG.DIFFICULTY_TIME && CONFIG.DIFFICULTY_TIME[difficulty])
+      || (difficulty === 'easy' ? 600 : difficulty === 'medium' ? 900 : 1200);
+
+    // Register puzzle open immediately (ensures backend timer starts and syncs)
     GameState.openPuzzle(puzzleId).then(() => {
       const updatedBlock = GameState.state?.blocks?.[puzzleId];
-      if (updatedBlock && updatedBlock.difficulty) {
-        const badgeEl = container.querySelector('.difficulty-badge');
-        if (badgeEl) {
-          const diff = updatedBlock.difficulty;
-          const mins = Math.floor((updatedBlock.timeLimitSeconds || 600) / 60);
-          badgeEl.className = `difficulty-badge difficulty-${diff}`;
-          badgeEl.textContent = `${diff.toUpperCase()} (${mins} MIN)`;
-        }
+      const curDiff = updatedBlock?.difficulty || difficulty;
+      const curLimit = updatedBlock?.timeLimitSeconds || totalPuzzleSec;
+      const mins = Math.floor(curLimit / 60);
+
+      const badgeEl = container.querySelector('.difficulty-badge');
+      if (badgeEl) {
+        badgeEl.className = `difficulty-badge difficulty-${curDiff}`;
+        badgeEl.innerHTML = `${getFoodBadgeSvg(curDiff)} <span>${curDiff.toUpperCase()} (${mins} MIN)</span>`;
+      }
+
+      const timerEl = document.getElementById('puzzle-countdown');
+      if (timerEl && updatedBlock && updatedBlock.status !== 'SOLVED' && updatedBlock.status !== 'FAILED') {
+        const curRem = GameState.getPuzzleRemainingSeconds(puzzleId);
+        timerEl.textContent = this.formatTime(curRem);
       }
     }).catch(err => {
       console.warn('Could not open puzzle on server:', err);
     });
 
-    const block = state.blocks?.[puzzleId] || {};
-    const difficulty = block.difficulty || (block.timeLimitSeconds <= 600 ? 'easy' : block.timeLimitSeconds <= 900 ? 'medium' : 'hard');
-    const totalPuzzleSec = block.timeLimitSeconds || (difficulty === 'easy' ? 600 : difficulty === 'medium' ? 900 : 1200);
     const isNoHint = !!(CONFIG.NO_HINT_PUZZLES && CONFIG.NO_HINT_PUZZLES.includes(puzzleId));
 
     // Find tile index for display and determine tile label
@@ -868,7 +897,8 @@ export const Screens = {
 
     // Initial check for puzzle timer expiration
     const initialRemainingSec = GameState.getPuzzleRemainingSeconds(puzzleId);
-    const isBlockActive = (block.status === 'OPENED' || block.status === 'OPENED_IN_PROGRESS');
+    // Puzzle timer is active whenever player is in puzzle and puzzle is not already solved or failed
+    const isBlockActive = (block.status !== 'SOLVED' && block.status !== 'FAILED');
     if (initialRemainingSec <= 0 && isBlockActive) {
       GameState.failPuzzle(puzzleId, 'TIMEOUT');
       this.showNotice(`Time expired for ${tileLabel}. The puzzle has failed.`, 'danger');

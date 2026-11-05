@@ -178,15 +178,27 @@ class StateManager {
           timeSpentMs = t.timeSpentMs;
         }
 
-        // Active since:
+        // Active since: ONLY run timer if this puzzle is currently active on client
         let activeSince = localBlock.activeSince || null;
-        if (status === 'OPENED' && !activeSince) {
-          activeSince = t.status === 'OPENED' ? getServerNow() : null;
+        if (status === 'OPENED') {
+          activeSince = (this.state?.activeBlock === t.puzzleId) ? (activeSince || getServerNow()) : null;
         } else if (status === 'SOLVED' || status === 'FAILED') {
           activeSince = null;
         }
 
         const unlockedClue = localBlock.unlockedClue || t.unlockedClue || null;
+
+        const puzzleDiff = t.difficulty
+          || localBlock.difficulty
+          || (CONFIG.TILE_DIFFICULTY && CONFIG.TILE_DIFFICULTY[t.puzzleId])
+          || (CONFIG.PUZZLES[t.puzzleId]?.difficulty)
+          || 'medium';
+
+        const puzzleTimeLimit = t.timeLimitSeconds
+          || localBlock.timeLimitSeconds
+          || CONFIG.PUZZLES[t.puzzleId]?.timeLimit
+          || (CONFIG.DIFFICULTY_TIME && CONFIG.DIFFICULTY_TIME[puzzleDiff])
+          || (puzzleDiff === 'easy' ? 600 : puzzleDiff === 'medium' ? 900 : 1200);
 
         blocks[t.puzzleId] = {
           status,
@@ -195,7 +207,8 @@ class StateManager {
           timeSpentMs,
           activeSince,
           unlockedClue,
-          timeLimitSeconds: t.timeLimitSeconds || localBlock.timeLimitSeconds || (CONFIG.PUZZLES[t.puzzleId]?.timeLimit) || 600,
+          difficulty: puzzleDiff,
+          timeLimitSeconds: puzzleTimeLimit,
           timeRemainingSeconds: t.timeRemainingSeconds ?? localBlock.timeRemainingSeconds ?? null,
           progress: localBlock.progress || {},
         };
@@ -350,7 +363,21 @@ class StateManager {
   }
 
   /**
-   * Computes puzzle remaining seconds using server data.
+   * Returns authoritative puzzle time limit in seconds based on difficulty hardness.
+   */
+  getPuzzleTimeLimit(id) {
+    const diff = (CONFIG.TILE_DIFFICULTY && CONFIG.TILE_DIFFICULTY[id])
+      || (CONFIG.PUZZLES[id]?.difficulty)
+      || this.state?.blocks?.[id]?.difficulty
+      || 'medium';
+    return this.state?.blocks?.[id]?.timeLimitSeconds
+      || CONFIG.PUZZLES[id]?.timeLimit
+      || (CONFIG.DIFFICULTY_TIME && CONFIG.DIFFICULTY_TIME[diff])
+      || (diff === 'easy' ? 600 : diff === 'medium' ? 900 : 1200);
+  }
+
+  /**
+   * Computes puzzle remaining seconds accurately based on hardness time limit and elapsed time.
    */
   getPuzzleRemainingSeconds(id) {
     if (!this.state || !this.state.blocks?.[id]) return 0;
@@ -358,11 +385,11 @@ class StateManager {
     const block = this.state.blocks[id];
     if (block.status === 'SOLVED' || block.status === 'FAILED') return 0;
 
-    const timeLimitSec = block.timeLimitSeconds || (CONFIG.PUZZLES[id]?.timeLimit) || 600;
+    const timeLimitSec = this.getPuzzleTimeLimit(id);
     let spentMs = block.timeSpentMs || 0;
 
-    if (block.activeSince && !this.state.vaultEntered && (block.status === 'OPENED' || block.status === 'OPENED_IN_PROGRESS')) {
-      spentMs += (getServerNow() - block.activeSince);
+    if (block.activeSince && !this.state.vaultEntered && (block.status === 'OPENED' || block.status === 'OPENED_IN_PROGRESS') && this.state.activeBlock === id) {
+      spentMs += Math.max(0, getServerNow() - block.activeSince);
     }
 
     return Math.max(0, timeLimitSec - Math.floor(spentMs / 1000));
