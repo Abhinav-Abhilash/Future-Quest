@@ -17,6 +17,19 @@ import { PUZZLE_REGISTRY } from './puzzles/index.js';
 import { PUZZLE_ART } from './puzzles/art.js';
 import { Toast } from './app.js';
 
+export function getFoodBadgeSvg(difficulty) {
+  const diff = (difficulty || 'medium').toLowerCase();
+  const label = diff.charAt(0).toUpperCase() + diff.slice(1);
+  return `
+    <span class="tile-food-badge badge-${diff}" title="Difficulty: ${label}" aria-label="Difficulty: ${label}">
+      <svg class="food-badge-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+        <rect x="1.25" y="1.25" width="13.5" height="13.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="8" cy="8" r="3.75" fill="currentColor"/>
+      </svg>
+    </span>
+  `;
+}
+
 const showToast = (msg, type) => {
   if (typeof window !== 'undefined' && window.Toast && typeof window.Toast.show === 'function') {
     window.Toast.show(msg, type);
@@ -556,6 +569,11 @@ export const Screens = {
           statusHumanLabel = 'Failed';
         }
 
+        const puzzleDiff = (CONFIG.TILE_DIFFICULTY && CONFIG.TILE_DIFFICULTY[itemId])
+          || (CONFIG.PUZZLES[itemId] && CONFIG.PUZZLES[itemId].difficulty)
+          || 'medium';
+        const foodBadgeHtml = getFoodBadgeSvg(puzzleDiff);
+
         tilesHtml += `
           <button 
             type="button" 
@@ -565,9 +583,12 @@ export const Screens = {
             data-tile-num="${tileNumber}"
             ${staggerDelay}
             ${!isClickable ? 'disabled aria-disabled="true"' : ''}
-            aria-label="Task ${tileNumber}, Status: ${statusHumanLabel}"
+            aria-label="Task ${tileNumber}, Difficulty: ${puzzleDiff}, Status: ${statusHumanLabel}"
           >
-            <div class="tile-task-tag">Task ${tileNumber}</div>
+            <div class="tile-top-row">
+              <span class="tile-task-tag">Task ${tileNumber}</span>
+              ${foodBadgeHtml}
+            </div>
             <div class="tile-gradient-number mono">${formattedNum}</div>
             ${elapsedIndicator}
             ${statusBadgeHtml}
@@ -891,7 +912,8 @@ export const Screens = {
               <div class="puzzle-header-task-info">
                 <span id="puzzle-band-task-heading" class="puzzle-band-task-label mono">TASK ${tileNumber}</span>
                 <div class="difficulty-badge difficulty-${difficulty}">
-                  ${difficulty.toUpperCase()} (${Math.floor(totalPuzzleSec / 60)} MIN)
+                  ${getFoodBadgeSvg(difficulty)}
+                  <span>${difficulty.toUpperCase()} (${Math.floor(totalPuzzleSec / 60)} MIN)</span>
                 </div>
                 <div class="puzzle-category-tag mono">${puzzleConfig.category}</div>
               </div>

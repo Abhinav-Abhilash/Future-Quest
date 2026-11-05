@@ -1502,6 +1502,16 @@ input, select, textarea {
   border-color: #A57EF0;
 }
 
+/* Top-left container: "Task N" label + Food Difficulty Badge */
+.tile-top-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  max-width: calc(100% - 95px);
+  z-index: 1;
+}
+
 /* Top-left small label: "Task N" */
 .tile-task-tag {
   font-size: 12px;
@@ -1512,8 +1522,40 @@ input, select, textarea {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: calc(100% - 95px);
-  /* Never overlaps the top-right status badge */
+}
+
+/* Food Difficulty Badges on Tiles (Circle in Square: Green=Easy, Yellow=Medium, Red=Hard) */
+.tile-food-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  background: rgba(10, 6, 22, 0.55);
+  padding: 1.5px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.tile-card:hover .tile-food-badge {
+  transform: scale(1.12);
+}
+
+.tile-food-badge.badge-easy {
+  color: #22c55e; /* Green for Easy */
+}
+
+.tile-food-badge.badge-medium {
+  color: #f59e0b; /* Yellow for Medium */
+}
+
+.tile-food-badge.badge-hard {
+  color: #ef4444; /* Red for Hard */
+}
+
+.food-badge-icon {
+  display: block;
 }
 
 /* Bottom-left large white monospace number */
@@ -2417,9 +2459,11 @@ input, select, textarea {
     padding: var(--space-2);
   }
 
+  .tile-top-row {
+    max-width: calc(100% - 75px);
+  }
   .tile-task-tag {
     font-size: 11px;
-    max-width: calc(100% - 75px);
   }
 
   .tile-gradient-number {
@@ -2491,9 +2535,11 @@ input, select, textarea {
     padding: 6px;
   }
 
+  .tile-top-row {
+    max-width: calc(100% - 32px);
+  }
   .tile-task-tag {
     font-size: 11px;
-    max-width: calc(100% - 32px);
   }
 
   .tile-gradient-number {

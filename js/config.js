@@ -26,6 +26,20 @@ export const CONFIG = {
   // DEV-ONLY: Style test flag for fixed tile order (false = sequential 1..10, true = randomized)
   SHUFFLE_TILES: false,
 
+  // Food difficulty badges (circle in square: green=easy, yellow=medium, red=hard)
+  TILE_DIFFICULTY: {
+    puzzle_1: "easy",
+    puzzle_2: "easy",
+    puzzle_3: "medium",
+    puzzle_4: "medium",
+    puzzle_5: "medium",
+    puzzle_6: "medium",
+    puzzle_7: "hard",
+    puzzle_8: "hard",
+    puzzle_9: "hard",
+    puzzle_10: "medium"
+  },
+
   // Event branding and promotional content configuration
   EVENT: {
     institution: "JAIN (Deemed-to-be University) Kochi",
@@ -104,6 +118,7 @@ export const CONFIG = {
     puzzle_1: {
       id: "puzzle_1",
       type: "ascii",
+      difficulty: "easy",
       title: "ASCII Decoder",
       category: "Information Security",
       whatToDo: "Convert the numerical ASCII codes into characters to decode the quote. Use the reference chart if needed.",
@@ -126,6 +141,7 @@ export const CONFIG = {
     puzzle_2: {
       id: "puzzle_2",
       type: "coords",
+      difficulty: "easy",
       title: "Coordinates Grid",
       category: "Computer Science",
       whatToDo: "Locate the given (Col, Row) coordinate pairs on the 7×7 grid. Extract the letters to discover 3 core engineering principles.",
@@ -152,6 +168,7 @@ export const CONFIG = {
     puzzle_3: {
       id: "puzzle_3",
       type: "bodmas",
+      difficulty: "medium",
       title: "BODMAS Decoder",
       category: "Computer Networks",
       whatToDo: "Evaluate each math expression using standard BODMAS/PEMDAS precedence. Map each number to its corresponding letter (1=A ... 26=Z).",
@@ -194,6 +211,7 @@ export const CONFIG = {
     puzzle_4: {
       id: "puzzle_4",
       type: "riddle",
+      difficulty: "medium",
       title: "System Riddle",
       category: "Operating Systems & Hardware",
       whatToDo: "Decrypt the identity riddle: read the cryptic clues about the legendary 17-year-old operating system's nickname, and type the letter keycaps.",
@@ -216,6 +234,7 @@ export const CONFIG = {
     puzzle_5: {
       id: "puzzle_5",
       type: "ascii",
+      difficulty: "medium",
       title: "Reverse-Index Cipher",
       category: "Cybernetics & Cryptography",
       whatToDo: "Decode the reverse-index numerical tokens into letters (where Z=1, Y=2, X=3 ... C=24, B=25, A=26). Type the letters to reveal the centerpiece phrase.",
@@ -235,6 +254,7 @@ export const CONFIG = {
     puzzle_6: {
       id: "puzzle_6",
       type: "riddle",
+      difficulty: "medium",
       title: "Visual Cryptogram",
       category: "Visual Deduction",
       whatToDo: "Analyze the symbolic motifs in the artwork to decipher the hidden 6-word phrase. Type the letters into the keycaps.",
@@ -265,6 +285,7 @@ export const CONFIG = {
     puzzle_7: {
       id: "puzzle_7",
       type: "wordsearch",
+      difficulty: "hard",
       title: "Word Search",
       category: "Applied Cryptography",
       whatToDo: "Locate all 20 tech terms from the word list in the 15×15 matrix. Words can go in any of 8 directions (horizontal, vertical, diagonal, forward, or backward).",
@@ -299,6 +320,7 @@ export const CONFIG = {
     puzzle_8: {
       id: "puzzle_8",
       type: "riddle",
+      difficulty: "hard",
       title: "Aerospace Riddle",
       category: "Automotive & Aerospace",
       whatToDo: "Deduce the vehicle described in the cosmic riddle. Type the 8-letter model name into the tactile keycaps.",
@@ -320,6 +342,7 @@ export const CONFIG = {
     puzzle_9: {
       id: "puzzle_9",
       type: "riddle",
+      difficulty: "hard",
       title: "Color Palette Riddle",
       category: "Colorimetry & Graphic Design",
       whatToDo: "Deduce the two background colors from the poetic colorimetry riddle. Type the color names into the keycaps.",
@@ -349,6 +372,7 @@ export const CONFIG = {
     puzzle_10: {
       id: "puzzle_10",
       type: "coords",
+      difficulty: "medium",
       title: "Cartesian Coordinates Grid",
       category: "Design Systems & Event Geometry",
       whatToDo: "Locate the given (Col, Row) coordinate pairs on the 7×7 grid. Extract the letters to discover the 2-word competition theme.",
@@ -400,3 +424,6 @@ export const CONFIG = {
 export function getTileLabel(tileIndex) {
   return `Task ${tileIndex + 1}`;
 }
+
+export const TILE_DIFFICULTY = CONFIG.TILE_DIFFICULTY;
+
