@@ -350,11 +350,11 @@ export const CONFIG = {
     puzzle_6: {
       id: "puzzle_6",
       type: "riddle",
-      title: "Visual Cryptic Inspection: Institution Name",
-      category: "Visual Cryptography & Institutional Identity",
-      whatToDo: "Examine the visual elements in the cryptic artwork (Lord Mahavira, cosmic universe, circuit halo, robotics) and deduce the complete institution name.",
-      prompt: "Identify the hosting institution name from the visual clues.",
-      hint: "Break down the artwork into three layers: the revered sage of non-violence in meditation, the expansive deep-space cosmos, and the futuristic neural circuits with robotics.",
+      title: "Host Institution Cryptogram",
+      category: "Institutional Identity",
+      whatToDo: "Deduce the complete hosting department and university name. Type the letters into the keycaps.",
+      prompt: "What department and school hosts this quest?",
+      hint: "Look at the official header at the top of the event branding. It combines the university name and its specialized technology division.",
       clueType: "spec",
       clue: {
         title: "Clue Fragment 2: Institution Branding & Logo Spec",
@@ -370,12 +370,10 @@ export const CONFIG = {
       },
       data: {
         id: "puzzle_6",
-        categoryTag: "VISUAL INSTITUTIONAL CRYPTOGRAM",
+        categoryTag: "HOST INSTITUTION & DEPARTMENT",
         formatBadge: "6 WORDS (4 + 10 + 6 + 2 + 6 + 10 LETTERS)",
-        imageUrl: "assets/institution_clue.jpg",
         riddleLines: [
-          "Behold the ancient sage of non-violence and victory (Mahavira),",
-          "Surrounded by cosmic constellations, neural circuits, and cyber robotics."
+          "What department and school hosts this quest?"
         ],
         solution: "JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY",
         acceptedSolutions: [
