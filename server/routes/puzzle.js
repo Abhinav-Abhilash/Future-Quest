@@ -120,7 +120,7 @@ router.post('/puzzle/:id/open', requireAuth, async (req, res) => {
       puzzle: payload,
       status: isSolved ? 'SOLVED' : block.status === 'FAILED' ? 'FAILED' : 'OPENED',
       timeRemainingSeconds,
-      attemptsRemaining: isBonus ? null : Math.max(0, 3 - (block.attemptsUsed || 0)),
+      attemptsRemaining: null,
       attemptsUsed: block.attemptsUsed || 0,
       hintUsed: !!block.hintUsed,
       hintsLeft: team.totalHintsLeft ?? 3,
@@ -307,9 +307,8 @@ router.post('/puzzle/:id/check', requireAuth, answerLimiter, async (req, res) =>
       });
     }
 
-    // Wrong answer - increment attempts
+    // Wrong answer - increment attempts (unlimited attempts allowed, no failure lockout)
     const newAttemptsUsed = (block.attemptsUsed || 0) + 1;
-    const isFailed = newAttemptsUsed >= 3;
     const activeElapsed = block.activeSince ? now - block.activeSince : 0;
     const updatedSpentMs = (block.timeSpentMs || 0) + activeElapsed;
 
@@ -318,38 +317,27 @@ router.post('/puzzle/:id/check', requireAuth, answerLimiter, async (req, res) =>
       {
         $set: {
           attemptsUsed: newAttemptsUsed,
-          status: isFailed ? 'FAILED' : 'OPENED',
-          activeSince: isFailed ? null : now, // reset active anchor
+          status: 'OPENED',
+          activeSince: now,
           timeSpentMs: updatedSpentMs,
           updatedAt: now,
         },
       }
     );
 
-    await logEvent(team._id, isFailed ? EVENT_TYPES.PUZZLE_FAILED : EVENT_TYPES.ANSWER_SUBMITTED, {
+    await logEvent(team._id, EVENT_TYPES.ANSWER_SUBMITTED, {
       puzzleId: id,
       attemptNumber: newAttemptsUsed,
-      isFailed,
+      correct: false,
     });
-
-    if (isFailed) {
-      return res.status(200).json({
-        success: false,
-        correct: false,
-        status: 'FAILED',
-        attemptsUsed: newAttemptsUsed,
-        attemptsRemaining: 0,
-        message: 'Three wrong checks reached. Puzzle is now failed permanently.',
-      });
-    }
 
     res.status(200).json({
       success: false,
       correct: false,
       status: 'OPENED',
       attemptsUsed: newAttemptsUsed,
-      attemptsRemaining: 3 - newAttemptsUsed,
-      message: 'Incorrect answer. Try again.',
+      attemptsRemaining: null,
+      message: 'Incorrect answer. Try again!',
     });
   } catch (error) {
     console.error('[PUZZLE CHECK ERROR]', error);

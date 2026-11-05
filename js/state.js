@@ -376,7 +376,8 @@ class StateManager {
       return {
         correct: !!res.correct,
         failed: res.status === 'FAILED',
-        attemptsLeft: res.attemptsRemaining ?? Math.max(0, 3 - (res.attemptsUsed || 0)),
+        attemptsLeft: null,
+        attemptsUsed: res.attemptsUsed || 0,
         clue: res.clue || null,
         message: res.message || '',
       };
@@ -384,6 +385,21 @@ class StateManager {
       console.error('Answer check error:', err);
       throw err;
     }
+  }
+
+  /**
+   * Local helper for wrong attempt recording without failure lockout
+   */
+  recordWrong(id) {
+    if (!this.state || !this.state.blocks[id]) return { failed: false };
+    const b = this.state.blocks[id];
+    b.attemptsUsed = (b.attemptsUsed || 0) + 1;
+    this.saveState();
+    return {
+      failed: false,
+      attemptsUsed: b.attemptsUsed,
+      unlimited: true
+    };
   }
 
   /**

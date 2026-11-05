@@ -65,7 +65,7 @@ router.get('/state', requireAuth, async (req, res) => {
         puzzleId,
         status: block.status,
         attemptsUsed: block.attemptsUsed || 0,
-        attemptsRemaining: isBonus ? null : Math.max(0, 3 - (block.attemptsUsed || 0)),
+        attemptsRemaining: null,
         hintUsed: !!block.hintUsed,
         bonus: isBonus,
       };

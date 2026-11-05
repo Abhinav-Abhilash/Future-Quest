@@ -17,7 +17,7 @@ export const CONFIG = {
   MASTER_TIME: 7200, // 2 hours in seconds (7200 seconds)
   
   // Game rules configuration
-  MAX_ATTEMPTS: 3,
+  MAX_ATTEMPTS: null, // Unlimited attempts (teams can try as much as needed)
   TOTAL_HINTS: 3,
 
   // DEV-ONLY: Development helpers & UI toggle

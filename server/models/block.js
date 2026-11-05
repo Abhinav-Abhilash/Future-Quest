@@ -19,7 +19,7 @@ export const BLOCK_STATUS = {
 
 export const BlockUpdateSchema = z.object({
   status: z.enum(['LOCKED', 'AVAILABLE', 'OPENED', 'SOLVED', 'FAILED']).optional(),
-  attemptsUsed: z.number().int().min(0).max(3).optional(),
+  attemptsUsed: z.number().int().min(0).optional(),
   hintUsed: z.boolean().optional(),
   timeSpentMs: z.number().int().min(0).optional(),
   activeSince: z.number().int().nullable().optional(),

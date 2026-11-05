@@ -7,7 +7,7 @@
  * 2. Duplicate registration rejection (case-insensitive)
  * 3. Fetch state (answers, difficulty omitted)
  * 4. Open puzzle_1
- * 5. Wrong answer x3 -> permanent FAIL
+ * 5. Wrong answers -> unlimited attempts (never fails or locks)
  * 6. Open puzzle_2
  * 7. Use hint -> deducts 1 of 3 hints
  * 8. Re-request hint -> free return without extra deduction
@@ -132,33 +132,33 @@ async function runRouteTests() {
     console.log(`       Attempts Remaining: ${openRes.data.attemptsRemaining}\n`);
 
     // Step 5: Test 3 Wrong Answers on puzzle_1 -> Permanent FAIL
-    console.log('[STEP 5] Testing 3 wrong answers on puzzle_1 (Testing attempt bounds)...');
+    console.log('[STEP 5] Testing wrong answers on puzzle_1 (Testing unlimited attempts / no lockout)...');
 
     // Attempt 1
     const wrong1 = await api('/puzzle/puzzle_1/check', {
       method: 'POST',
       body: JSON.stringify({ answer: 'WRONG GUESS ONE' }),
     });
-    console.log(`       Wrong 1: Attempts remaining = ${wrong1.data.attemptsRemaining}, status = ${wrong1.data.status}`);
+    console.log(`       Wrong 1: Attempts used = ${wrong1.data.attemptsUsed}, status = ${wrong1.data.status}`);
 
     // Attempt 2
     const wrong2 = await api('/puzzle/puzzle_1/check', {
       method: 'POST',
       body: JSON.stringify({ answer: 'WRONG GUESS TWO' }),
     });
-    console.log(`       Wrong 2: Attempts remaining = ${wrong2.data.attemptsRemaining}, status = ${wrong2.data.status}`);
+    console.log(`       Wrong 2: Attempts used = ${wrong2.data.attemptsUsed}, status = ${wrong2.data.status}`);
 
-    // Attempt 3 -> Should fail
+    // Attempt 3 -> Should remain OPENED (unlimited attempts)
     const wrong3 = await api('/puzzle/puzzle_1/check', {
       method: 'POST',
       body: JSON.stringify({ answer: 'WRONG GUESS THREE' }),
     });
-    console.log(`       Wrong 3: Attempts remaining = ${wrong3.data.attemptsRemaining}, status = ${wrong3.data.status}`);
+    console.log(`       Wrong 3: Attempts used = ${wrong3.data.attemptsUsed}, status = ${wrong3.data.status}`);
 
-    if (wrong3.data.status !== 'FAILED') {
-      throw new Error(`Expected puzzle_1 to be FAILED, got ${wrong3.data.status}`);
+    if (wrong3.data.status !== 'OPENED') {
+      throw new Error(`Expected puzzle_1 to remain OPENED (unlimited attempts), got ${wrong3.data.status}`);
     }
-    console.log('[PASS] puzzle_1 failed permanently after 3 wrong checks.\n');
+    console.log('[PASS] puzzle_1 allows unlimited attempts without failing or locking.\n');
 
     // Step 6: POST /api/puzzle/puzzle_2/open
     console.log('[STEP 6] Testing POST /api/puzzle/puzzle_2/open...');

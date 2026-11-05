@@ -8,7 +8,7 @@
  * 2. Duplicate Team Name rejection
  * 3. Client state secrecy (no answers/difficulty on unopened tiles)
  * 4. Puzzle Open & timer initialization
- * 5. Wrong Answer x 3 -> Permanent failure
+ * 5. Wrong Answer -> Unlimited attempts (never locks or fails)
  * 6. Puzzle 2 Open & Hint deduction
  * 7. Correct answer -> Solved & clue unsealed
  * 8. Contest totals verify 10 quest puzzles
@@ -108,17 +108,17 @@ async function runE2ETest() {
     assert('puzzle_1 time limit is revealed', typeof p1Block.timeLimitSeconds === 'number' && p1Block.timeLimitSeconds > 0);
     assert('puzzle_1 countdown is active', GameState.getPuzzleRemainingSeconds('puzzle_1') > 0);
 
-    // --- TEST 5: Wrong Check x3 -> Permanent Failure ---
-    console.log('\n--- 5. Testing Wrong Answer x3 Permanent Failure ---');
+    // --- TEST 5: Unlimited Attempts (Does NOT fail or lock) ---
+    console.log('\n--- 5. Testing Unlimited Attempts (No Lockout) ---');
     const w1 = await GameState.submitAnswer('puzzle_1', 'WRONG_ANSWER_1');
-    assert('Attempt 1 rejected', !w1.correct && w1.attemptsLeft === 2);
+    assert('Attempt 1 rejected', !w1.correct);
 
     const w2 = await GameState.submitAnswer('puzzle_1', 'WRONG_ANSWER_2');
-    assert('Attempt 2 rejected', !w2.correct && w2.attemptsLeft === 1);
+    assert('Attempt 2 rejected', !w2.correct);
 
     const w3 = await GameState.submitAnswer('puzzle_1', 'WRONG_ANSWER_3');
-    assert('Attempt 3 rejected and puzzle failed', !w3.correct && w3.failed === true);
-    assert('State marks puzzle_1 FAILED', GameState.state.blocks.puzzle_1.status === 'FAILED');
+    assert('Attempt 3 rejected without failure', !w3.correct && w3.failed === false);
+    assert('State keeps puzzle_1 OPENED (unlimited attempts)', GameState.state.blocks.puzzle_1.status === 'OPENED');
 
     // --- TEST 6: Puzzle 2 Open & Hint Deduction ---
     console.log('\n--- 6. Testing Puzzle 2 Open & Hint Usage ---');
@@ -152,7 +152,7 @@ async function runE2ETest() {
     GameState.state = null;
     await GameState.syncWithServer();
     assert('Session restored from server on reload', GameState.hasSession());
-    assert('puzzle_1 remains FAILED after reload', GameState.state.blocks.puzzle_1.status === 'FAILED');
+    assert('puzzle_1 remains OPENED after reload', GameState.state.blocks.puzzle_1.status === 'OPENED');
     assert('puzzle_2 remains SOLVED with clue after reload', GameState.state.blocks.puzzle_2.status === 'SOLVED' && !!GameState.state.blocks.puzzle_2.unlockedClue);
     assert('Hints remaining remains 2 after reload', GameState.state.hintsRemaining === 2);
 

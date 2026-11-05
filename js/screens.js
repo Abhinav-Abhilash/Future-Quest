@@ -1015,15 +1015,12 @@ export const Screens = {
           <footer class="puzzle-sticky-action-bar" id="puzzle-sticky-action-bar" role="region" aria-label="Puzzle Actions">
             <div class="action-bar-inner">
               <div class="action-bar-left">
-                <!-- Attempts with Tactile Key Icons -->
-                <div class="action-bar-attempts" id="action-attempts-box" title="${attemptsLeft} attempts remaining">
+                <!-- Attempts Display (Unlimited) -->
+                <div class="action-bar-attempts" id="action-attempts-box" title="Unlimited attempts allowed">
                   <span class="action-bar-label mono">ATTEMPTS</span>
-                  <div class="key-pips-row" id="action-attempts-pips">
-                    ${Array.from({ length: CONFIG.MAX_ATTEMPTS }, (_, i) => `
-                      <span class="key-pip ${i < attemptsLeft ? '' : 'key-snapped'}" title="${i < attemptsLeft ? 'Attempt available' : 'Attempt spent'}">
-                        ${i < attemptsLeft ? ICONS.key : ICONS.keyBroken}
-                      </span>
-                    `).join('')}
+                  <div class="key-pips-row mono" id="action-attempts-pips" style="font-size: 12px; font-weight: 600; color: #F0EDF6; display: flex; align-items: center; gap: 5px;">
+                    <span style="color: #60A5FA;">✦</span>
+                    <span id="action-attempts-count">Unlimited (${block.attemptsUsed || 0} tried)</span>
                   </div>
                 </div>
                 
@@ -1104,13 +1101,9 @@ export const Screens = {
         hintBtn.setAttribute('aria-disabled', 'true');
       }
 
-      const remAttempts = Math.max(0, CONFIG.MAX_ATTEMPTS - (currentBlock.attemptsUsed || 0));
-      if (attemptsPipsEl) {
-        attemptsPipsEl.innerHTML = Array.from({ length: CONFIG.MAX_ATTEMPTS }, (_, i) => `
-          <span class="key-pip ${i < remAttempts ? '' : 'key-snapped'}" title="${i < remAttempts ? 'Attempt available' : 'Attempt spent'}">
-            ${i < remAttempts ? ICONS.key : ICONS.keyBroken}
-          </span>
-        `).join('');
+      const attemptsCountEl = container.querySelector('#action-attempts-count');
+      if (attemptsCountEl) {
+        attemptsCountEl.textContent = `Unlimited (${currentBlock.attemptsUsed || 0} tried)`;
       }
 
       // Status Banners & Action Notice
@@ -1135,7 +1128,7 @@ export const Screens = {
         if (checkBtnMain) checkBtnMain.disabled = true;
         if (hintBtn) hintBtn.disabled = true;
         if (actionNotice) {
-          actionNotice.textContent = 'LOCKED (Maximum attempts exceeded or time expired)';
+          actionNotice.textContent = 'LOCKED (Time limit expired)';
           actionNotice.className = 'action-bar-notice notice-danger mono';
         }
         if (statusBanner) {
@@ -1143,7 +1136,7 @@ export const Screens = {
             <div class="alert alert-danger" role="alert">
               <span class="alert-icon">${ICONS.cross}</span>
               <div class="alert-content">
-                <strong>Puzzle Failed:</strong> Maximum attempts exceeded or time expired. This tile is permanently locked.
+                <strong>Puzzle Failed:</strong> Time limit expired. This tile is permanently locked.
               </div>
             </div>
           `;
@@ -1293,6 +1286,9 @@ export const Screens = {
           const b = GameState.state?.blocks[puzzleId];
           return b?.status === 'SOLVED' || b?.status === 'FAILED' || GameState.isMasterExpired();
         },
+        checkAnswer: async (payload) => {
+          return await GameState.submitAnswer(puzzleId, payload);
+        },
         onSolved: () => {
           GameState.markSolved(puzzleId);
           triggerSolveBurst();
@@ -1309,17 +1305,12 @@ export const Screens = {
             setTimeout(() => flash.classList.remove('flash-active'), 280);
           }
           // Shake the action bar attempts row
-          const pipsRow = container.querySelector('#action-attempts-pips');
-          if (pipsRow) {
-            pipsRow.classList.add('key-shake');
-            setTimeout(() => pipsRow.classList.remove('key-shake'), 400);
+          const attemptsBox = container.querySelector('#action-attempts-box');
+          if (attemptsBox) {
+            attemptsBox.classList.add('key-shake');
+            setTimeout(() => attemptsBox.classList.remove('key-shake'), 400);
           }
-          if (res.failed) {
-            this.showNotice(`Maximum attempts reached for ${tileLabel}. The puzzle has failed.`, 'danger');
-            showToast(`Task ${tileNumber} failed: maximum attempts reached.`, 'danger');
-          } else {
-            showToast(`Incorrect answer. ${res.attemptsRemaining} attempts left.`, 'amber');
-          }
+          showToast(`Incorrect answer. You have unlimited attempts—try again!`, 'amber');
         }
       };
 
@@ -1844,7 +1835,7 @@ export const Screens = {
           </div>
           <div class="quick-fact-item">
             <span class="quick-fact-label">Attempts</span>
-            <span class="quick-fact-val mono">3 per Puzzle</span>
+            <span class="quick-fact-val mono">Unlimited</span>
           </div>
         </div>
 
@@ -1907,7 +1898,7 @@ export const Screens = {
             <details class="rules-accordion" id="rule-4" open>
               <summary>4. Puzzle Grid & Attempt Policy</summary>
               <p class="rule-text">
-                Tiles 1 through 10 are randomized in order at contest initialization. All 10 puzzle tiles are unlocked from the start and can be attempted in any order. Each puzzle permits a maximum of <strong>3 attempts</strong>. Entering 3 incorrect answers permanently marks the puzzle as <strong>FAILED</strong>.
+                Tiles 1 through 10 are randomized in order at contest initialization. All 10 puzzle tiles are unlocked from the start and can be attempted in any order. Each puzzle permits <strong>unlimited attempts</strong>—teams have complete freedom to try as many answers as needed without being locked out. A puzzle only expires and locks if its countdown timer reaches zero.
               </p>
               <p class="rule-text">
                 Some puzzles involve reading code or using your browser's developer tools. Everything you need is on the page or in your browser.
