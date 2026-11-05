@@ -1124,18 +1124,6 @@ export const Screens = {
         <!-- 4. Unlocked Technical Clue Container (slides in below stage when solved) -->
         <div id="puzzle-clue-container" class="puzzle-clue-container"></div>
 
-        <!-- DEV-ONLY: Puzzle Testing Toolbar -->
-        ${CONFIG.DEV_MODE ? `
-          <div class="dev-toolbar dev-only" style="margin: 12px 16px; padding: 8px 14px; background: rgba(255, 153, 0, 0.08); border: 1px dashed #FF9900; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-            <span class="mono" style="font-size: 11px; color: #FFB340;">/* DEV-ONLY */ Puzzle Shortcuts:</span>
-            <div style="display: flex; gap: 8px;">
-              <button type="button" class="btn btn-secondary btn-sm keycap dev-only" id="btn-dev-solve" style="font-size: 11px; border-color: #3FB950; color: #3FB950;">
-                Mark Solved (dev)
-              </button>
-            </div>
-          </div>
-        ` : ''}
-
         <!-- 5. Sticky Bottom Action Bar -->
         <footer class="puzzle-sticky-action-bar" id="puzzle-sticky-action-bar" role="region" aria-label="Puzzle Actions">
           <div class="action-bar-inner">
@@ -1542,19 +1530,6 @@ export const Screens = {
           this.activePuzzleModule.checkAnswer();
         }
       });
-    }
-
-    // /* DEV-ONLY */ Test solver button
-    if (CONFIG.DEV_MODE) {
-      const devSolveBtn = container.querySelector('#btn-dev-solve');
-      if (devSolveBtn) {
-        devSolveBtn.addEventListener('click', () => {
-          GameState.markSolved(puzzleId);
-          triggerSolveBurst();
-          showToast(`[DEV] Task ${tileNumber} marked solved!`, 'success');
-          renderStatusAndClue();
-        });
-      }
     }
 
     const backGridBottom = container.querySelector('#btn-back-grid-bottom');

@@ -25,7 +25,7 @@ export const CONFIG = {
   TOTAL_HINTS: 3,
 
   // DEV-ONLY: Development helpers & UI toggle
-  DEV_MODE: true,
+  DEV_MODE: false,
 
   // DEV-ONLY: Style test flag for fixed tile order (false = sequential 1..10, true = randomized)
   SHUFFLE_TILES: false,

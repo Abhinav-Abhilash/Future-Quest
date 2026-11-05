@@ -3565,34 +3565,9 @@ body.lite-mode .burst-particle {
   transform: none !important;
 }
 
-/* DEV-ONLY: Universal rule to immediately hide all dev UI elements if dev mode is disabled */
+/* Universal fallback rule to hide any dev UI elements if dev mode is disabled */
 body:not(.dev-mode) .dev-only {
   display: none !important;
-}
-
-/* DEV-ONLY: Fixed bottom-right reset bar */
-.dev-reset-bar {
-  position: fixed;
-  bottom: var(--space-4, 16px);
-  right: var(--space-4, 16px);
-  z-index: 9999;
-  background: rgba(18, 14, 34, 0.95);
-  border: 1px dashed var(--border-emphasis, #7E7492);
-  border-radius: var(--radius-sm, 4px);
-  padding: 6px 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
-}
-
-.dev-reset-bar .dev-tag {
-  font-family: var(--font-mono, monospace);
-  font-size: 10px;
-  font-weight: 700;
-  color: #FFC928;
-  letter-spacing: 0.08em;
 }
 
 

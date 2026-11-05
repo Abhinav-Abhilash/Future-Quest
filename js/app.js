@@ -177,38 +177,9 @@ class App {
       }
     });
 
-    // DEV-ONLY: Initialize fixed dev reset bar across all screens
-    this.initDevResetBar();
-  }
-
-  /**
-   * DEV-ONLY: Mount fixed dev reset bar at bottom-right of screen on every route.
-   */
-  initDevResetBar() {
-    const existing = document.getElementById('dev-reset-bar');
-    if (existing) existing.remove();
-
-    if (!CONFIG.DEV_MODE) return;
-
-    const barEl = document.createElement('aside');
-    barEl.id = 'dev-reset-bar';
-    barEl.className = 'dev-reset-bar dev-only';
-    barEl.setAttribute('aria-label', 'Developer Reset Bar');
-    barEl.innerHTML = `
-      <span class="dev-tag mono">DEV</span>
-      <button type="button" class="btn btn-secondary btn-sm" id="btn-dev-reset-all">Reset all progress</button>
-    `;
-
-    document.body.appendChild(barEl);
-
-    const resetBtn = barEl.querySelector('#btn-dev-reset-all');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
-        Modal.showDevResetConfirmation(() => {
-          this.performDevReset();
-        });
-      });
-    }
+    // Ensure any leftover dev reset bar is removed from DOM
+    const leftoverDevBar = document.getElementById('dev-reset-bar');
+    if (leftoverDevBar) leftoverDevBar.remove();
   }
 
   /**
