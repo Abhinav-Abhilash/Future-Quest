@@ -448,31 +448,65 @@ export const Screens = {
       const formattedNum = String(tileNum).padStart(2, '0');
       const block = state.blocks[itemId];
       const isSolved = block && block.status === 'SOLVED';
+      const isInProgress = block && (block.status === 'OPENED' || block.status === 'OPENED_IN_PROGRESS');
+      const isFailed = block && block.status === 'FAILED';
       const clue = block ? block.unlockedClue : null;
 
-      if (isSolved && clue) {
+      if (isSolved) {
         let iconSvg = ICONS.check;
-        if (clue.type === 'spec') iconSvg = ICONS.clueSpec || ICONS.check;
-        else if (clue.type === 'text') iconSvg = ICONS.clueText || ICONS.check;
-        else if (clue.type === 'image') iconSvg = ICONS.clueImage || ICONS.check;
+        if (clue) {
+          if (clue.type === 'spec') iconSvg = ICONS.clueSpec || ICONS.check;
+          else if (clue.type === 'text') iconSvg = ICONS.clueText || ICONS.check;
+          else if (clue.type === 'image') iconSvg = ICONS.clueImage || ICONS.check;
+        }
+
+        const clueTitle = clue ? (clue.title || clue.fragment || 'Clue Fragment') : 'Clue Unlocked';
 
         pouchSlotsHtml += `
           <div 
-            class="pouch-slot pouch-slot-filled pouch-stamp" 
+            class="pouch-slot pouch-slot-solved pouch-slot-filled pouch-stamp" 
             data-puzzle-id="${itemId}" 
-            title="Task ${tileNum}: ${clue.title} (Solved)" 
+            title="Task ${tileNum}: ${clueTitle} (Solved - Green)" 
             tabindex="0"
             role="button"
-            aria-label="Task ${tileNum} clue unlocked"
+            aria-label="Task ${tileNum} clue unlocked (Solved)"
           >
             <span class="pouch-slot-icon">${iconSvg}</span>
+            <span class="pouch-slot-num">${formattedNum}</span>
+          </div>
+        `;
+      } else if (isInProgress) {
+        pouchSlotsHtml += `
+          <div 
+            class="pouch-slot pouch-slot-inprogress" 
+            data-puzzle-id="${itemId}" 
+            title="Task ${tileNum}: In Progress (Yellow)" 
+            tabindex="0"
+            role="button"
+            aria-label="Task ${tileNum} in progress"
+          >
+            <span class="pouch-slot-icon">${ICONS.clock}</span>
+            <span class="pouch-slot-num">${formattedNum}</span>
+          </div>
+        `;
+      } else if (isFailed) {
+        pouchSlotsHtml += `
+          <div 
+            class="pouch-slot pouch-slot-failed" 
+            data-puzzle-id="${itemId}" 
+            title="Task ${tileNum}: Failed (Red)" 
+            tabindex="0"
+            role="button"
+            aria-label="Task ${tileNum} failed"
+          >
+            <span class="pouch-slot-icon">${ICONS.cross}</span>
             <span class="pouch-slot-num">${formattedNum}</span>
           </div>
         `;
       } else {
         pouchSlotsHtml += `
           <div 
-            class="pouch-slot" 
+            class="pouch-slot pouch-slot-locked" 
             data-puzzle-id="${itemId}" 
             title="Task ${tileNum}: Locked" 
             tabindex="0"
@@ -525,14 +559,17 @@ export const Screens = {
       } else {
         // Tiles 1..10
         const block = state.blocks[itemId] || { status: 'UNOPENED' };
-        const status = block.status; // UNOPENED, OPENED_IN_PROGRESS, SOLVED, FAILED
+        const status = block.status; // UNOPENED, AVAILABLE, OPENED, OPENED_IN_PROGRESS, SOLVED, FAILED
+        const isInProgress = (status === 'OPENED' || status === 'OPENED_IN_PROGRESS');
+        const isSolved = (status === 'SOLVED');
+        const isFailed = (status === 'FAILED');
 
         let statusClass = 'status-unopened';
         let statusBadgeHtml = '';
         let isClickable = !isVaultEntered;
         let elapsedIndicator = '';
 
-        if (status === 'OPENED_IN_PROGRESS') {
+        if (isInProgress) {
           statusClass = 'status-in-progress';
           statusBadgeHtml = `
             <div class="tile-corner-badge badge-in-progress" aria-label="Status: In progress">
@@ -541,7 +578,7 @@ export const Screens = {
             </div>
           `;
           elapsedIndicator = `<div class="tile-time-elapsed">In progress</div>`;
-        } else if (status === 'SOLVED') {
+        } else if (isSolved) {
           statusClass = 'status-solved';
           statusBadgeHtml = `
             <div class="tile-corner-badge badge-solved" aria-label="Status: Solved">
@@ -549,7 +586,7 @@ export const Screens = {
               <span class="badge-text">Solved</span>
             </div>
           `;
-        } else if (status === 'FAILED') {
+        } else if (isFailed) {
           statusClass = 'status-failed';
           statusBadgeHtml = `
             <div class="tile-corner-badge badge-failed" aria-label="Status: Failed">
@@ -561,11 +598,11 @@ export const Screens = {
         }
 
         let statusHumanLabel = 'Unopened';
-        if (status === 'OPENED_IN_PROGRESS') {
+        if (isInProgress) {
           statusHumanLabel = 'In progress';
-        } else if (status === 'SOLVED') {
+        } else if (isSolved) {
           statusHumanLabel = 'Solved';
-        } else if (status === 'FAILED') {
+        } else if (isFailed) {
           statusHumanLabel = 'Failed';
         }
 
@@ -741,10 +778,11 @@ export const Screens = {
         const puzzleId = slot.dataset.puzzleId;
         if (!puzzleId) return;
         const b = state.blocks[puzzleId];
-        if (b && b.status !== 'UNOPENED' && !isVaultEntered) {
-          router.navigate(`/puzzle/${puzzleId}`);
-        } else if (isVaultEntered) {
+        if (b && b.status === 'FAILED') return;
+        if (isVaultEntered) {
           router.navigate('/vault');
+        } else {
+          router.navigate(`/puzzle/${puzzleId}`);
         }
       });
       slot.addEventListener('keydown', (e) => {
@@ -818,7 +856,8 @@ export const Screens = {
 
     // Initial check for puzzle timer expiration
     const initialRemainingSec = GameState.getPuzzleRemainingSeconds(puzzleId);
-    if (initialRemainingSec <= 0 && block.status === 'OPENED_IN_PROGRESS') {
+    const isBlockActive = (block.status === 'OPENED' || block.status === 'OPENED_IN_PROGRESS');
+    if (initialRemainingSec <= 0 && isBlockActive) {
       GameState.failPuzzle(puzzleId, 'TIMEOUT');
       this.showNotice(`Time expired for ${tileLabel}. The puzzle has failed.`, 'danger');
       router.navigate('/grid');
@@ -920,7 +959,7 @@ export const Screens = {
             </div>
             
             <div class="puzzle-header-right">
-              <div class="puzzle-timer-badge ${initialRemainingSec < 120 && block.status === 'OPENED_IN_PROGRESS' ? 'timer-low' : ''}">
+              <div class="puzzle-timer-badge ${initialRemainingSec < 120 && isBlockActive ? 'timer-low' : ''}">
                 <span class="timer-icon">${ICONS.clock}</span>
                 <span class="timer-value mono" id="puzzle-countdown">${this.formatTime(initialRemainingSec)}</span>
               </div>
@@ -1407,7 +1446,7 @@ export const Screens = {
     }
 
     // 1-second interval to update puzzle countdown display smoothly
-    if (block.status === 'OPENED_IN_PROGRESS') {
+    if (isBlockActive) {
       this.activePuzzleInterval = setInterval(() => {
         const remainingSec = GameState.getPuzzleRemainingSeconds(puzzleId);
         const timerEl = document.getElementById('puzzle-countdown');
@@ -1418,7 +1457,8 @@ export const Screens = {
           const badge = timerEl.closest('.puzzle-timer-badge');
           if (badge) {
             const b = GameState.state?.blocks[puzzleId];
-            if (remainingSec < 120 && b && b.status === 'OPENED_IN_PROGRESS') {
+            const activeNow = (b && (b.status === 'OPENED' || b.status === 'OPENED_IN_PROGRESS'));
+            if (remainingSec < 120 && activeNow) {
               badge.classList.add('timer-low');
             } else {
               badge.classList.remove('timer-low');
@@ -1448,7 +1488,8 @@ export const Screens = {
 
         // Handle expiration
         const b = GameState.state?.blocks[puzzleId];
-        if (remainingSec <= 0 && b && b.status === 'OPENED_IN_PROGRESS') {
+        const activeNow = (b && (b.status === 'OPENED' || b.status === 'OPENED_IN_PROGRESS'));
+        if (remainingSec <= 0 && activeNow) {
           GameState.failPuzzle(puzzleId, 'TIMEOUT');
           this.unmountCurrentPuzzle();
           clearInterval(this.activePuzzleInterval);

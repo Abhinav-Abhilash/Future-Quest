@@ -1664,18 +1664,21 @@ input, select, textarea {
 
 /* Tile state modifiers */
 .tile-card.status-in-progress {
-  border-color: var(--status-amber-border);
+  border-color: #f59e0b;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.2);
 }
 
 .tile-card.status-solved {
-  border-color: var(--status-solved-border);
+  border-color: #22c55e;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.2);
 }
 
 .tile-card.status-failed {
-  opacity: 0.45;
-  filter: grayscale(40%);
+  opacity: 0.55;
+  filter: grayscale(30%);
   cursor: not-allowed;
-  border-color: var(--status-failed-border);
+  border-color: #ef4444;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.2);
 }
 
 .tile-disabled {
@@ -2769,40 +2772,129 @@ input, select, textarea {
 .pouch-slot {
   width: 44px;
   height: 48px;
-  border: 1px dashed var(--border-default);
   border-radius: var(--radius-sm);
-  background: var(--bg-input);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
   cursor: pointer;
-  color: var(--text-muted);
-  transition: transform 90ms ease, border-color 150ms ease, background-color 150ms ease;
+  transition: transform 120ms ease, border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
   user-select: none;
+  position: relative;
+  z-index: 1;
 }
 
 .pouch-slot:hover {
-  border-color: var(--accent);
   transform: translateY(-2px);
 }
 
-.pouch-slot-filled {
-  border-style: solid;
-  border-color: var(--status-solved-border);
-  background: var(--status-solved-bg);
-  color: var(--status-solved);
+.pouch-slot-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.pouch-slot-icon svg {
+  width: 15px;
+  height: 15px;
 }
 
 .pouch-slot-num {
   font-size: 9px;
   font-family: var(--font-mono);
-  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  line-height: 1;
 }
 
+/* 1. Locked / Unopened Slot: Dashed border */
+.pouch-slot-locked,
+.pouch-slot:not(.pouch-slot-solved):not(.pouch-slot-filled):not(.pouch-slot-inprogress):not(.pouch-slot-failed) {
+  border: 1px dashed var(--border-default);
+  background: var(--bg-input);
+  color: var(--text-muted);
+}
+.pouch-slot-locked .pouch-slot-num,
+.pouch-slot:not(.pouch-slot-solved):not(.pouch-slot-filled):not(.pouch-slot-inprogress):not(.pouch-slot-failed) .pouch-slot-num {
+  color: var(--text-muted);
+}
+.pouch-slot-locked:hover,
+.pouch-slot:not(.pouch-slot-solved):not(.pouch-slot-filled):not(.pouch-slot-inprogress):not(.pouch-slot-failed):hover {
+  border-color: var(--accent);
+  color: var(--text-secondary);
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.25);
+}
+
+/* 2. Solved Slot: Green colour */
+.pouch-slot-solved,
+.pouch-slot-filled {
+  border: 1px solid #22c55e;
+  background: rgba(34, 197, 94, 0.16);
+  color: #4ade80;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.25);
+}
+.pouch-slot-solved .pouch-slot-num,
 .pouch-slot-filled .pouch-slot-num {
-  color: var(--status-solved);
+  color: #4ade80;
+}
+.pouch-slot-solved .pouch-slot-icon,
+.pouch-slot-filled .pouch-slot-icon {
+  color: #22c55e;
+}
+.pouch-slot-solved:hover,
+.pouch-slot-filled:hover {
+  border-color: #4ade80;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.45);
+}
+
+/* 3. In Progress Slot: Yellow colour */
+.pouch-slot-inprogress {
+  border: 1px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.16);
+  color: #fbbf24;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+  animation: pulsePouchInProgress 2s ease-in-out infinite;
+}
+.pouch-slot-inprogress .pouch-slot-num {
+  color: #fbbf24;
+}
+.pouch-slot-inprogress .pouch-slot-icon {
+  color: #f59e0b;
+}
+.pouch-slot-inprogress:hover {
+  border-color: #fbbf24;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.45);
+}
+
+@keyframes pulsePouchInProgress {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.45);
+  }
+}
+
+/* 4. Failed Slot: Red colour */
+.pouch-slot-failed {
+  border: 1px solid #ef4444;
+  background: rgba(239, 68, 68, 0.16);
+  color: #f87171;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+  opacity: 0.9;
+}
+.pouch-slot-failed .pouch-slot-num {
+  color: #f87171;
+}
+.pouch-slot-failed .pouch-slot-icon {
+  color: #ef4444;
+}
+.pouch-slot-failed:hover {
+  border-color: #f87171;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.45);
 }
 
 .pouch-stamp {
@@ -3510,7 +3602,8 @@ button, .btn, .btn-icon, .keycap {
   .puzzle-screen.puzzle-expand-in,
   .vault-slot-card.stagger-in,
   .custom-checkbox .check-svg polyline,
-  .pouch-route-active {
+  .pouch-route-active,
+  .pouch-slot-inprogress {
     animation: none !important;
     transition: none !important;
     transform: none !important;
@@ -3523,7 +3616,8 @@ body.lite-mode .tile-style-submit.tile-submit-ready,
 body.lite-mode .puzzle-screen.puzzle-expand-in,
 body.lite-mode .vault-slot-card.stagger-in,
 body.lite-mode .custom-checkbox .check-svg polyline,
-body.lite-mode .pouch-route-active {
+body.lite-mode .pouch-route-active,
+body.lite-mode .pouch-slot-inprogress {
   animation: none !important;
   transition: none !important;
   transform: none !important;
