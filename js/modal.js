@@ -231,6 +231,49 @@ class ModalManager {
 
     this.trapFocus(card);
   }
+
+  /**
+   * Show Sign Out Confirmation Modal.
+   */
+  showSignOutConfirmation(onConfirm) {
+    this.init();
+    this.lastActiveElement = document.activeElement;
+
+    this.modalRoot.innerHTML = `
+      <div class="modal-backdrop" data-action="backdrop">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-signout-title">
+          <div class="modal-header">
+            <h2 id="modal-signout-title" class="modal-title">Sign Out?</h2>
+            <button class="btn-icon" data-action="close" aria-label="Close dialog">
+              ${ICONS.close}
+            </button>
+          </div>
+          <div class="modal-body">
+            <p class="modal-text">
+              Are you sure you want to sign out of this team session? You can sign back in or register another team.
+            </p>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" data-action="close">Cancel</button>
+            <button type="button" class="btn btn-danger" id="btn-signout-confirm">Sign Out</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.modalRoot.classList.add('is-active');
+    const card = this.modalRoot.querySelector('.modal-card');
+    const confirmBtn = document.getElementById('btn-signout-confirm');
+
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => {
+        this.close();
+        onConfirm();
+      });
+    }
+
+    this.trapFocus(card);
+  }
 }
 
 export const Modal = new ModalManager();

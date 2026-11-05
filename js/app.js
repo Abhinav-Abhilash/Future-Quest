@@ -435,7 +435,6 @@ class App {
             <nav class="nav-links desktop-only" aria-label="Main Navigation">
               <a href="#/grid" class="nav-link ${currentRoute === 'grid' ? 'active' : ''}">Grid</a>
               <a href="#/rules" class="nav-link ${currentRoute === 'rules' ? 'active' : ''}">Rules</a>
-              ${state.vaultEntered ? `<a href="#/vault" class="nav-link ${currentRoute === 'vault' ? 'active' : ''}">Vault</a>` : ''}
             </nav>
           </div>
 
@@ -463,6 +462,18 @@ class App {
               <span class="nav-team-avatar">${teamInitial}</span>
               <span class="team-label text-truncate">${teamName}</span>
             </div>
+
+            <!-- Sign Out Button (Navbar) -->
+            <button 
+              type="button" 
+              class="btn-icon nav-signout-btn" 
+              id="btn-nav-signout" 
+              title="Sign out of ${teamName}"
+              aria-label="Sign out"
+            >
+              ${ICONS.logout}
+              <span class="desktop-only">Sign Out</span>
+            </button>
 
             <!-- Mobile Menu Toggle Button -->
             <button 
@@ -492,7 +503,11 @@ class App {
             <div class="mobile-drawer-links">
               <a href="#/grid" class="mobile-drawer-link ${currentRoute === 'grid' ? 'active' : ''}">Grid</a>
               <a href="#/rules" class="mobile-drawer-link ${currentRoute === 'rules' ? 'active' : ''}">Rules</a>
-              ${state.vaultEntered ? `<a href="#/vault" class="mobile-drawer-link ${currentRoute === 'vault' ? 'active' : ''}">Vault</a>` : ''}
+            </div>
+            <div class="mobile-drawer-footer" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-subtle);">
+              <button type="button" class="btn mobile-signout-btn" id="btn-mobile-signout">
+                ${ICONS.logout} <span>Sign Out</span>
+              </button>
             </div>
           </div>
         </div>
@@ -511,6 +526,35 @@ class App {
           toggleBtn.innerHTML = this.mobileMenuOpen ? ICONS.close : ICONS.menu;
         }
       });
+    }
+
+    // Bind Sign Out actions
+    const handleSignOut = () => {
+      Modal.showSignOutConfirmation(() => {
+        GameState.resetSession();
+        try {
+          localStorage.removeItem('future_quest_2026_state');
+          localStorage.removeItem('future_quest_token');
+          localStorage.removeItem('future_quest_team_id');
+          sessionStorage.clear();
+        } catch (e) {
+          console.warn('Storage clear error:', e);
+        }
+        document.documentElement.classList.remove('has-active-session');
+        document.body.classList.remove('has-active-session', 'lite-mode');
+        window.__gridFirstLoadDone = false;
+        window.location.hash = '#/landing';
+        window.location.reload();
+      });
+    };
+
+    const navSignoutBtn = navContainer.querySelector('#btn-nav-signout');
+    if (navSignoutBtn) {
+      navSignoutBtn.addEventListener('click', handleSignOut);
+    }
+    const mobileSignoutBtn = navContainer.querySelector('#btn-mobile-signout');
+    if (mobileSignoutBtn) {
+      mobileSignoutBtn.addEventListener('click', handleSignOut);
     }
   }
 
