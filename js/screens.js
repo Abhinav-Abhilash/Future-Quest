@@ -408,8 +408,18 @@ export const Screens = {
       return;
     }
     if (!state) {
-      state = GameState.state;
+      state = {
+        teamName: 'Team',
+        timerStartedAt: Date.now(),
+        vaultEntered: false,
+        hintsRemaining: 3,
+        gridOrder: [...Object.keys(CONFIG.PUZZLES), 'vault_12'],
+        blocks: {},
+      };
+      GameState.state = state;
+      GameState.saveState();
     }
+    state.blocks = state.blocks || {};
 
     // Check all OPENED_IN_PROGRESS puzzles so any expired puzzle becomes FAILED immediately
     GameState.checkExpiredPuzzles();
@@ -854,10 +864,38 @@ export const Screens = {
 
     const isBonus = false;
 
-    const state = GameState.state;
-    if (!state || !state.blocks[puzzleId]) {
-      router.navigate('/grid');
+    let state = GameState.state;
+    if (!state) {
+      state = GameState.loadState();
+      GameState.state = state;
+    }
+    if (!state && GameState.hasSession()) {
+      state = {
+        teamName: 'Team',
+        timerStartedAt: Date.now(),
+        vaultEntered: false,
+        hintsRemaining: 3,
+        gridOrder: [...Object.keys(CONFIG.PUZZLES), 'vault_12'],
+        blocks: {},
+      };
+      GameState.state = state;
+      GameState.saveState();
+    }
+    if (!state) {
+      router.navigate('/landing');
       return;
+    }
+    state.blocks = state.blocks || {};
+    if (!state.blocks[puzzleId]) {
+      state.blocks[puzzleId] = {
+        status: 'AVAILABLE',
+        attemptsUsed: 0,
+        hintUsed: false,
+        timeSpentMs: 0,
+        activeSince: null,
+        progress: {},
+      };
+      GameState.saveState();
     }
 
     if (state.vaultEntered) {
@@ -1250,6 +1288,12 @@ export const Screens = {
                   <span class="clue-tag mono">SPECIFICATION CLUE UNLOCKED</span>
                   <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
                 </div>
+                ${clue.placementTip ? `
+                  <div class="clue-placement-banner">
+                    <span class="placement-badge mono">💡 POSTER PLACEMENT TIP</span>
+                    <p class="placement-text">${clue.placementTip}</p>
+                  </div>
+                ` : ''}
                 <div class="clue-body">
                   <table class="spec-table">
                     <tbody>${specRows}</tbody>
@@ -1269,6 +1313,12 @@ export const Screens = {
                   <span class="clue-tag mono">TEXT CONTENT CLUE UNLOCKED</span>
                   <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
                 </div>
+                ${clue.placementTip ? `
+                  <div class="clue-placement-banner">
+                    <span class="placement-badge mono">💡 POSTER PLACEMENT TIP</span>
+                    <p class="placement-text">${clue.placementTip}</p>
+                  </div>
+                ` : ''}
                 <div class="clue-body">
                   <div class="clue-copy-box">
                     <pre class="clue-pre mono"><code>${clue.content}</code></pre>
@@ -1297,6 +1347,12 @@ export const Screens = {
                   <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
                   <p class="clue-caption">${clue.caption || ''}</p>
                 </div>
+                ${clue.placementTip ? `
+                  <div class="clue-placement-banner">
+                    <span class="placement-badge mono">💡 POSTER PLACEMENT TIP</span>
+                    <p class="placement-text">${clue.placementTip}</p>
+                  </div>
+                ` : ''}
                 <div class="clue-body">
                   <div class="svg-preview-box" style="display:flex; justify-content:center; align-items:center; padding:12px; background:#0B0814; border-radius:6px;">
                     ${imgContent}
@@ -1634,8 +1690,14 @@ export const Screens = {
 
         if (clue.type === 'spec') {
           const specSummary = (clue.specs || []).map(s => `${s.label}: ${s.value}`).join(' | ');
-          clueBodyHtml = `<div class="vault-clue-spec-snippet"><code>${specSummary}</code></div>`;
-          const specExport = (clue.specs || []).map(s => `${s.label}: ${s.value}`).join('\n');
+          clueBodyHtml = `
+            ${clue.placementTip ? `<div class="vault-placement-tip"><span class="tip-pill mono">💡 PLACEMENT TIP</span> <span>${clue.placementTip}</span></div>` : ''}
+            <div class="vault-clue-spec-snippet"><code>${specSummary}</code></div>
+          `;
+          const specExport = [
+            clue.placementTip ? `Placement Tip: ${clue.placementTip}` : '',
+            ...(clue.specs || []).map(s => `${s.label}: ${s.value}`)
+          ].filter(Boolean).join('\n');
           allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Specifications) ---\n${specExport}`);
           actionBtnHtml = `
             <button type="button" class="btn btn-secondary btn-sm btn-vault-copy" data-text="${encodeURIComponent(specExport)}">
@@ -1643,26 +1705,49 @@ export const Screens = {
             </button>
           `;
         } else if (clue.type === 'text') {
-          clueBodyHtml = `<div class="vault-clue-text-snippet">${clue.content}</div>`;
-          allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Text) ---\n${clue.content}`);
+          clueBodyHtml = `
+            ${clue.placementTip ? `<div class="vault-placement-tip"><span class="tip-pill mono">💡 PLACEMENT TIP</span> <span>${clue.placementTip}</span></div>` : ''}
+            <div class="vault-clue-text-snippet">${clue.content}</div>
+          `;
+          const textExport = [
+            clue.placementTip ? `Placement Tip: ${clue.placementTip}` : '',
+            clue.content
+          ].filter(Boolean).join('\n\n');
+          allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Text) ---\n${textExport}`);
           actionBtnHtml = `
-            <button type="button" class="btn btn-secondary btn-sm btn-vault-copy" data-text="${encodeURIComponent(clue.content)}">
+            <button type="button" class="btn btn-secondary btn-sm btn-vault-copy" data-text="${encodeURIComponent(textExport)}">
               ${ICONS.copy} <span>Copy Text</span>
             </button>
           `;
         } else if (clue.type === 'image') {
           const isRaster = !!clue.imageUrl;
           if (isRaster) {
-            clueBodyHtml = `<div class="vault-clue-image-snippet" style="text-align:center; padding:8px; background:#0B0814; border-radius:4px;"><img src="${clue.imageUrl}" alt="${clue.title}" style="max-width:100%; max-height:120px; object-fit:contain; border-radius:4px;" /></div>`;
-            allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Image Asset) ---\n[Image File: ${clue.filename || clue.imageUrl}]`);
+            clueBodyHtml = `
+              ${clue.placementTip ? `<div class="vault-placement-tip"><span class="tip-pill mono">💡 PLACEMENT TIP</span> <span>${clue.placementTip}</span></div>` : ''}
+              <div class="vault-clue-image-snippet" style="text-align:center; padding:8px; background:#0B0814; border-radius:4px;"><img src="${clue.imageUrl}" alt="${clue.title}" style="max-width:100%; max-height:120px; object-fit:contain; border-radius:4px;" /></div>
+            `;
+            const imgExport = [
+              `[Image File: ${clue.filename || clue.imageUrl}]`,
+              clue.placementTip ? `Placement Tip: ${clue.placementTip}` : '',
+              clue.caption ? `Caption: ${clue.caption}` : ''
+            ].filter(Boolean).join('\n');
+            allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Image Asset) ---\n${imgExport}`);
             actionBtnHtml = `
               <a href="${clue.imageUrl}" download="${clue.filename || 'asset.png'}" class="btn btn-secondary btn-sm">
                 ${ICONS.download} <span>Download Image</span>
               </a>
             `;
           } else {
-            clueBodyHtml = `<div class="vault-clue-image-snippet">${clue.svgContent}</div>`;
-            allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Vector Asset) ---\n[Attached SVG: ${clue.filename}]`);
+            clueBodyHtml = `
+              ${clue.placementTip ? `<div class="vault-placement-tip"><span class="tip-pill mono">💡 PLACEMENT TIP</span> <span>${clue.placementTip}</span></div>` : ''}
+              <div class="vault-clue-image-snippet">${clue.svgContent}</div>
+            `;
+            const svgExport = [
+              `[Attached SVG: ${clue.filename}]`,
+              clue.placementTip ? `Placement Tip: ${clue.placementTip}` : '',
+              clue.caption ? `Caption: ${clue.caption}` : ''
+            ].filter(Boolean).join('\n');
+            allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Vector Asset) ---\n${svgExport}`);
             actionBtnHtml = `
               <button type="button" class="btn btn-secondary btn-sm btn-vault-download" data-svg="${encodeURIComponent(clue.svgContent)}" data-filename="${clue.filename}">
                 ${ICONS.download} <span>Download SVG</span>

@@ -113,6 +113,13 @@ class StateManager {
             activeSince: null,
             progress: {},
           };
+        } else {
+          if (parsed.blocks[id].unlockedClue && CONFIG.PUZZLES[id]) {
+            CONFIG.PUZZLES[id].clue = parsed.blocks[id].unlockedClue;
+          }
+          if (parsed.blocks[id].revealedHint && CONFIG.PUZZLES[id]) {
+            CONFIG.PUZZLES[id].hint = parsed.blocks[id].revealedHint;
+          }
         }
       }
       delete parsed.blocks['puzzle_11'];
@@ -294,7 +301,8 @@ class StateManager {
     }
     const hasToken = (typeof localStorage !== 'undefined' && !!localStorage.getItem('future_quest_token'));
     const hasTeam = !!(this.state && (this.state.teamName || this.state.teamId));
-    return hasTeam || hasToken;
+    const hasBlocks = !!(this.state && this.state.blocks && Object.keys(this.state.blocks).length > 0);
+    return hasTeam || hasToken || hasBlocks;
   }
 
   /**
@@ -479,6 +487,9 @@ class StateManager {
       const authoritativeLimit = res.puzzle?.timeLimit || this.getPuzzleTimeLimit(id);
       block.difficulty = res.puzzle?.difficulty || (authoritativeLimit <= 600 ? 'easy' : authoritativeLimit <= 900 ? 'medium' : 'hard');
       block.timeLimitSeconds = authoritativeLimit;
+      if (block.activeSince) {
+        block.timeSpentMs = (block.timeSpentMs || 0) + Math.max(0, getServerNow() - block.activeSince);
+      }
       block.timeRemainingSeconds = res.timeRemainingSeconds ?? this.getPuzzleRemainingSeconds(id);
       block.activeSince = res.status === 'OPENED' ? getServerNow() : null;
       block.unlockedClue = res.unlockedClue || null;
@@ -614,7 +625,15 @@ class StateManager {
 
       return false;
     } catch (err) {
-      console.error('Hint request error:', err);
+      console.warn('Hint request error on server, activating local fallback:', err);
+      if (this.state && (this.state.hintsRemaining ?? 3) > 0 && this.state.blocks?.[id] && !this.state.blocks[id].hintUsed) {
+        this.state.hintsRemaining = Math.max(0, (this.state.hintsRemaining ?? 3) - 1);
+        this.state.blocks[id].hintUsed = true;
+        const hintText = CONFIG.PUZZLES[id]?.hint || 'Scan the requirements and check clues carefully.';
+        this.state.blocks[id].revealedHint = hintText;
+        this.saveState();
+        return { success: true, hint: hintText, hintsRemaining: this.state.hintsRemaining };
+      }
       throw err;
     }
   }

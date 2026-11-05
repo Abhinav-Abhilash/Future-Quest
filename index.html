@@ -30,26 +30,41 @@
   <meta name="twitter:image" content="https://futurequest.jainsoft.co.in/assets/og-poster-1200x630.jpg">
 
   <!-- Core Dark Graphite Stylesheet (Game Screens & Design System) -->
-  <link rel="stylesheet" href="styles.css?v=2.2.4">
+  <link rel="stylesheet" href="styles.css?v=2.2.5">
 
   <!-- Interactive Puzzles Stylesheet -->
-  <link rel="stylesheet" href="puzzles.css?v=2.2.4">
+  <link rel="stylesheet" href="puzzles.css?v=2.2.5">
 
   <!-- Zero-Flash Session Guard & Conditional Landing CSS Injection -->
   <script>
     (function () {
       try {
         var raw = localStorage.getItem('future_quest_2026_state');
+        var hasActive = false;
         if (raw) {
           var state = JSON.parse(raw);
-          if (state && state.teamName && state.timerStartedAt) {
+          if (state && (state.teamName || state.teamId || (state.blocks && Object.keys(state.blocks).length > 0))) {
+            hasActive = true;
             document.documentElement.classList.add('has-active-session');
           }
         }
-        // Lazy-load landing.css immediately if landing route for zero-flash paint
         var hash = location.hash;
-        if (!hash || hash === '#/' || hash === '#/landing' || hash === '#/home') {
-          if (!document.documentElement.classList.contains('has-active-session')) {
+        if (hasActive && hash && hash !== '#/' && hash !== '#/landing' && hash !== '#/home') {
+          // Immediately hide landing if reloaded inside an active session route
+          var cleanUpLandingOnReady = function() {
+            if (document.body) document.body.classList.remove('is-landing');
+            var staticLp = document.getElementById('static-landing-view');
+            if (staticLp) staticLp.style.display = 'none';
+            var mainEl = document.getElementById('app-main');
+            if (mainEl) mainEl.style.display = 'block';
+          };
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', cleanUpLandingOnReady);
+          } else {
+            cleanUpLandingOnReady();
+          }
+        } else if (!hash || hash === '#/' || hash === '#/landing' || hash === '#/home') {
+          if (!hasActive) {
             var link = document.createElement('link');
             link.id = 'landing-css';
             link.rel = 'stylesheet';
@@ -417,7 +432,7 @@
   <div id="screen-edge-flash" class="screen-edge-flash" aria-hidden="true"></div>
 
   <!-- Application Bootstrap -->
-  <script type="module" src="js/app.js?v=2.2.4"></script>
+  <script type="module" src="js/app.js?v=2.2.5"></script>
 </body>
 
 </html>

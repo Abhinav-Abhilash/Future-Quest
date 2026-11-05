@@ -30,13 +30,14 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 1: Tagline Specification (Tomorrow start with the code)',
       type: 'spec',
+      placementTip: 'Place at Center, directly below FUTURE (Text size: 32)',
       specs: [
         { label: 'Fragment', value: 'Fragment 1' },
         { label: 'Tagline Text', value: 'Tomorrow start with the code you write today' },
         { label: 'Text Size', value: '32' },
+        { label: 'Placement Tip', value: 'Place at Center, directly below FUTURE' },
         { label: 'Font / Style', value: 'Arial / Italics' },
         { label: 'Color', value: 'White / Black (#000000)' },
-        { label: 'Position', value: 'Center, directly below FUTURE' },
       ],
     },
     // Sanitized client data - NO solutions
@@ -70,12 +71,13 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 2: Required Motto Specification (LEARN – BUILD – LEAD)',
       type: 'spec',
+      placementTip: 'Place at Center, directly below the description paragraph (Text size: 30)',
       specs: [
         { label: 'Fragment', value: 'Fragment 2' },
         { label: 'Motto Text', value: 'LEARN – BUILD – LEAD' },
         { label: 'Text Size', value: '30' },
+        { label: 'Placement Tip', value: 'Place at Center, directly below description paragraph' },
         { label: 'Color Rules', value: 'LEARN: Green, BUILD: Blue, LEAD: Red' },
-        { label: 'Position', value: 'Center, directly below description paragraph' },
       ],
     },
     clientData: {
@@ -112,13 +114,14 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 3: Centerpiece Title Specification (Code the future)',
       type: 'spec',
+      placementTip: 'Place CODE THE at Center (upper-middle), and FUTURE directly below CODE THE (Text size: 69)',
       specs: [
         { label: 'Fragment', value: 'Fragment 3' },
         { label: 'Title to Add', value: 'Code the future' },
         { label: 'Text Size', value: '69' },
+        { label: 'Placement Tip', value: 'Place CODE THE at Center (upper-middle), and FUTURE directly below CODE THE' },
         { label: 'Font', value: 'Arial Black (Bold display)' },
         { label: 'Color', value: 'Yellow (#FACC15)' },
-        { label: 'Position', value: 'Center, upper-middle, below FUTURE QUEST 2026' },
       ],
     },
     clientData: {
@@ -173,7 +176,8 @@ export const PUZZLES = {
       type: 'image',
       imageUrl: 'assets/cinnamon_bun_android.png',
       filename: 'cinnamon_bun_android.png',
-      caption: 'Graphic Asset: Android (Cinnamon Bun Edition) - Position: Upper-left, below title',
+      placementTip: 'Place at Upper-left, below title (opposite Red sports car)',
+      caption: 'Graphic Asset: Android (Cinnamon Bun Edition) - Placement Tip: Place at Upper-left, below title',
     },
     clientData: {
       id: 'puzzle_4',
@@ -207,7 +211,8 @@ export const PUZZLES = {
       type: 'image',
       imageUrl: 'assets/human_meets_ai.png',
       filename: 'human_meets_ai.png',
-      caption: 'Centerpiece Graphic Asset: Robotic Hand & Human Hand Touching - Position: Center, middle-left & middle-right',
+      placementTip: 'Place Robotic hand at Middle-left entering from left edge, and Human hand at Middle-right entering from right edge',
+      caption: 'Centerpiece Graphic Asset: Robotic Hand & Human Hand Touching - Placement Tip: Robotic hand at Middle-left, Human hand at Middle-right',
     },
     clientData: {
       id: 'puzzle_5',
@@ -235,14 +240,17 @@ export const PUZZLES = {
     hint: 'Observe the distinct visual cues in the image: the serene figure in meditation at center (4 letters), the radiant open book of knowledge (10 letters), the academy of learning (6 letters), the connecting link (2 letters), the realm of tomorrow (6 letters), and the neural cybernetics with robotic arm (10 letters).',
     clue: {
       title: 'Clue Fragment 6: Institution Header & Logo Specification',
-      type: 'spec',
+      type: 'image',
+      imageUrl: 'assets/jain_logo.png',
+      filename: 'JAIN School of Future Logo.png',
+      placementTip: 'Place JGI + JAIN logo at Top-left, JAIN UNIVERSITY text at Top-left right of logo, and SCHOOL OF FUTURE TECHNOLOGY directly below university name (Text size: 22)',
+      caption: 'Institution Header & Logo: JAIN UNIVERSITY. / SCHOOL OF FUTURE TECHNOLOGY (Text size: 22) - Placement Tip: JGI + JAIN logo at Top-left, JAIN UNIVERSITY at Top-left right of logo, SCHOOL OF FUTURE TECHNOLOGY directly below',
       specs: [
         { label: 'Fragment', value: 'Fragment 6' },
         { label: 'Institution Name', value: 'JAIN UNIVERSITY. / SCHOOL OF FUTURE TECHNOLOGY' },
         { label: 'Text Size', value: '22' },
-        { label: 'Logo Graphic Asset', value: 'JGi JAIN (Deemed-to-be University) Kochi Logo (assets/jain_logo.png)' },
-        { label: 'Font / Weight', value: 'Helvetica / Arial Bold, uppercase' },
-        { label: 'Position', value: 'Top-left corner of canvas, right of logo' },
+        { label: 'Placement Tip', value: 'Place JGI + JAIN logo at Top-left, JAIN UNIVERSITY at Top-left right of logo, SCHOOL OF FUTURE TECHNOLOGY directly below' },
+        { label: 'Logo Asset', value: 'JAIN School of Future Logo.png' },
       ],
     },
     clientData: {
@@ -288,10 +296,12 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 7: Main Technology Paragraph Specification',
       type: 'spec',
+      placementTip: 'Place at Lower-middle, center-aligned (Text size: 40, using the 20 technology keywords)',
       specs: [
         { label: 'Fragment', value: 'Fragment 7' },
         { label: 'Element', value: 'Main Technology Description Paragraph' },
         { label: 'Text Size', value: '40' },
+        { label: 'Placement Tip', value: 'Place at Lower-middle, center-aligned' },
         { label: 'Required Word Bank', value: 'AROUND, ARTIFICIAL, CENTERED, COMPUTING, DAILY, DATA, EDGE, FUTURE, INNOVATIONS, INTEGRATION, LIFE, QUANTUM, RAPID, REALITY, RESHAPE, ROBOTICS, SCIENCE, SUSTAINABLE, TECHNOLOGY, VIRTUAL' },
         { label: 'Font / Style', value: 'Calibri / Italics' },
         { label: 'Position', value: 'Lower-middle, center-aligned' },
@@ -354,7 +364,8 @@ export const PUZZLES = {
       type: 'image',
       imageUrl: 'assets/tesla_roadster.png',
       filename: 'tesla_roadster.png',
-      caption: 'Graphic Asset: Tesla Roadster (Red Sports Car) - Position: Upper-right, opposite Android logo',
+      placementTip: 'Place Red sports car at Upper-right, opposite Android logo',
+      caption: 'Graphic Asset: Tesla Roadster (Red Sports Car) - Placement Tip: Place at Upper-right, opposite Android logo',
     },
     clientData: {
       id: 'puzzle_8',
@@ -385,7 +396,8 @@ export const PUZZLES = {
       type: 'image',
       imageUrl: 'assets/poster_background_palette.png',
       filename: 'poster_background_palette.png',
-      caption: 'Canvas Asset: Dark Blue to Light Steel Blue Gradient with Concentric Circular Alignment Lines',
+      placementTip: 'Use as the full poster canvas background (Dark Blue to Light Steel Blue gradient with concentric guide circles)',
+      caption: 'Canvas Asset: Dark Blue to Light Steel Blue Gradient with Concentric Circular Alignment Lines - Placement Tip: Full poster canvas background',
     },
     clientData: {
       id: 'puzzle_9',
@@ -432,10 +444,12 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 10: Event Title Specification (FUTURE QUEST 2026)',
       type: 'spec',
+      placementTip: 'Place at Top-center (Text size: 75, aligned with concentric guide circles)',
       specs: [
         { label: 'Fragment', value: 'Fragment 10' },
         { label: 'Event Title', value: 'FUTURE QUEST 2026' },
         { label: 'Text Size', value: '75' },
+        { label: 'Placement Tip', value: 'Place at Top-center (aligned with concentric guide circles)' },
         { label: 'Font', value: 'Space Grotesk / Arial Black (Bold uppercase)' },
         { label: 'Position', value: 'Top-center of canvas' },
         { label: 'Concentric Guides', value: 'Concentric alignment guide circles centered at (50%, 48%)' },

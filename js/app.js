@@ -628,8 +628,14 @@ class App {
   }
 }
 
-// Bootstrap application on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
+// Bootstrap application on DOM ready (resilient to deferred module execution & page reload)
+function bootstrapApp() {
   const app = new App();
   app.init();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootstrapApp);
+} else {
+  bootstrapApp();
+}

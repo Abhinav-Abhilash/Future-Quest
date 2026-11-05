@@ -51,13 +51,21 @@ export class Router {
    * Navigate programmatically to a new hash route.
    */
   navigate(path) {
-    window.location.hash = path.startsWith('#') ? path : `#/${path.replace(/^\//, '')}`;
+    const targetHash = path.startsWith('#') ? path : `#/${path.replace(/^\//, '')}`;
+    if (window.location.hash === targetHash) {
+      this.handleHashChange();
+    } else {
+      window.location.hash = targetHash;
+    }
   }
 
   /**
    * Main route resolver and guard logic.
    */
   handleHashChange() {
+    if (!GameState.state) {
+      GameState.state = GameState.loadState();
+    }
     const parsed = this.parseHash();
     const hasSession = GameState.hasSession();
     const state = GameState.state;

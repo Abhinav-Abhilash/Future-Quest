@@ -86,13 +86,16 @@ router.post('/puzzle/:id/open', requireAuth, async (req, res) => {
 
     if (!isSolved) {
       const timeLimitMs = puz.timeLimit * 1000;
-      const currentSpentMs = block.timeSpentMs || 0;
+      let currentSpentMs = block.timeSpentMs || 0;
+      if (block.activeSince) {
+        currentSpentMs += Math.max(0, now - block.activeSince);
+      }
 
-      // Check if already timed out while paused
+      // Check if already timed out while paused or active
       if (currentSpentMs >= timeLimitMs) {
         await blocks.updateOne(
           { _id: block._id },
-          { $set: { status: 'FAILED', activeSince: null, updatedAt: now } }
+          { $set: { status: 'FAILED', timeSpentMs: currentSpentMs, activeSince: null, updatedAt: now } }
         );
         return res.status(400).json({
           error: 'Puzzle time limit has expired. Marked as FAILED.',
@@ -106,6 +109,7 @@ router.post('/puzzle/:id/open', requireAuth, async (req, res) => {
         {
           $set: {
             status: 'OPENED',
+            timeSpentMs: currentSpentMs,
             activeSince: now,
             updatedAt: now,
           },
