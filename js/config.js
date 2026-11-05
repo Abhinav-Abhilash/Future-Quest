@@ -329,10 +329,12 @@ export const CONFIG = {
         categoryTag: "POSTER PALETTE SPECIFICATION",
         formatBadge: "6 WORDS (4 + 4 + 3 + 5 + 5 + 4 LETTERS)",
         riddleLines: [
-          "We are born of the exact same race.",
-          "One of us is full of dark humor with a solid character.",
-          "The other has a very light mind, but a heart as hard as steel.",
-          "What two colors are we?"
+          "The pitch black shade of night - COLOR 1 (PART 1)",
+          "Color of the deep ocean - COLOR 1 (PART 2)",
+          "CONJUNCTION",
+          "Pale, has lot of illumination - COLOR 2 (PART 1)",
+          "Super tough iron alloy - COLOR 2 (PART 2)",
+          "The base hue again - COLOR 2 (PART 3)"
         ],
         words: [
           { name: "Word 1", length: 4 },
