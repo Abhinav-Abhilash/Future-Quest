@@ -11,7 +11,7 @@
  * 5. Wrong Answer x 3 -> Permanent failure
  * 6. Puzzle 2 Open & Hint deduction
  * 7. Correct answer -> Solved & clue unsealed
- * 8. Bonus puzzle (Apple Eats Snake) excluded from totals
+ * 8. Contest totals verify 10 quest puzzles
  * 9. Client Reload simulation -> Server sync restores full state
  * 10. Vault Entry -> Timer locked & HMAC verification hash generated
  * 11. Poster Submission -> Idempotent recording
@@ -76,7 +76,7 @@ async function runE2ETest() {
     assert('Registration succeeds and returns state', !!regRes && regRes.teamName === testTeam);
     assert('Server set timerStartedAt timestamp', typeof regRes.timerStartedAt === 'number' && regRes.timerStartedAt > 0);
     assert('Initial hintsRemaining is 3', regRes.hintsRemaining === 3);
-    assert('Grid order has 12 tiles', regRes.gridOrder && regRes.gridOrder.length === 12);
+    assert('Grid order has 11 tiles (10 tasks + vault)', regRes.gridOrder && regRes.gridOrder.length === 11);
 
     // --- TEST 2: Duplicate Registration Rejection ---
     console.log('\n--- 2. Testing Duplicate Name Rejection ---');
@@ -140,13 +140,10 @@ async function runE2ETest() {
     assert('Clue unlocked and sealed object returned', !!correctRes.clue && typeof correctRes.clue.title === 'string');
     assert('puzzle_2 marked SOLVED', GameState.state.blocks.puzzle_2.status === 'SOLVED');
 
-    // --- TEST 8: Bonus Puzzle Exclusions ---
-    console.log('\n--- 8. Testing Apple Eats Snake Bonus Mini-Game ---');
-    await GameState.openPuzzle('puzzle_11');
-    assert('puzzle_11 bonus timer is 0', GameState.getPuzzleRemainingSeconds('puzzle_11') === 0);
-    assert('puzzle_11 hint returns false', (await GameState.useHint('puzzle_11')) === false);
+    // --- TEST 8: Contest Totals ---
+    console.log('\n--- 8. Testing Contest Totals ---');
     const summary = GameState.getSummary();
-    assert('Contest total is 10 (excludes bonus)', summary.total === 10);
+    assert('Contest total is 10', summary.total === 10);
     assert('Contest solved is 1 of 10', summary.solved === 1);
 
     // --- TEST 9: Reload / Server Sync State Restoration ---

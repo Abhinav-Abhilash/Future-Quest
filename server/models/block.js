@@ -28,7 +28,7 @@ export const BlockUpdateSchema = z.object({
 });
 
 /**
- * Initialize all 11 puzzle blocks for a newly registered team
+ * Initialize all 10 puzzle blocks for a newly registered team
  * @param {string|ObjectId} teamId
  * @param {string[]} [puzzleIds]
  */
@@ -47,7 +47,6 @@ export async function initBlocksForTeam(teamId, puzzleIds) {
     'puzzle_8',
     'puzzle_9',
     'puzzle_10',
-    'puzzle_11',
   ];
 
   const now = Date.now();

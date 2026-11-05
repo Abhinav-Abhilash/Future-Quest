@@ -43,7 +43,7 @@ router.post('/vault/enter', requireAuth, async (req, res) => {
       { $set: { activeSince: null, updatedAt: now } }
     );
 
-    // 3. Collect blocks and compute solved tally (excluding bonus puzzle_11)
+    // 3. Collect blocks and compute solved tally
     const allBlocks = await blocks.find({ teamId: team._id }).toArray();
     const solvedQuestBlocks = [];
     const failedQuestBlocks = [];

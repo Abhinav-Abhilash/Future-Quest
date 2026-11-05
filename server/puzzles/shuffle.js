@@ -22,10 +22,9 @@ export function createPRNG(seed) {
 
 /**
  * Deterministically shuffle an array of puzzle IDs using Fisher-Yates and the team's seed.
- * Puzzle 11 (bonus) remains at index 10 (tile 11).
  *
  * @param {number} seed
- * @returns {string[]} Ordered array of 11 puzzle IDs
+ * @returns {string[]} Ordered array of 10 puzzle IDs
  */
 export function getTeamPuzzleOrder(seed) {
   const prng = createPRNG(seed);
@@ -50,7 +49,6 @@ export function getTeamPuzzleOrder(seed) {
     questPuzzles[j] = temp;
   }
 
-  // Puzzle 11 is always the 11th tile (bonus arcade)
-  return [...questPuzzles, 'puzzle_11'];
+  return questPuzzles;
 }
 

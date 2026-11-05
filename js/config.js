@@ -266,26 +266,13 @@ export const CONFIG = {
         id: "puzzle_10",
         groups: ["Word 1", "Word 2"]
       }
-    },
-    puzzle_11: {
-      id: "puzzle_11",
-      type: "snake",
-      title: "Apple Eats Snake",
-      category: "Bonus Arcade",
-      bonus: true,
-      whatToDo: "Guide the apple to eat the whole snake. Mind its head!",
-      prompt: "Guide the apple to eat the whole snake. Mind its head!",
-      data: {
-        id: "puzzle_11",
-        gridSize: 15
-      }
     }
   }
 };
 
 /**
- * Returns the human-readable tile label for a given grid index (0 to 10).
- * All 11 puzzle tiles use "Task N" (where N is 1 to 11).
+ * Returns the human-readable tile label for a given grid index (0 to 9).
+ * All 10 puzzle tiles use "Task N" (where N is 1 to 10).
  */
 export function getTileLabel(tileIndex) {
   return `Task ${tileIndex + 1}`;

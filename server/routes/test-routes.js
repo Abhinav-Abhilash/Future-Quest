@@ -12,10 +12,9 @@
  * 7. Use hint -> deducts 1 of 3 hints
  * 8. Re-request hint -> free return without extra deduction
  * 9. Correct answer -> SOLVED, clue unlocked
- * 10. Open puzzle_11 -> bonus arcade verified
- * 11. Enter vault -> freezes timer, HMAC verification hash generated
- * 12. Submit poster -> idempotent submission
- * 13. Dev reset -> cleans up team data
+ * 10. Enter vault -> freezes timer, HMAC verification hash generated
+ * 11. Submit poster -> idempotent submission
+ * 12. Dev reset -> cleans up team data
  */
 
 import { startServer } from '../index.js';
@@ -198,16 +197,8 @@ async function runRouteTests() {
     console.log(`[PASS] puzzle_2 solved! Status: ${correctRes.data.status}`);
     console.log(`       Unlocked Clue: "${correctRes.data.clue?.title}"\n`);
 
-    // Step 10: POST /api/puzzle/puzzle_11/open (Bonus Arcade)
-    console.log('[STEP 10] Testing bonus arcade puzzle_11...');
-    const bonusRes = await api('/puzzle/puzzle_11/open', { method: 'POST' });
-    if (!bonusRes.data?.puzzle?.bonus) {
-      throw new Error('puzzle_11 is not marked as bonus.');
-    }
-    console.log(`[PASS] puzzle_11 verified as bonus (no timer limit: ${bonusRes.data.timeRemainingSeconds === null})\n`);
-
-    // Step 11: POST /api/vault/enter
-    console.log('[STEP 11] Testing POST /api/vault/enter (Freeze timers & HMAC hash)...');
+    // Step 10: POST /api/vault/enter
+    console.log('[STEP 10] Testing POST /api/vault/enter (Freeze timers & HMAC hash)...');
     const vaultRes = await api('/vault/enter', { method: 'POST' });
     if (!vaultRes.ok || !vaultRes.data?.verificationHash) {
       throw new Error(`Vault enter error: ${JSON.stringify(vaultRes.data)}`);
@@ -218,8 +209,8 @@ async function runRouteTests() {
     console.log(`       Verification HMAC: ${vaultRes.data.verificationHash}`);
     console.log(`       Total Clues Unlocked: ${vaultRes.data.clues.length}\n`);
 
-    // Step 12: POST /api/submit (Idempotent final submission)
-    console.log('[STEP 12] Testing POST /api/submit...');
+    // Step 11: POST /api/submit (Idempotent final submission)
+    console.log('[STEP 11] Testing POST /api/submit...');
     const subRes1 = await api('/submit', {
       method: 'POST',
       body: JSON.stringify({
@@ -247,8 +238,8 @@ async function runRouteTests() {
     }
     console.log(`[PASS] Submission 2 idempotent confirmation: "alreadySubmitted: true"\n`);
 
-    // Step 13: POST /api/dev/reset
-    console.log('[STEP 13] Testing POST /api/dev/reset (Cleanup)...');
+    // Step 12: POST /api/dev/reset
+    console.log('[STEP 12] Testing POST /api/dev/reset (Cleanup)...');
     const resetRes = await api('/dev/reset', {
       method: 'POST',
       headers: {

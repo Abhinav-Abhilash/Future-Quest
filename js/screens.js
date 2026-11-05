@@ -489,15 +489,15 @@ export const Screens = {
       const staggerClass = isFirstLoad ? 'tile-deal-in' : '';
       const staggerDelay = isFirstLoad ? `style="animation-delay: ${index * 40}ms;"` : '';
 
-      if (itemId === 'vault_12' || index === 11) {
-        // Tile 12: Red Submit Button (static until ready, then ONE gentle pulse)
+      if (itemId === 'vault_12' || index === 10 || index === 11) {
+        // Submit Button (static until ready, then ONE gentle pulse)
         tilesHtml += `
           <button 
             type="button" 
             class="tile-card tile-style-submit ${submitPulseClass} ${staggerClass}"
             id="tile-vault-btn"
             ${staggerDelay}
-            aria-label="Tile 12: Submit (Opens Vault Confirmation)"
+            aria-label="Submit: Opens Vault Confirmation"
           >
             <div class="tile-submit-content">
               <span class="submit-icon">${ICONS.lock}</span>
@@ -506,7 +506,7 @@ export const Screens = {
           </button>
         `;
       } else {
-        // Tiles 1..11
+        // Tiles 1..10
         const isBonus = !!(CONFIG.PUZZLES[itemId]?.bonus);
         const block = state.blocks[itemId] || { status: 'UNOPENED' };
         const status = block.status; // UNOPENED, OPENED_IN_PROGRESS, SOLVED, FAILED
@@ -1836,7 +1836,7 @@ export const Screens = {
           </div>
           <div class="quick-fact-item">
             <span class="quick-fact-label">Puzzles</span>
-            <span class="quick-fact-val mono">11 Tasks + Vault</span>
+            <span class="quick-fact-val mono">10 Tasks + Vault</span>
           </div>
           <div class="quick-fact-item">
             <span class="quick-fact-label">Hint Allocation</span>
@@ -1907,10 +1907,7 @@ export const Screens = {
             <details class="rules-accordion" id="rule-4" open>
               <summary>4. Puzzle Grid & Attempt Policy</summary>
               <p class="rule-text">
-                Tiles 1 through 11 are randomized in order at contest initialization. All 11 puzzle tiles are unlocked from the start and can be attempted in any order. Each puzzle permits a maximum of <strong>3 attempts</strong>. Entering 3 incorrect answers permanently marks the puzzle as <strong>FAILED</strong>.
-              </p>
-              <p class="rule-text">
-                One tile is a bonus mini-game. It has no clue and does not affect your score.
+                Tiles 1 through 10 are randomized in order at contest initialization. All 10 puzzle tiles are unlocked from the start and can be attempted in any order. Each puzzle permits a maximum of <strong>3 attempts</strong>. Entering 3 incorrect answers permanently marks the puzzle as <strong>FAILED</strong>.
               </p>
               <p class="rule-text">
                 Some puzzles involve reading code or using your browser's developer tools. Everything you need is on the page or in your browser.
@@ -1920,14 +1917,14 @@ export const Screens = {
             <details class="rules-accordion" id="rule-5" open>
               <summary>5. Hint Allocation</summary>
               <p class="rule-text">
-                Each team is allocated exactly <strong>3 hints total</strong> for the entire 2-hour competition (shared across all 11 puzzles). Spending a hint permanently reveals a clue for that puzzle. Hints are non-refundable and cannot be re-assigned.
+                Each team is allocated exactly <strong>3 hints total</strong> for the entire 2-hour competition (shared across all 10 puzzles). Spending a hint permanently reveals a clue for that puzzle. Hints are non-refundable and cannot be re-assigned.
               </p>
             </details>
 
             <details class="rules-accordion" id="rule-6" open>
-              <summary>6. Tile 12 & The Submission Vault Warning</summary>
+              <summary>6. The Submission Vault Warning</summary>
               <p class="rule-text">
-                Tile 12 is the Submission Vault. Once you confirm entry into the Submission Vault, your master timer stops and all puzzle tiles become read-only. Unsolved puzzles remain unsolved and no further answers can be submitted. You will proceed to collect your unlocked poster assets and your cryptographic verification hash.
+                The final tile is the Submission Vault. Once you confirm entry into the Submission Vault, your master timer stops and all puzzle tiles become read-only. Unsolved puzzles remain unsolved and no further answers can be submitted. You will proceed to collect your unlocked poster assets and your cryptographic verification hash.
               </p>
             </details>
 

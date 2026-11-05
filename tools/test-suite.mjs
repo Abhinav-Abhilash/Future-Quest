@@ -32,8 +32,8 @@ assert('PUZZLE_ART has 6 keys', ART_KEYS.length === 6);
   assert(`PUZZLE_ART contains ${key}`, typeof PUZZLE_ART[key] === 'string' && PUZZLE_ART[key].includes('<svg'));
 });
 
-// 3. Client Puzzle Configurations Verification (Puzzles 1..11) - Client is fully sanitized
-for (let i = 1; i <= 11; i++) {
+// 3. Client Puzzle Configurations Verification (Puzzles 1..10) - Client is fully sanitized
+for (let i = 1; i <= 10; i++) {
   const pid = `puzzle_${i}`;
   const p = CONFIG.PUZZLES[pid];
   const sp = SERVER_PUZZLES[pid];
@@ -44,15 +44,9 @@ for (let i = 1; i <= 11; i++) {
 
   // Server definitions check
   assert(`${pid} exists in server definitions`, !!sp);
-  if (sp.bonus) {
-    assert(`${pid} server bonus is true`, sp.bonus === true);
-    assert(`${pid} server has no hint`, !sp.hint);
-    assert(`${pid} server has no clue`, !sp.clue);
-  } else {
-    assert(`${pid} server has hint`, typeof sp.hint === 'string' && sp.hint.length > 0);
-    assert(`${pid} server has clue`, typeof sp.clue === 'object' && !!sp.clue.title);
-    assert(`${pid} server difficulty is mapped`, ['easy', 'medium', 'hard'].includes(sp.difficulty));
-  }
+  assert(`${pid} server has hint`, typeof sp.hint === 'string' && sp.hint.length > 0);
+  assert(`${pid} server has clue`, typeof sp.clue === 'object' && !!sp.clue.title);
+  assert(`${pid} server difficulty is mapped`, ['easy', 'medium', 'hard'].includes(sp.difficulty));
 }
 
 console.log('=============================================');

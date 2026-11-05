@@ -473,25 +473,6 @@ export const PUZZLES = {
     },
     acceptedAnswers: ['FUTURE QUEST'],
   },
-
-  puzzle_11: {
-    id: 'puzzle_11',
-    type: 'snake',
-    title: 'Apple Eats Snake',
-    category: 'Bonus Arcade',
-    difficulty: null,
-    timeLimit: null,
-    bonus: true,
-    whatToDo: "Guide the apple to eat the whole snake. Mind its head!",
-    prompt: "Guide the apple to eat the whole snake. Mind its head!",
-    hint: null,
-    clue: null,
-    clientData: {
-      id: 'puzzle_11',
-      gridSize: 15,
-    },
-    acceptedAnswers: [],
-  },
 };
 
 /**
