@@ -128,7 +128,7 @@ export function mount(root, data, ctx) {
       return `
         <div class="bodmas-group-panel ${isGrpSolved ? 'group-locked' : ''}" id="bodmas-group-${gIdx}">
           <div class="bodmas-panel-header">
-            <span class="bodmas-panel-title mono">Word ${gIdx + 1}: ${group.name}</span>
+            <span class="bodmas-panel-title mono">Word ${gIdx + 1} (${group.equations.length} letters)</span>
             ${!isGrpSolved && !isLocked ? `
               <button type="button" class="btn-group-clear keycap-btn" data-group="${gIdx}">Clear</button>
             ` : ''}

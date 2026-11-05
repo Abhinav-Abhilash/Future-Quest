@@ -155,6 +155,28 @@ class App {
       GameState.syncWithServer().catch(() => {});
     });
 
+    // Anti-cheat: prevent copying and dragging puzzle challenge content
+    document.addEventListener('copy', (e) => {
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+        return; // Allow copying player's own input
+      }
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed) return;
+      const anchor = selection.anchorNode;
+      const el = anchor?.nodeType === Node.ELEMENT_NODE ? anchor : anchor?.parentElement;
+      if (el && el.closest && el.closest('.puzzle-screen, .puzzle-interactive-container, .bodmas-group-panel, .calc-expr-box, .coord-word-group, .ascii-word-group, .riddle-card')) {
+        e.preventDefault();
+      }
+    });
+
+    document.addEventListener('dragstart', (e) => {
+      const target = e.target;
+      if (target && target.closest && target.closest('.calc-expr-box, .bodmas-calc-card, .coord-chip, .ascii-physical-card, .riddle-card')) {
+        e.preventDefault();
+      }
+    });
+
     // DEV-ONLY: Initialize fixed dev reset bar across all screens
     this.initDevResetBar();
   }

@@ -160,7 +160,7 @@ export function mount(root, data, ctx) {
         <div class="coord-word-group ${isGrpSolved ? 'group-solved' : ''}" id="coord-group-${gIdx}">
           <div class="coord-group-header">
             <div class="coord-group-title">
-              <span class="coord-group-name">Word ${gIdx + 1}: ${grp.name}</span>
+              <span class="coord-group-name">Word ${gIdx + 1} (${grp.coords.length} letters)</span>
               <span class="coord-group-status mono">${isGrpSolved ? 'SOLVED' : `${grp.coords.length} letters`}</span>
             </div>
             ${!isGrpSolved && !isLocked ? `

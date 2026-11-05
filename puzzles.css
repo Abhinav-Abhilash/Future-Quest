@@ -1656,6 +1656,8 @@
   border: 1px solid #3D3063;
   border-radius: 6px;
   margin-bottom: 10px;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .bodmas-group-panel.group-locked {
@@ -1668,12 +1670,16 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .bodmas-panel-title {
   font-size: 12px;
   font-weight: 700;
   color: #FFFFFF;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .bodmas-calc-card,
@@ -1686,6 +1692,8 @@
   background: #120D20;
   border: 1px solid #2D234A;
   border-radius: 6px;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .calc-slot-badge {
@@ -1695,6 +1703,8 @@
   color: #FFC928;
   border: 1px solid #3D3063;
   border-radius: 3px;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .calc-expr-box,
@@ -1710,6 +1720,17 @@
   border-radius: 4px;
   letter-spacing: 0.04em;
   box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.7);
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+.calc-expr-box::selection,
+.bodmas-expr-display::selection,
+.bodmas-group-panel::selection,
+.bodmas-calc-card::selection {
+  background: transparent !important;
+  color: inherit !important;
 }
 
 .calc-input-row {
@@ -3540,6 +3561,61 @@ body.lite-mode .cell-correct-pop {
 .snake-start-banner.hidden {
   opacity: 0;
   visibility: hidden;
+}
+
+/* ==========================================================================
+   ANTI-CHEAT: Prevent text selection and copying of puzzle challenge content
+   ========================================================================== */
+.puzzle-screen,
+.puzzle-interactive-container,
+.puzzle-interactive-stage,
+.bodmas-calc-grid,
+.bodmas-calc-card,
+.calc-expr-box,
+.bodmas-expr-display,
+.bodmas-group-panel,
+.bodmas-panel-header,
+.bodmas-panel-title,
+.coord-word-group,
+.coord-group-header,
+.coord-chips-row,
+.coord-chip,
+.ascii-word-group,
+.ascii-physical-card,
+.card-mono-code,
+.riddle-card,
+.riddle-prompt,
+.wordsearch-container,
+.wordsearch-grid {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Allow text selection only within player editable input fields */
+.puzzle-screen input:not([disabled]),
+.puzzle-screen textarea:not([disabled]) {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* Disallow visual drag-selection highlight across all puzzle challenge contents */
+.puzzle-screen ::selection,
+.puzzle-interactive-container ::selection,
+.puzzle-interactive-stage ::selection,
+.bodmas-calc-grid ::selection,
+.calc-expr-box ::selection,
+.bodmas-expr-display ::selection,
+.bodmas-group-panel ::selection,
+.coord-word-group ::selection,
+.ascii-word-group ::selection,
+.riddle-card ::selection,
+.wordsearch-grid ::selection {
+  background: transparent !important;
+  color: inherit !important;
 }
 
 
