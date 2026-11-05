@@ -2216,43 +2216,6 @@ input, select, textarea {
   max-height: 80px;
 }
 
-/* Verification Hash Box */
-.hash-box-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3) var(--space-4);
-  gap: var(--space-3);
-  flex-wrap: wrap;
-}
-
-.hash-display {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.hash-label {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.hash-code {
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-subtle);
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  color: var(--accent);
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.5px;
-}
-
 /* Submission CTA Card */
 .cta-card {
   background-color: var(--bg-surface);

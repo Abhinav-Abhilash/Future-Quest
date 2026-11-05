@@ -1,7 +1,7 @@
 /**
  * Future Quest 2026 - Game State Management (Backend API Integrated)
  *
- * All state transitions, timers, validations, clues, and verification hashes
+ * All state transitions, timers, validations, and clues
  * are strictly sourced from the Node.js + Express + MongoDB Atlas backend.
  * localStorage acts purely as an ephemeral client cache to prevent UI flash on load.
  */
@@ -449,7 +449,7 @@ class StateManager {
 
   /**
    * Enter the submission vault.
-   * Calls POST /api/vault/enter to freeze timers & generate HMAC verification hash.
+   * Calls POST /api/vault/enter to freeze timers and finalize contest state.
    */
   async enterVault() {
     if (!this.state) return null;
@@ -494,7 +494,7 @@ class StateManager {
     const totalQuestPuzzles = questPuzzleIds.length;
 
     if (!this.state) {
-      return { solved: 0, total: totalQuestPuzzles, hintsUsed: 0, timeTakenFormatted: '00:00:00', verificationHash: '' };
+      return { solved: 0, total: totalQuestPuzzles, hintsUsed: 0, timeTakenFormatted: '00:00:00' };
     }
 
     let solvedCount = 0;
@@ -519,7 +519,6 @@ class StateManager {
       hintsUsed,
       timeTakenFormatted: `${hrs}:${mins}:${secs}`,
       elapsedSec,
-      verificationHash: this.state.verificationHash || '',
     };
   }
 

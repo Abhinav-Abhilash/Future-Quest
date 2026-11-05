@@ -1616,7 +1616,7 @@ export const Screens = {
           </div>
         ` : ''}
 
-        <!-- 4-STEP VAULT WORKFLOW -->
+        <!-- 3-STEP VAULT WORKFLOW -->
 
         <!-- STEP 1: Performance Summary -->
         <div class="vault-step-card" role="region" aria-label="Step 1: Contest Performance Summary">
@@ -1686,6 +1686,21 @@ export const Screens = {
             </label>
           </div>
 
+          <!-- Team Details for External Submission -->
+          <div class="vault-team-id-card" style="margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4); background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--radius-sm);">
+            <div style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 6px;">Team Details for External Submission</div>
+            <div style="display: flex; gap: var(--space-5); flex-wrap: wrap;">
+              <div>
+                <span style="font-size: 12px; color: var(--text-muted);">Team Name:</span>
+                <strong class="mono" style="color: var(--text-bright); margin-left: 6px;">${state.teamName}</strong>
+              </div>
+              <div>
+                <span style="font-size: 12px; color: var(--text-muted);">School:</span>
+                <strong class="mono" style="color: var(--text-bright); margin-left: 6px;">${state.schoolName}</strong>
+              </div>
+            </div>
+          </div>
+
           <div class="cta-card">
             <div class="cta-reminder">
               <span class="reminder-icon">${ICONS.check}</span>
@@ -1702,7 +1717,7 @@ export const Screens = {
                 id="btn-vault-final-submit"
                 style="pointer-events: none; opacity: 0.5;"
               >
-                Submit Your Final Entry &rarr;
+                Submit Your Poster &rarr;
               </a>
             </div>
             <p class="cta-note">Check both items above to enable the submission button. The form opens in a secure new tab.</p>
@@ -1877,7 +1892,7 @@ export const Screens = {
             <details class="rules-accordion" id="rule-6" open>
               <summary>6. The Submission Vault Warning</summary>
               <p class="rule-text">
-                The final tile is the Submission Vault. Once you confirm entry into the Submission Vault, your master timer stops and all puzzle tiles become read-only. Unsolved puzzles remain unsolved and no further answers can be submitted. You will proceed to collect your unlocked poster assets and your cryptographic verification hash.
+                The final tile is the Submission Vault. Once you confirm entry into the Submission Vault, your master timer stops and all puzzle tiles become read-only. Unsolved puzzles remain unsolved and no further answers can be submitted. You will proceed to collect your unlocked poster assets and submit your final entry.
               </p>
             </details>
 

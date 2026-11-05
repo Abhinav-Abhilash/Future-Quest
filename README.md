@@ -92,5 +92,5 @@ npx http-server -p 8000
 1. **Master Countdown:** 2 hours (7,200 seconds) continuous timer stored against `timerStartedAt`. Automatically terminates puzzle access and enters the vault at 0 seconds.
 2. **Mystery Difficulty:** Puzzles carry independent limits (Easy 10m, Medium 15m, Hard 20m) with distribution (2 easy, 5 medium, 4 hard). Difficulty and time limits are never revealed or hinted at on the grid or nav before opening.
 3. **Attempts & Hints:** Maximum 3 attempts per puzzle (3 incorrect attempts permanently fail the puzzle). Shared allocation of 3 hints total for the team.
-4. **Submission Vault (`#/vault`):** Freezes timer, locks tiles into read-only mode, displays clue inventory, and outputs client verification hash.
+4. **Submission Vault (`#/vault`):** Freezes timer, locks tiles into read-only mode, displays clue inventory, and provides team submission instructions.
 5. **Developer Reset System (`DEV_MODE = true`):** Fixed bottom-right bar with "Reset all progress" button clears all state and resets to `#/landing`. Set `CONFIG.DEV_MODE = false` for live production.

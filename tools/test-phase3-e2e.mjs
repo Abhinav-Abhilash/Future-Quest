@@ -13,7 +13,7 @@
  * 7. Correct answer -> Solved & clue unsealed
  * 8. Contest totals verify 10 quest puzzles
  * 9. Client Reload simulation -> Server sync restores full state
- * 10. Vault Entry -> Timer locked & HMAC verification hash generated
+ * 10. Vault Entry -> Timer locked & server HMAC audit record generated
  * 11. Poster Submission -> Idempotent recording
  * 12. Dev Reset -> Cleanup
  */
@@ -157,12 +157,12 @@ async function runE2ETest() {
     assert('Hints remaining remains 2 after reload', GameState.state.hintsRemaining === 2);
 
     // --- TEST 10: Vault Entry ---
-    console.log('\n--- 10. Testing Vault Entry & HMAC Hash ---');
+    console.log('\n--- 10. Testing Vault Entry & Server Audit Record ---');
     const vaultRes = await GameState.enterVault();
     assert('Vault entry succeeds', GameState.state.vaultEntered === true);
     assert('Timer locked timestamp returned', typeof vaultRes.timerLockedAt === 'number');
-    assert('Cryptographic HMAC verification hash returned', typeof vaultRes.verificationHash === 'string' && vaultRes.verificationHash.length === 64);
-    assert('HMAC hash saved to client state', GameState.state.verificationHash === vaultRes.verificationHash);
+    assert('Server audit hash returned', typeof vaultRes.verificationHash === 'string' && vaultRes.verificationHash.length === 64);
+    assert('Audit hash saved to state for judge logging', GameState.state.verificationHash === vaultRes.verificationHash);
 
     // --- TEST 11: Final Poster Submission ---
     console.log('\n--- 11. Testing Poster Submission ---');
