@@ -1858,59 +1858,66 @@ export const Screens = {
         </div>
 
         <!-- STEP 3: Submission Checklist & Call to Action -->
-        <div class="vault-step-card submission-cta-section" role="region" aria-label="Step 3: Pre-submission Checklist">
+        <div class="vault-step-card submission-cta-section" role="region" aria-label="Step 3: Official Poster Submission">
           <div class="vault-step-header">
             <span class="vault-step-badge">STEP 3</span>
-            <h2 class="vault-step-title">Final Submission Checklist</h2>
-            <p class="section-subtitle">Confirm readiness before proceeding to the external submission form.</p>
+            <h2 class="vault-step-title">Official Poster Submission & Entry Confirmation</h2>
+            <p class="section-subtitle">Confirm readiness before proceeding to the official competition entry portal.</p>
           </div>
 
-          <div class="vault-checklist">
-            <label class="ready-check-item">
-              <input type="checkbox" id="chk-vault-specs" class="vault-pre-check" />
-              <span class="ready-check-text">We incorporated all unlocked specifications into our final entry.</span>
-            </label>
-            <label class="ready-check-item">
-              <input type="checkbox" id="chk-vault-ready" class="vault-pre-check" />
-              <span class="ready-check-text">We are ready to submit our final entry.</span>
-            </label>
-          </div>
-
-          <!-- Team Details for External Submission -->
-          <div class="vault-team-id-card" style="margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4); background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--radius-sm);">
-            <div style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 6px;">Team Details for External Submission</div>
-            <div style="display: flex; gap: var(--space-5); flex-wrap: wrap;">
-              <div>
-                <span style="font-size: 12px; color: var(--text-muted);">Team Name:</span>
-                <strong class="mono" style="color: var(--text-bright); margin-left: 6px;">${state.teamName}</strong>
+          <div class="vault-submission-grid">
+            <div class="vault-submission-left">
+              <!-- Team Identity & Verification -->
+              <div class="vault-team-id-card">
+                <div class="team-id-label">Verified Competition Team</div>
+                <div class="team-id-details">
+                  <div class="team-id-row">
+                    <span class="team-id-key">Team Name:</span>
+                    <strong class="mono team-id-val">${state.teamName}</strong>
+                  </div>
+                  <div class="team-id-row">
+                    <span class="team-id-key">School:</span>
+                    <strong class="mono team-id-val">${state.schoolName}</strong>
+                  </div>
+                </div>
               </div>
-              <div>
-                <span style="font-size: 12px; color: var(--text-muted);">School:</span>
-                <strong class="mono" style="color: var(--text-bright); margin-left: 6px;">${state.schoolName}</strong>
+
+              <!-- Pre-submission Checklist -->
+              <div class="vault-checklist">
+                <label class="ready-check-item">
+                  <input type="checkbox" id="chk-vault-specs" class="vault-pre-check" />
+                  <span class="ready-check-text">We incorporated all unlocked specifications and placement guidelines into our poster.</span>
+                </label>
+                <label class="ready-check-item">
+                  <input type="checkbox" id="chk-vault-ready" class="vault-pre-check" />
+                  <span class="ready-check-text">Our poster design is finalized and ready for judging evaluation.</span>
+                </label>
               </div>
             </div>
-          </div>
 
-          <div class="cta-card">
-            <div class="cta-reminder">
-              <span class="reminder-icon">${ICONS.check}</span>
-              <p class="reminder-text">
-                "Use the content and specs you unlocked exactly. Everything else about your design is your creative choice."
-              </p>
+            <div class="vault-submission-right">
+              <div class="vault-submit-action-box">
+                <div class="cta-reminder">
+                  <span class="reminder-icon">${ICONS.check}</span>
+                  <p class="reminder-text">
+                    "Use the content and specs you unlocked exactly. Everything else about your design is your creative choice."
+                  </p>
+                </div>
+                <div class="cta-actions">
+                  <a 
+                    href="${CONFIG.POSTER_FORM_URL}" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    class="btn btn-primary btn-lg btn-vault-submit"
+                    id="btn-vault-final-submit"
+                    style="pointer-events: none; opacity: 0.5;"
+                  >
+                    Submit Your Poster &rarr;
+                  </a>
+                </div>
+                <p class="cta-note">Check both readiness items to unlock submission. Form opens in a secure new tab.</p>
+              </div>
             </div>
-            <div class="cta-actions">
-              <a 
-                href="${CONFIG.POSTER_FORM_URL}" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                class="btn btn-primary btn-lg"
-                id="btn-vault-final-submit"
-                style="pointer-events: none; opacity: 0.5;"
-              >
-                Submit Your Poster &rarr;
-              </a>
-            </div>
-            <p class="cta-note">Check both items above to enable the submission button. The form opens in a secure new tab.</p>
           </div>
         </div>
       </section>

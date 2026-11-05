@@ -71,12 +71,12 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 2: Required Motto Specification (LEARN – BUILD – LEAD)',
       type: 'spec',
-      placementTip: 'Place at Center, directly below the description paragraph (Text size: 30)',
+      placementTip: 'Place at Center, below description (Text size: 30)',
       specs: [
         { label: 'Fragment', value: 'Fragment 2' },
         { label: 'Motto Text', value: 'LEARN – BUILD – LEAD' },
         { label: 'Text Size', value: '30' },
-        { label: 'Placement Tip', value: 'Place at Center, directly below description paragraph' },
+        { label: 'Placement Tip', value: 'Place at Center, below description' },
         { label: 'Color Rules', value: 'LEARN: Green, BUILD: Blue, LEAD: Red' },
       ],
     },
@@ -176,8 +176,8 @@ export const PUZZLES = {
       type: 'image',
       imageUrl: 'assets/cinnamon_bun_android.png',
       filename: 'cinnamon_bun_android.png',
-      placementTip: 'Place at Upper-left, below title (opposite Red sports car)',
-      caption: 'Graphic Asset: Android (Cinnamon Bun Edition) - Placement Tip: Place at Upper-left, below title',
+      placementTip: 'Place Android logo at Upper-left, below title (opposite Red sports car)',
+      caption: 'Graphic Asset: Android Logo (Cinnamon Bun Edition) - Placement Tip: Upper-left, below title',
     },
     clientData: {
       id: 'puzzle_4',
@@ -296,7 +296,7 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 7: Main Technology Paragraph Specification',
       type: 'spec',
-      placementTip: 'Place at Lower-middle, center-aligned (Text size: 40, using the 20 technology keywords)',
+      placementTip: 'Place Technology description paragraph at Lower-middle, center-aligned (Text size: 40)',
       specs: [
         { label: 'Fragment', value: 'Fragment 7' },
         { label: 'Element', value: 'Main Technology Description Paragraph' },
@@ -365,7 +365,7 @@ export const PUZZLES = {
       imageUrl: 'assets/tesla_roadster.png',
       filename: 'tesla_roadster.png',
       placementTip: 'Place Red sports car at Upper-right, opposite Android logo',
-      caption: 'Graphic Asset: Tesla Roadster (Red Sports Car) - Placement Tip: Place at Upper-right, opposite Android logo',
+      caption: 'Graphic Asset: Tesla Roadster (Red Sports Car) - Placement Tip: Upper-right, opposite Android logo',
     },
     clientData: {
       id: 'puzzle_8',
@@ -396,8 +396,8 @@ export const PUZZLES = {
       type: 'image',
       imageUrl: 'assets/poster_background_palette.png',
       filename: 'poster_background_palette.png',
-      placementTip: 'Use as the full poster canvas background (Dark Blue to Light Steel Blue gradient with concentric guide circles)',
-      caption: 'Canvas Asset: Dark Blue to Light Steel Blue Gradient with Concentric Circular Alignment Lines - Placement Tip: Full poster canvas background',
+      placementTip: 'Place as full canvas background backdrop (Dark Blue to Light Steel Blue)',
+      caption: 'Canvas Asset: Dark Blue to Light Steel Blue Gradient with Concentric Circular Alignment Guides',
     },
     clientData: {
       id: 'puzzle_9',
@@ -444,12 +444,12 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 10: Event Title Specification (FUTURE QUEST 2026)',
       type: 'spec',
-      placementTip: 'Place at Top-center (Text size: 75, aligned with concentric guide circles)',
+      placementTip: 'Place FUTURE QUEST 2026 at Top-center (Text size: 75)',
       specs: [
         { label: 'Fragment', value: 'Fragment 10' },
         { label: 'Event Title', value: 'FUTURE QUEST 2026' },
         { label: 'Text Size', value: '75' },
-        { label: 'Placement Tip', value: 'Place at Top-center (aligned with concentric guide circles)' },
+        { label: 'Placement Tip', value: 'Place at Top-center' },
         { label: 'Font', value: 'Space Grotesk / Arial Black (Bold uppercase)' },
         { label: 'Position', value: 'Top-center of canvas' },
         { label: 'Concentric Guides', value: 'Concentric alignment guide circles centered at (50%, 48%)' },
