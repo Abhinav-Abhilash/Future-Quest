@@ -30,6 +30,8 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 1: Tagline Specification (Tomorrow start with the code)',
       type: 'spec',
+      answerText: 'Tomorrow start with the code you write today',
+      textSize: '32',
       placementTip: 'Place at Center, directly below FUTURE (Text size: 32)',
       specs: [
         { label: 'Fragment', value: 'Fragment 1' },
@@ -71,6 +73,8 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 2: Required Motto Specification (LEARN – BUILD – LEAD)',
       type: 'spec',
+      answerText: 'LEARN – BUILD – LEAD',
+      textSize: '30',
       placementTip: 'Place at Center, below description (Text size: 30)',
       specs: [
         { label: 'Fragment', value: 'Fragment 2' },
@@ -114,6 +118,8 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 3: Centerpiece Title Specification (Code the future)',
       type: 'spec',
+      answerText: 'Code the future',
+      textSize: '69',
       placementTip: 'Place CODE THE at Center (upper-middle), and FUTURE directly below CODE THE (Text size: 69)',
       specs: [
         { label: 'Fragment', value: 'Fragment 3' },
@@ -174,6 +180,7 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 4: Cinnamon Bun Graphic Asset (Android)',
       type: 'image',
+      answerText: 'CINNAMON BUN (Android Logo)',
       imageUrl: 'assets/cinnamon_bun_android.png',
       filename: 'cinnamon_bun_android.png',
       placementTip: 'Place Android logo at Upper-left, below title (opposite Red sports car)',
@@ -209,6 +216,7 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 5: Centerpiece Graphic (Where Human Meets AI)',
       type: 'image',
+      answerText: 'WHERE HUMAN MEETS AI',
       imageUrl: 'assets/human_meets_ai.png',
       filename: 'human_meets_ai.png',
       placementTip: 'Place Robotic hand at Middle-left entering from left edge, and Human hand at Middle-right entering from right edge',
@@ -241,9 +249,11 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 6: Institution Header & Logo Specification',
       type: 'image',
+      answerText: 'JAIN UNIVERSITY. / SCHOOL OF FUTURE TECHNOLOGY',
+      textSize: '22',
       imageUrl: 'assets/jain_logo.png',
       filename: 'JAIN School of Future Logo.png',
-      placementTip: 'Place JGI + JAIN logo at Top-left, JAIN UNIVERSITY text at Top-left right of logo, and SCHOOL OF FUTURE TECHNOLOGY directly below university name (Text size: 22)',
+      placementTip: 'Place JGI + JAIN logo at Top-left, JAIN UNIVERSITY text at Top-left right of logo, and SCHOOL OF FUTURE TECHNOLOGY text directly below university name (Text size: 22)',
       caption: 'Institution Header & Logo: JAIN UNIVERSITY. / SCHOOL OF FUTURE TECHNOLOGY (Text size: 22) - Placement Tip: JGI + JAIN logo at Top-left, JAIN UNIVERSITY at Top-left right of logo, SCHOOL OF FUTURE TECHNOLOGY directly below',
       specs: [
         { label: 'Fragment', value: 'Fragment 6' },
@@ -296,6 +306,8 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 7: Main Technology Paragraph Specification',
       type: 'spec',
+      answerText: 'Main Technology Description Paragraph (20 Tech Words)',
+      textSize: '40',
       placementTip: 'Place Technology description paragraph at Lower-middle, center-aligned (Text size: 40)',
       specs: [
         { label: 'Fragment', value: 'Fragment 7' },
@@ -362,6 +374,7 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 8: Tesla Roadster Graphic Asset (Red Sports Car)',
       type: 'image',
+      answerText: 'ROADSTER (Tesla Roadster)',
       imageUrl: 'assets/tesla_roadster.png',
       filename: 'tesla_roadster.png',
       placementTip: 'Place Red sports car at Upper-right, opposite Android logo',
@@ -394,6 +407,7 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 9: Official Canvas Background Palette Image',
       type: 'image',
+      answerText: 'DARK BLUE AND LIGHT STEEL BLUE',
       imageUrl: 'assets/poster_background_palette.png',
       filename: 'poster_background_palette.png',
       placementTip: 'Place as full canvas background backdrop (Dark Blue to Light Steel Blue)',
@@ -444,6 +458,8 @@ export const PUZZLES = {
     clue: {
       title: 'Clue Fragment 10: Event Title Specification (FUTURE QUEST 2026)',
       type: 'spec',
+      answerText: 'FUTURE QUEST 2026',
+      textSize: '75',
       placementTip: 'Place FUTURE QUEST 2026 at Top-center (Text size: 75)',
       specs: [
         { label: 'Fragment', value: 'Fragment 10' },

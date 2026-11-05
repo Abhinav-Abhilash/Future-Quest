@@ -492,7 +492,10 @@ class StateManager {
       }
       block.timeRemainingSeconds = res.timeRemainingSeconds ?? this.getPuzzleRemainingSeconds(id);
       block.activeSince = res.status === 'OPENED' ? getServerNow() : null;
-      block.unlockedClue = res.unlockedClue || null;
+      block.unlockedClue = res.unlockedClue || block.unlockedClue || null;
+      if (block.unlockedClue && CONFIG.PUZZLES[id]) {
+        CONFIG.PUZZLES[id].clue = block.unlockedClue;
+      }
 
       this.state.activeBlock = id;
       this.state.hintsRemaining = res.hintsLeft ?? this.state.hintsRemaining;
@@ -733,6 +736,9 @@ class StateManager {
     if (!this.state || !this.state.blocks?.[id]) return;
     this.state.blocks[id].status = 'SOLVED';
     this.state.blocks[id].activeSince = null;
+    if (!this.state.blocks[id].unlockedClue && CONFIG.PUZZLES[id]?.clue) {
+      this.state.blocks[id].unlockedClue = CONFIG.PUZZLES[id].clue;
+    }
     this.saveState();
   }
 

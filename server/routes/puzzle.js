@@ -132,7 +132,7 @@ router.post('/puzzle/:id/open', requireAuth, async (req, res) => {
       attemptsUsed: block.attemptsUsed || 0,
       hintUsed: !!block.hintUsed,
       hintsLeft: team.totalHintsLeft ?? 3,
-      unlockedClue: isSolved ? block.unlockedClue : null,
+      unlockedClue: isSolved ? (block.unlockedClue || puz.clue) : null,
     });
   } catch (error) {
     console.error('[PUZZLE OPEN ERROR]', error);

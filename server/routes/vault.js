@@ -56,7 +56,8 @@ router.post('/vault/enter', requireAuth, async (req, res) => {
 
       if (b.status === 'SOLVED') {
         solvedQuestBlocks.push(b.puzzleId);
-        if (b.unlockedClue) unlockedClues.push(b.unlockedClue);
+        const clueObj = b.unlockedClue || PUZZLES[b.puzzleId]?.clue;
+        if (clueObj) unlockedClues.push(clueObj);
       } else if (b.status === 'FAILED') {
         failedQuestBlocks.push(b.puzzleId);
       }
