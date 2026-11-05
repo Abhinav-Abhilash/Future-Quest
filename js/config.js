@@ -151,7 +151,7 @@ export const CONFIG = {
       category: "Information Security",
       whatToDo: "Convert the numerical ASCII codes into characters to decode the quote. Use the reference chart if needed.",
       prompt: "Translate the 8-word quote encoded in standard ASCII numbers below.",
-      hint: "Look up the standard ASCII decimal value for each number: 84 is 'T', 111 is 'o', 109 is 'm'...",
+      hint: "Open the ASCII Table reference drawer. Lowercase letters start at 97 ('a') through 122 ('z'), while uppercase letters range from 65 ('A') to 90 ('Z').",
       clueType: "spec",
       clue: {
         title: "Clue Fragment 6: Required Quote",
@@ -189,7 +189,7 @@ export const CONFIG = {
       category: "Computer Science",
       whatToDo: "Locate the given (Col, Row) coordinate pairs on the 7×7 grid. Extract the letters to discover 3 core engineering principles.",
       prompt: "Read the cells at the designated coordinates to uncover the three mission keywords.",
-      hint: "In (Col, Row), the first number is the horizontal column (1-7), and the second is the vertical row (1-7 from top).",
+      hint: "Read each coordinate pair as (Column, Row). Count columns from left to right (1–7) and rows from top to bottom (1–7) to find the intersecting letter.",
       clueType: "spec",
       clue: {
         title: "Clue Fragment 9: Required Motto (LEARN – BUILD – LEAD)",
@@ -228,7 +228,7 @@ export const CONFIG = {
       category: "Computer Networks",
       whatToDo: "Evaluate each math expression using standard BODMAS/PEMDAS precedence. Map each number to its corresponding letter (1=A ... 26=Z).",
       prompt: "Calculate the 13 mathematical expressions to reveal the 3-word slogan.",
-      hint: "Remember precedence: Brackets, Orders (powers), Division & Multiplication, Addition & Subtraction. 1=A, 2=B...",
+      hint: "Evaluate operations inside brackets first, then division and multiplication before addition and subtraction. Convert resulting numbers into alphabetical order (1=A, 2=B...).",
       clueType: "spec",
       clue: {
         title: "Clue Fragment 5: Required Title (CODE THE FUTURE)",
@@ -288,7 +288,7 @@ export const CONFIG = {
       category: "Operating Systems & Hardware",
       whatToDo: "Decrypt the identity riddle: read the cryptic clues about the legendary 17-year-old operating system's nickname, and type the letter keycaps.",
       prompt: "Identify the 17-year-old mobile OS with sweet, spiced roots.",
-      hint: "Android was launched in 2008 (~17 years ago), sports a green alien mascot, and used confectionery code-names with aromatic spices.",
+      hint: "Think of the world's most popular mobile operating system. Before switching strictly to numbers, each major release was nicknamed after a beloved dessert or sweet baked treat.",
       clueType: "spec",
       clue: {
         title: "Clue Fragment 4: System Architecture & Palette",
@@ -325,7 +325,7 @@ export const CONFIG = {
       category: "Cybernetics & Cryptography",
       whatToDo: "Decode the reverse-index numerical tokens into letters (where Z=1, Y=2, X=3 ... C=24, B=25, A=26). Type the letters to reveal the centerpiece phrase.",
       prompt: "Decrypt the 4-word centerpiece theme using reverse alphabet indexing.",
-      hint: "Each number represents its reverse alphabet position: 26=A, 25=B, 24=C ... 1=Z (Formula: 27 - letter position). Open the Table drawer for reference.",
+      hint: "This cipher inverts the alphabet (Z=1, Y=2, A=26). Subtract each given number from 27 to find its standard alphabetical position. Open the reference drawer for assistance.",
       clueType: "image",
       clue: {
         title: "Clue Fragment 3: Centerpiece Graphic (Where Human Meets AI)",
@@ -354,7 +354,7 @@ export const CONFIG = {
       category: "Visual Cryptography & Institutional Identity",
       whatToDo: "Examine the visual elements in the cryptic artwork (Lord Mahavira, cosmic universe, circuit halo, robotics) and deduce the complete institution name.",
       prompt: "Identify the hosting institution name from the visual clues.",
-      hint: "Mahavira signifies 'JAIN', the cosmos signifies 'UNIVERSITY', and the neural circuits/robotics signify 'SCHOOL OF FUTURE TECHNOLOGY'.",
+      hint: "Break down the artwork into three layers: the revered sage of non-violence in meditation, the expansive deep-space cosmos, and the futuristic neural circuits with robotics.",
       clueType: "spec",
       clue: {
         title: "Clue Fragment 2: Institution Branding & Logo Spec",
@@ -400,7 +400,7 @@ export const CONFIG = {
       category: "Applied Cryptography",
       whatToDo: "Locate all 20 tech terms from the word list in the 15×15 matrix. Words can go in any of 8 directions (horizontal, vertical, diagonal, forward, or backward).",
       prompt: "Find the 20 technology words listed in the checklist below.",
-      hint: "Look for AROUND starting at [5,0] going up, ARTIFICIAL at [0,7] going down, FUTURE at [7,8] going down...",
+      hint: "Scan the matrix in all 8 directions—words can run horizontally, vertically, or diagonally. Try searching for uncommon letters like 'Q' in Quantum, 'Z', or distinctive double-letter clusters.",
       clueType: "spec",
       clue: {
         title: "Clue Fragment 8: Required Word Bank (Submission Paragraph)",
@@ -450,7 +450,7 @@ export const CONFIG = {
       category: "Automotive & Aerospace",
       whatToDo: "Deduce the vehicle described in the cosmic riddle. Type the 8-letter model name into the tactile keycaps.",
       prompt: "Solve the riddle of the spacefaring convertible piloted by Starman.",
-      hint: "In February 2018, Falcon Heavy launched Elon Musk's cherry electric convertible into heliocentric orbit carrying a dummy in a spacesuit.",
+      hint: "A pioneer electric vehicle manufacturer launched their iconic two-door open-top sports car into deep orbit as the test payload on a heavy-lift rocket.",
       clueType: "spec",
       clue: {
         title: "Clue Fragment 7: Aerospace Telemetry & Specs",
@@ -486,7 +486,7 @@ export const CONFIG = {
       category: "Colorimetry & Graphic Design",
       whatToDo: "Deduce the two background colors from the poetic colorimetry riddle. Type the color names into the keycaps.",
       prompt: "Identify the two complementary colors that form the poster canvas background.",
-      hint: "Both colors are shades of blue. One has 'dark' character, and the other has a 'light' mind with 'steel' strength.",
+      hint: "Both colors belong to the same cool color family. One is deep and shadowy, while the other is an airy pastel named after an industrial metallic alloy.",
       clueType: "image",
       clue: {
         title: "Clue Fragment 1: Official Canvas Background Specification",
@@ -528,7 +528,7 @@ export const CONFIG = {
       category: "Design Systems & Layout Geometry",
       whatToDo: "Locate the 5 Cartesian coordinate points (x, y) on the 7×7 geometry blueprint to spell out the master layout directive.",
       prompt: "Trace the 5 Cartesian grid points from origin (1,1) bottom-left.",
-      hint: "Cartesian coordinates: (Col, Row) starting from bottom-left (1,1). (1,5)=A, (5,4)=L, (4,7)=I, (3,5)=G, (5,6)=N.",
+      hint: "In Cartesian mode, coordinate (1,1) begins at the bottom-left corner. Count horizontally across the X-axis for column, then vertically up the Y-axis for row.",
       clueType: "spec",
       clue: {
         title: "Clue Fragment 10: Geometric Grid Alignment Specification",
@@ -572,7 +572,7 @@ export const CONFIG = {
       category: "Event Identity & Typography",
       whatToDo: "Solve the grand event identity riddle to reveal the primary hero headline for your poster.",
       prompt: "Deduce the 3-part event headline and launch year.",
-      hint: "Word 1 is 'FUTURE', Word 2 is 'QUEST', Word 3 is the current event year '2026'.",
+      hint: "Observe the event branding shown across the competition portal and navigation header. It unites what lies ahead, a grand journey, and this year's date.",
       clueType: "spec",
       clue: {
         title: "Clue Fragment 11: Hero Headline Typography Spec",
