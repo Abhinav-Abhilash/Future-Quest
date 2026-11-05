@@ -176,26 +176,27 @@ const t10_full = t10_spelledWords.join(' ');
 report('T10 COORDS Dynamic Check (FUTURE QUEST)', t10_ok && t10_full === 'FUTURE QUEST', t10_full);
 
 // -------------------------------------------------------------
-// T11: Apple Eats Snake (ROADSTER)
+// T11: Apple Eats Snake (Pure Bonus Mini-Game: CHOMP)
 // -------------------------------------------------------------
 const t11 = CONFIG.PUZZLES.puzzle_11;
 const t11_data = t11.data;
 const t11_targetWord = t11_data.targetWord;
 const t11_letters = t11_targetWord.split('');
-const t11_hasOverride = CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE.puzzle_11 === 480;
-const t11_noHint = Array.isArray(CONFIG.NO_HINT_PUZZLES) && CONFIG.NO_HINT_PUZZLES.includes('puzzle_11');
-const t11_hasNoHintConfig = !t11.hint;
+const t11_isBonus = t11.bonus === true;
+const t11_hasNoClue = !t11.clue && !t11.clueType;
+const t11_hasNoHint = !t11.hint;
+const t11_notInDifficulty = !(CONFIG.TILE_DIFFICULTY && CONFIG.TILE_DIFFICULTY.puzzle_11);
+const t11_notInAnswers = !(CONFIG.MOCK_ANSWERS && CONFIG.MOCK_ANSWERS.puzzle_11);
 const t11_ok = t11.type === 'snake' &&
-  typeof t11_targetWord === 'string' &&
-  t11_targetWord === 'ROADSTER' &&
-  t11_letters.length === 8 &&
-  t11_letters.join('') === 'ROADSTER' &&
-  t11.clue.type === 'text' &&
-  t11.clue.content === t11_targetWord &&
-  t11_hasOverride &&
-  t11_noHint &&
-  t11_hasNoHintConfig;
-report('T11 Apple Eats Snake Dynamic Check (ROADSTER, 480s override, no-hint)', t11_ok, `Override: ${t11_hasOverride}, NoHint: ${t11_noHint}, NoHintText: ${t11_hasNoHintConfig}`);
+  t11_isBonus &&
+  t11_targetWord === 'CHOMP' &&
+  t11_letters.length === 5 &&
+  t11_letters.join('') === 'CHOMP' &&
+  t11_hasNoClue &&
+  t11_hasNoHint &&
+  t11_notInDifficulty &&
+  t11_notInAnswers;
+report('T11 Apple Eats Snake Bonus Check (CHOMP, length 5, no clue/hint/answers)', t11_ok, `Bonus: ${t11_isBonus}, Word: ${t11_targetWord}, Length: ${t11_letters.length}`);
 
 console.log('=============================================================');
 if (allPassed) {

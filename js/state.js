@@ -174,6 +174,7 @@ class StateManager {
    */
   getPuzzleRemainingSeconds(id) {
     if (!this.state || !this.state.blocks[id]) return 0;
+    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) return 0;
     const block = this.state.blocks[id];
     const difficulty = CONFIG.TILE_DIFFICULTY[id] || 'easy';
     const maxSec = (CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE[id]) || CONFIG.DIFFICULTY_TIME[difficulty] || 600;
@@ -195,6 +196,7 @@ class StateManager {
     if (!this.state || !this.state.blocks) return;
     let changed = false;
     for (const id in this.state.blocks) {
+      if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) continue;
       const block = this.state.blocks[id];
       if (block.status === 'OPENED_IN_PROGRESS') {
         const remaining = this.getPuzzleRemainingSeconds(id);
@@ -220,11 +222,6 @@ class StateManager {
     if (!this.state || !this.state.blocks[id]) return null;
     const block = this.state.blocks[id];
 
-    // If master timer or vault entered, do not update timer
-    if (this.state.vaultEntered || this.isMasterExpired()) {
-      return block;
-    }
-
     // Ensure only one puzzle may have activeSince set at a time
     if (this.state.activeBlock && this.state.activeBlock !== id) {
       this.leavePuzzle(this.state.activeBlock);
@@ -233,6 +230,17 @@ class StateManager {
       if (otherId !== id && this.state.blocks[otherId].activeSince != null) {
         this.leavePuzzle(otherId);
       }
+    }
+
+    // Bonus puzzle: do not start a puzzle timer and never set OPENED_IN_PROGRESS
+    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) {
+      this.state.activeBlock = null;
+      return block;
+    }
+
+    // If master timer or vault entered, do not update timer
+    if (this.state.vaultEntered || this.isMasterExpired()) {
+      return block;
     }
 
     // Set active block
@@ -265,6 +273,13 @@ class StateManager {
     const targetId = id || this.state.activeBlock;
     if (!targetId || !this.state.blocks[targetId]) return;
 
+    if (CONFIG.PUZZLES[targetId] && CONFIG.PUZZLES[targetId].bonus) {
+      if (this.state.activeBlock === targetId) {
+        this.state.activeBlock = null;
+      }
+      return;
+    }
+
     const block = this.state.blocks[targetId];
     if (block.activeSince) {
       const elapsed = Date.now() - block.activeSince;
@@ -283,6 +298,9 @@ class StateManager {
   submitAnswer(id, rawAnswer) {
     if (!this.state || !this.state.blocks[id]) {
       return { error: 'Invalid puzzle' };
+    }
+    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) {
+      return { error: 'Bonus puzzle cannot be submitted.' };
     }
 
     const block = this.state.blocks[id];
@@ -351,6 +369,7 @@ class StateManager {
    */
   saveProgress(id, progressObj) {
     if (!this.state || !this.state.blocks[id]) return;
+    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) return;
     this.state.blocks[id].progress = {
       ...(this.state.blocks[id].progress || {}),
       ...progressObj
@@ -364,6 +383,7 @@ class StateManager {
    */
   markSolved(id) {
     if (!this.state || !this.state.blocks[id]) return;
+    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) return;
     const block = this.state.blocks[id];
     if (block.status === 'SOLVED') return;
 
@@ -387,6 +407,7 @@ class StateManager {
    */
   recordWrong(id) {
     if (!this.state || !this.state.blocks[id]) return { failed: false, attemptsLeft: 0 };
+    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) return { failed: false, attemptsLeft: 0 };
     const block = this.state.blocks[id];
     if (block.status === 'SOLVED' || block.status === 'FAILED') {
       return { failed: block.status === 'FAILED', attemptsLeft: 0 };
@@ -411,6 +432,7 @@ class StateManager {
    */
   useHint(id) {
     if (!this.state || !this.state.blocks[id]) return false;
+    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) return false;
     if (CONFIG.NO_HINT_PUZZLES && CONFIG.NO_HINT_PUZZLES.includes(id)) return false;
     const block = this.state.blocks[id];
 
@@ -429,6 +451,7 @@ class StateManager {
    */
   failPuzzle(id, reason = 'TIMEOUT') {
     if (!this.state || !this.state.blocks[id]) return;
+    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) return;
     const block = this.state.blocks[id];
     if (block.status === 'SOLVED' || block.status === 'FAILED') return;
 
@@ -447,6 +470,7 @@ class StateManager {
   devSkipTimer(id, secondsLeft = 10) {
     if (!CONFIG.DEV_MODE) return;
     if (!this.state || !this.state.blocks[id]) return;
+    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) return;
     const block = this.state.blocks[id];
     const difficulty = CONFIG.TILE_DIFFICULTY[id] || 'easy';
     const maxSec = (CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE[id]) || CONFIG.DIFFICULTY_TIME[difficulty] || 600;
@@ -490,11 +514,14 @@ class StateManager {
    * Get contest summary statistics.
    */
   getSummary() {
-    if (!this.state) return { solved: 0, total: 11, hintsUsed: 0, timeTakenFormatted: '00:00:00' };
+    const questPuzzleIds = Object.keys(CONFIG.PUZZLES).filter(id => !CONFIG.PUZZLES[id].bonus);
+    const totalQuestPuzzles = questPuzzleIds.length;
+
+    if (!this.state) return { solved: 0, total: totalQuestPuzzles, hintsUsed: 0, timeTakenFormatted: '00:00:00' };
 
     let solvedCount = 0;
-    for (const id in this.state.blocks) {
-      if (this.state.blocks[id].status === 'SOLVED') {
+    for (const id of questPuzzleIds) {
+      if (this.state.blocks[id] && this.state.blocks[id].status === 'SOLVED') {
         solvedCount++;
       }
     }
@@ -512,7 +539,7 @@ class StateManager {
 
     return {
       solved: solvedCount,
-      total: 11,
+      total: totalQuestPuzzles,
       hintsUsed,
       timeTakenFormatted: `${hrs}:${mins}:${secs}`,
       elapsedSec
@@ -530,7 +557,7 @@ class StateManager {
     const { teamName, schoolName, timerStartedAt, timerLockedAt } = this.state;
     const summary = this.getSummary();
     const solvedIds = Object.keys(this.state.blocks)
-      .filter(id => this.state.blocks[id].status === 'SOLVED')
+      .filter(id => !CONFIG.PUZZLES[id]?.bonus && this.state.blocks[id].status === 'SOLVED')
       .sort()
       .join(',');
 

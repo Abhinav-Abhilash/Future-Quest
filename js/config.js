@@ -19,12 +19,10 @@ export const CONFIG = {
   },
 
   // Per-puzzle custom time limits in seconds (overrides DIFFICULTY_TIME)
-  PUZZLE_TIME_OVERRIDE: {
-    puzzle_11: 480 // 8 minutes (480 seconds)
-  },
+  PUZZLE_TIME_OVERRIDE: {},
 
   // Puzzles where hints are disallowed
-  NO_HINT_PUZZLES: ['puzzle_11'],
+  NO_HINT_PUZZLES: [],
 
   // Game rules configuration
   MAX_ATTEMPTS: 3,
@@ -131,8 +129,7 @@ export const CONFIG = {
     puzzle_7: "hard",
     puzzle_8: "hard",
     puzzle_9: "hard",
-    puzzle_10: "medium",
-    puzzle_11: "hard"
+    puzzle_10: "medium"
   },
 
   // Mock answers (validated case-insensitively with whitespace trimmed)
@@ -146,8 +143,7 @@ export const CONFIG = {
     puzzle_7: "AROUND",
     puzzle_8: "ROADSTER",
     puzzle_9: "DARK BLUE AND LIGHT STEEL BLUE",
-    puzzle_10: "FUTURE QUEST",
-    puzzle_11: "ROADSTER"
+    puzzle_10: "FUTURE QUEST"
   },
 
   // Interactive puzzle configurations with type, prompt, data, and technical clues
@@ -590,19 +586,13 @@ export const CONFIG = {
       id: "puzzle_11",
       type: "snake",
       title: "Apple Eats Snake",
-      category: "Reverse Arcade Dynamics",
-      whatToDo: "Guide the apple to eat the snake's segments in the right order to spell the secret word.",
-      prompt: "Guide the hungry red apple to consume the wandering snake's body segments in the exact sequence of the secret word.",
-      clueType: "text",
-      clue: {
-        title: "Word for your poster",
-        label: "Word for your poster",
-        type: "text",
-        content: "ROADSTER"
-      },
+      category: "Bonus Arcade",
+      bonus: true,
+      whatToDo: "Guide the apple to eat the wandering snake's segments in order to spell CHOMP.",
+      prompt: "Guide the hungry red apple to consume the wandering snake's body segments in order to spell CHOMP.",
       data: {
         id: "puzzle_11",
-        targetWord: "ROADSTER",
+        targetWord: "CHOMP",
         gridSize: 15
       }
     }

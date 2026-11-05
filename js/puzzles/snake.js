@@ -1,21 +1,20 @@
 /**
- * Future Quest 2026 - Apple Eats Snake Puzzle Module
+ * Future Quest 2026 - Apple Eats Snake (Pure Bonus Mini-Game)
  * 
- * Reverse Snake arcade challenge:
+ * Pure bonus arcade challenge:
  * - The player controls the APPLE.
  * - A SNAKE wanders the board and avoids walls.
- * - The apple EATS the snake segment by segment in the correct word sequence.
- * - Eating a segment in order adds to the collected letters strip.
- * - Eating out of order costs 1 life (3 apple lives).
- * - Losing all 3 lives counts as a failed attempt via ctx.onWrongCheck().
- * - Eating all segments in order completes the target word ("ROADSTER") and calls ctx.onSolved().
- * - Fixed-step game loop (8 moves/sec) via requestAnimationFrame.
+ * - The apple EATS the snake segment by segment in order to spell "CHOMP".
+ * - Pure bonus: no clue, no timer, no attempts, no hints, no lives, no penalties.
+ * - Wrong-order bites simply bounce back safely.
+ * - Sized to fit 360px wide with no horizontal scroll.
+ * - Fixed-step game loop (~6 moves/sec) via requestAnimationFrame.
  * - Turn-based mode for prefers-reduced-motion or body.lite-mode.
- * - Fully accessible with keyboard, swipe, on-screen D-pad, and polite aria-live announcements.
+ * - Accessible with keyboard, swipe, touch D-pad, and polite aria-live announcements.
  */
 
 import { PUZZLE_ART } from './art.js';
-import { showRewardPopup, isReducedMotion } from './popup.js';
+import { isReducedMotion } from './popup.js';
 
 let activeCleanup = null;
 let activeModuleInstance = null;
@@ -41,50 +40,36 @@ export function checkAnswer() {
 export function mount(root, data, ctx) {
   unmount();
 
-  const isLocked = ctx.isLocked();
-  const targetWord = (data && data.targetWord ? data.targetWord : 'ROADSTER').toUpperCase();
+  const targetWord = (data && data.targetWord ? data.targetWord : 'CHOMP').toUpperCase();
   const wordLength = targetWord.length;
   const GRID_SIZE = 15;
   const CANVAS_SIZE = 450;
   const CELL_SIZE = CANVAS_SIZE / GRID_SIZE; // 30px per cell
 
-  // Restore saved progress if any
-  const saved = ctx.getProgress() || {};
-  let collected = Array.isArray(saved.collected) ? saved.collected : [];
-  let lives = typeof saved.lives === 'number' ? saved.lives : 3;
+  let collected = [];
 
   // Root layout HTML
   root.innerHTML = `
-    <div class="snake-game-wrapper" role="region" aria-label="Apple Eats Snake Arcade Game">
+    <div class="snake-game-wrapper" role="region" aria-label="Apple Eats Snake Bonus Arcade Game">
       <!-- HUD Top Bar -->
       <div class="snake-hud-bar">
         <div class="snake-target-info">
-          <span class="snake-hud-tag mono">TARGET WORD:</span>
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <span class="snake-hud-tag mono">TARGET WORD: ${targetWord}</span>
+            <span class="snake-hud-tag mono" id="snake-progress-count">COLLECTED: 0 / ${wordLength}</span>
+          </div>
           <div class="snake-word-strip" id="snake-word-strip" aria-label="Collected letters progress">
             <!-- Dynamic letter chips rendered below -->
           </div>
         </div>
 
-        <div class="snake-hud-status-group">
-          <!-- Lives (3 Apple Icons) -->
-          <div class="snake-lives-box" aria-label="Lives remaining: ${lives} of 3">
-            <span class="snake-lives-label mono">LIVES</span>
-            <div class="snake-lives-icons" id="snake-lives-icons">
-              ${[0, 1, 2].map(i => `
-                <span class="snake-life-apple ${i < lives ? 'life-active' : 'life-lost'}" data-life-index="${i}">
-                  ${PUZZLE_ART.apple}
-                </span>
-              `).join('')}
-            </div>
-          </div>
-
-          <!-- Round Controls -->
+        <div class="snake-hud-status-group" style="justify-content: flex-end;">
           <div class="snake-controls-group">
-            <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-snake-pause" aria-label="Pause or resume round">
+            <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-snake-pause" aria-label="Pause or resume game">
               <span id="snake-pause-text">Pause</span>
             </button>
-            <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-snake-reset-board" aria-label="Reset current round without losing attempts">
-              Reset Board
+            <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-snake-reset-board" aria-label="Spawn a new snake">
+              New Snake
             </button>
           </div>
         </div>
@@ -92,13 +77,18 @@ export function mount(root, data, ctx) {
 
       <!-- Canvas Stage & Overlays -->
       <div class="snake-canvas-container" id="snake-canvas-box">
+        <!-- Start banner: disappears on first move -->
+        <div class="snake-start-banner" id="snake-start-banner">
+          Press any arrow key or tap to start
+        </div>
+
         <canvas 
           id="snake-canvas" 
           width="${CANVAS_SIZE}" 
           height="${CANVAS_SIZE}" 
           tabindex="0" 
           role="application"
-          aria-label="Apple Eats Snake grid. 15 by 15. Use Arrow keys or WASD to guide the apple. Eat the snake segments in order."
+          aria-label="Apple Eats Snake grid. 15 by 15. Use Arrow keys or WASD to guide the apple. Eat snake segments in order."
         ></canvas>
 
         <!-- Pause Overlay -->
@@ -110,13 +100,16 @@ export function mount(root, data, ctx) {
           </div>
         </div>
 
-        <!-- Round Cleared / Victory Overlay -->
+        <!-- Celebration Overlay (Bonus Win) -->
         <div class="snake-victory-overlay hidden" id="snake-victory-overlay" aria-hidden="true">
           <div class="snake-victory-modal keycap">
             <div class="snake-victory-icon">${PUZZLE_ART.apple}</div>
             <h3 class="mono">WORD ASSEMBLED!</h3>
-            <p class="mono text-success"><strong>${targetWord}</strong></p>
-            <span class="snake-victory-sub">Technical clue unsealed below.</span>
+            <p class="mono text-success" style="font-size: 1.4rem; letter-spacing: 0.15em;"><strong>${targetWord}</strong></p>
+            <span class="snake-victory-sub">Bonus mini-game complete! Great reflexes.</span>
+            <div style="margin-top: 12px;">
+              <button type="button" class="btn btn-primary keycap" id="btn-snake-play-again">Play Again</button>
+            </div>
           </div>
         </div>
       </div>
@@ -128,7 +121,7 @@ export function mount(root, data, ctx) {
           <span class="guide-item"><kbd>Space</kbd> to Pause</span>
         </div>
 
-        <!-- On-Screen D-Pad (Touch & Mobile Friendly) -->
+        <!-- On-Screen D-Pad (Shown on touch devices) -->
         <div class="snake-dpad" role="group" aria-label="On-screen directional controls">
           <button type="button" class="dpad-btn dpad-up" data-dir="up" aria-label="Move Up">▲</button>
           <div class="dpad-row">
@@ -148,12 +141,14 @@ export function mount(root, data, ctx) {
   const canvas = root.querySelector('#snake-canvas');
   const ctx2d = canvas.getContext('2d');
   const wordStripEl = root.querySelector('#snake-word-strip');
-  const livesIconsEl = root.querySelector('#snake-lives-icons');
+  const progressCountEl = root.querySelector('#snake-progress-count');
+  const startBannerEl = root.querySelector('#snake-start-banner');
   const pauseOverlay = root.querySelector('#snake-pause-overlay');
   const victoryOverlay = root.querySelector('#snake-victory-overlay');
   const pauseBtn = root.querySelector('#btn-snake-pause');
   const pauseText = root.querySelector('#snake-pause-text');
   const resumeBtn = root.querySelector('#btn-snake-resume');
+  const playAgainBtn = root.querySelector('#btn-snake-play-again');
   const resetBoardBtn = root.querySelector('#btn-snake-reset-board');
   const announcer = root.querySelector('#snake-live-announcer');
 
@@ -167,13 +162,12 @@ export function mount(root, data, ctx) {
   // GAME STATE
   // -------------------------------------------------------------
   let isPaused = false;
-  let isGameOver = isLocked;
-  let isWon = collected.length === wordLength;
+  let isWon = false;
   let rafId = null;
   let lastTickTime = 0;
-  const TICK_INTERVAL_MS = 125; // 8 moves per second
+  const TICK_INTERVAL_MS = 166; // ~6 moves per second
   let mouthAnimPhase = 0; // 0..1 oscillating
-  let invulnerableTicks = 0;
+  let popAnimTicks = 0;
 
   // Directions
   const DIRS = {
@@ -199,44 +193,47 @@ export function mount(root, data, ctx) {
   };
 
   // Helper: init or reset board
-  const setupSnakeAndApple = (keepProgress = false) => {
+  const setupSnakeAndApple = () => {
     apple.x = 2;
     apple.y = 7;
     apple.dir = DIRS.right;
     apple.nextDir = DIRS.right;
     apple.isMoving = false;
-    invulnerableTicks = 0;
+    popAnimTicks = 0;
+    collected = [];
+    isWon = false;
 
-    if (!keepProgress) {
-      collected = [];
-      lives = 3;
-    }
+    if (victoryOverlay) victoryOverlay.classList.add('hidden');
+    if (startBannerEl) startBannerEl.classList.remove('hidden');
 
-    // Build snake segments from remaining letters
-    const remainingLetters = targetWord.slice(collected.length).split('');
-    snake.head = { x: 11, y: 7, dir: DIRS.left };
+    // Build snake with all segments of target word
+    const letters = targetWord.split('');
+    snake.head = { x: 10, y: 7, dir: DIRS.left };
     snake.segments = [];
 
     // Snake body trails to the right of head initially
-    for (let i = 0; i < remainingLetters.length; i++) {
-      const segX = Math.min(GRID_SIZE - 1, 12 + i);
+    for (let i = 0; i < letters.length; i++) {
+      const segX = Math.min(GRID_SIZE - 1, 11 + i);
       const segY = 7;
       snake.segments.push({
         x: segX,
         y: segY,
-        letter: remainingLetters[i],
-        targetOrderIndex: collected.length + i // Global index into targetWord
+        letter: letters[i],
+        targetOrderIndex: i
       });
     }
 
     updateHUD();
   };
 
-  // Helper: update Word Strip and Lives in DOM
+  // Helper: update Word Strip and Progress count in DOM
   const updateHUD = () => {
-    if (!wordStripEl || !livesIconsEl) return;
+    if (!wordStripEl) return;
 
-    // Word Strip
+    if (progressCountEl) {
+      progressCountEl.textContent = `COLLECTED: ${collected.length} / ${wordLength}`;
+    }
+
     const nextTargetIndex = collected.length;
     let chipsHtml = '';
     for (let i = 0; i < wordLength; i++) {
@@ -264,13 +261,6 @@ export function mount(root, data, ctx) {
       }
     }
     wordStripEl.innerHTML = chipsHtml;
-
-    // Lives
-    livesIconsEl.innerHTML = [0, 1, 2].map(i => `
-      <span class="snake-life-apple ${i < lives ? 'life-active' : 'life-lost'}" data-life-index="${i}" aria-hidden="true">
-        ${PUZZLE_ART.apple}
-      </span>
-    `).join('');
   };
 
   // Helper: check if a cell is inside board bounds
@@ -281,19 +271,16 @@ export function mount(root, data, ctx) {
     const head = snake.head;
     const currentDir = head.dir;
 
-    // Directions candidate list
     const candidateDirs = [
       currentDir,
       { x: -currentDir.y, y: currentDir.x },  // turn left
       { x: currentDir.y, y: -currentDir.x }   // turn right
     ];
 
-    // Filter directions that remain in bounds and do not instantly collide with snake's own neck
     const validDirs = candidateDirs.filter(d => {
       const nx = head.x + d.x;
       const ny = head.y + d.y;
       if (!inBounds(nx, ny)) return false;
-      // Do not run into immediate neck
       if (snake.segments.length > 0 && snake.segments[0].x === nx && snake.segments[0].y === ny) {
         return false;
       }
@@ -302,21 +289,18 @@ export function mount(root, data, ctx) {
 
     let chosenDir = currentDir;
     if (validDirs.length > 0) {
-      // 75% stick to current dir if valid, 25% randomly explore turns for lively movement
-      if (validDirs.includes(currentDir) && Math.random() < 0.75) {
+      if (validDirs.includes(currentDir) && Math.random() < 0.70) {
         chosenDir = currentDir;
       } else {
         chosenDir = validDirs[Math.floor(Math.random() * validDirs.length)];
       }
     } else {
-      // Emergency turnaround if cornered
       const reverseDir = { x: -currentDir.x, y: -currentDir.y };
       chosenDir = inBounds(head.x + reverseDir.x, head.y + reverseDir.y) ? reverseDir : currentDir;
     }
 
     head.dir = chosenDir;
 
-    // Shift segments forward
     let prevX = head.x;
     let prevY = head.y;
     head.x += chosenDir.x;
@@ -335,13 +319,13 @@ export function mount(root, data, ctx) {
 
   // Helper: handle collisions between apple and snake
   const checkCollisions = () => {
-    if (isWon || isGameOver || invulnerableTicks > 0) return;
+    if (isWon) return;
 
     const nextRequiredIndex = collected.length;
 
     // 1. Check if apple collided with snake head
     if (apple.x === snake.head.x && apple.y === snake.head.y) {
-      handleWrongEat('Snake Head');
+      handleWrongEat();
       return;
     }
 
@@ -350,11 +334,9 @@ export function mount(root, data, ctx) {
       const seg = snake.segments[i];
       if (apple.x === seg.x && apple.y === seg.y) {
         if (seg.targetOrderIndex === nextRequiredIndex) {
-          // CORRECT SEGMENT EATEN!
           handleCorrectEat(i, seg);
         } else {
-          // WRONG SEGMENT OUT OF ORDER!
-          handleWrongEat(seg.letter);
+          handleWrongEat();
         }
         return;
       }
@@ -366,54 +348,40 @@ export function mount(root, data, ctx) {
     const eatenLetter = seg.letter;
     snake.segments.splice(segIndex, 1);
     collected.push(eatenLetter);
-    ctx.saveProgress({ collected, lives });
     updateHUD();
 
-    mouthAnimPhase = 1; // Open wide chomp
-    announce(`Eaten letter ${eatenLetter}! (${collected.length} of ${wordLength} collected)`);
+    mouthAnimPhase = 1;
+    popAnimTicks = 6;
+    announce(`Chomped letter ${eatenLetter}! (${collected.length} of ${wordLength} collected)`);
 
     // Check if full word completed
     if (collected.length === wordLength) {
       isWon = true;
       if (victoryOverlay) victoryOverlay.classList.remove('hidden');
-      announce(`Puzzle Complete! Target word ${targetWord} fully assembled.`);
-      showRewardPopup(root, targetWord);
-      ctx.onSolved();
+      announce(`All done! Target word ${targetWord} fully assembled.`);
       stopLoop();
     }
   };
 
-  // Wrong segment hit or head collision
-  const handleWrongEat = (detail) => {
-    lives--;
-    invulnerableTicks = 14; // ~1.75s grace period
-    ctx.saveProgress({ collected, lives });
-    updateHUD();
-
-    if (lives <= 0) {
-      // 3 lives lost: count as one wrong check
-      announce(`All 3 lives lost! Deducting attempt.`);
-      ctx.onWrongCheck();
-
-      if (ctx.isLocked()) {
-        isGameOver = true;
-        stopLoop();
-      } else {
-        // Reset board with fresh snake for next round
-        setupSnakeAndApple(false);
-        announce(`Board reset. Try again to collect ${targetWord} in order.`);
-      }
-    } else {
-      announce(`Wrong letter or hazard (${detail})! Life lost. ${lives} lives remaining.`);
+  // Wrong segment hit or head collision (forgiving pop-back, no penalty)
+  const handleWrongEat = () => {
+    // Pop apple back 1 step if possible
+    const backX = apple.x - apple.dir.x;
+    const backY = apple.y - apple.dir.y;
+    if (inBounds(backX, backY)) {
+      apple.x = backX;
+      apple.y = backY;
     }
+    const nextChar = targetWord[collected.length];
+    announce(`Oops! Eat the segments in order. Next letter is ${nextChar}.`);
   };
 
   // Turn-based or continuous step execution
   const executeStep = () => {
-    if (isPaused || isGameOver || isWon) return;
+    if (isPaused || isWon) return;
 
-    if (invulnerableTicks > 0) {
-      invulnerableTicks--;
+    if (popAnimTicks > 0) {
+      popAnimTicks--;
     }
 
     // Update apple position
@@ -527,7 +495,6 @@ export function mount(root, data, ctx) {
       const tyEnd = tyStart + hDir.y * 7;
       ctx2d.moveTo(txStart, tyStart);
       ctx2d.lineTo(txEnd, tyEnd);
-      // Forked tip
       if (hDir.x !== 0) {
         ctx2d.lineTo(txEnd + hDir.x * 3, tyEnd - 3);
         ctx2d.moveTo(txEnd, tyEnd);
@@ -543,7 +510,7 @@ export function mount(root, data, ctx) {
       // Head rounded tile
       ctx2d.fillStyle = '#16A34A';
       ctx2d.beginPath();
-      ctx2d.roundRect(hx + 3, syRound(hy), CELL_SIZE - 6, CELL_SIZE - 6, 8);
+      ctx2d.roundRect(hx + 3, hy + 3, CELL_SIZE - 6, CELL_SIZE - 6, 8);
       ctx2d.fill();
       ctx2d.strokeStyle = '#15803D';
       ctx2d.lineWidth = 2;
@@ -561,10 +528,6 @@ export function mount(root, data, ctx) {
       const acy = ay + CELL_SIZE / 2;
 
       ctx2d.save();
-      // Blinking transparency during invulnerability grace period
-      if (invulnerableTicks > 0 && Math.floor(invulnerableTicks / 2) % 2 === 0) {
-        ctx2d.globalAlpha = 0.35;
-      }
 
       // Stem at top
       ctx2d.fillStyle = '#78350F';
@@ -579,7 +542,6 @@ export function mount(root, data, ctx) {
       // Apple Body with animated mouth wedge facing direction
       const baseRadius = (CELL_SIZE - 8) / 2;
       const facingAngle = apple.dir ? apple.dir.angle : 0;
-      // Mouth oscillates between 0.05 and 0.35 radians (~30 deg wedge)
       const mouthSpread = isWon ? 0.05 : 0.05 + 0.30 * (0.5 + 0.5 * Math.sin(mouthAnimPhase * Math.PI));
 
       ctx2d.fillStyle = '#DC2626';
@@ -621,16 +583,11 @@ export function mount(root, data, ctx) {
     }
   };
 
-  function syRound(v) {
-    return v + 3;
-  }
-
   function drawSnakeEyes(cx, cy, dir) {
     ctx2d.fillStyle = '#FFFFFF';
     const perpX = -dir.y;
     const perpY = dir.x;
     const eyeDist = 6;
-    const eyeFwd = dir.x * 3 + dir.y * 3;
 
     // Left eye
     const e1x = cx + perpX * eyeDist + dir.x * 2;
@@ -660,7 +617,7 @@ export function mount(root, data, ctx) {
   const isTurnBased = () => isReducedMotion();
 
   const gameLoop = (timestamp) => {
-    if (isGameOver || isWon) {
+    if (isWon) {
       render();
       return;
     }
@@ -669,7 +626,7 @@ export function mount(root, data, ctx) {
       if (!lastTickTime) lastTickTime = timestamp;
       const elapsed = timestamp - lastTickTime;
 
-      // Animate mouth smoothly at 60fps
+      // Animate mouth smoothly
       mouthAnimPhase += 0.08;
 
       if (elapsed >= TICK_INTERVAL_MS) {
@@ -700,13 +657,17 @@ export function mount(root, data, ctx) {
   // INPUT CONTROLS
   // -------------------------------------------------------------
   const triggerDirection = (dirKey) => {
-    if (isGameOver || isWon) return;
+    if (isWon) return;
 
     const newDir = DIRS[dirKey];
     if (!newDir) return;
 
     apple.nextDir = newDir;
     apple.isMoving = true;
+
+    if (startBannerEl) {
+      startBannerEl.classList.add('hidden');
+    }
 
     // In turn-based mode (reduced motion / lite mode), move 1 step per command
     if (isTurnBased()) {
@@ -716,7 +677,7 @@ export function mount(root, data, ctx) {
   };
 
   const togglePause = () => {
-    if (isGameOver || isWon) return;
+    if (isWon) return;
     isPaused = !isPaused;
     if (pauseOverlay) {
       pauseOverlay.classList.toggle('hidden', !isPaused);
@@ -732,7 +693,6 @@ export function mount(root, data, ctx) {
   };
 
   const handleKeyDown = (e) => {
-    // Ignore inputs when user is in modal or outside game
     if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
 
     const key = e.key;
@@ -795,7 +755,7 @@ export function mount(root, data, ctx) {
 
   // Visibility change: pause if user switches tabs
   const handleVisibilityChange = () => {
-    if (document.hidden && !isPaused && !isWon && !isGameOver) {
+    if (document.hidden && !isPaused && !isWon) {
       togglePause();
     }
   };
@@ -808,16 +768,24 @@ export function mount(root, data, ctx) {
 
   if (pauseBtn) pauseBtn.addEventListener('click', togglePause);
   if (resumeBtn) resumeBtn.addEventListener('click', togglePause);
+  if (playAgainBtn) {
+    playAgainBtn.addEventListener('click', () => {
+      setupSnakeAndApple();
+      startLoop();
+      announce('New game started! Steer apple to collect CHOMP.');
+    });
+  }
   if (resetBoardBtn) {
     resetBoardBtn.addEventListener('click', () => {
-      setupSnakeAndApple(false);
-      announce('Board reset. Round restarted.');
+      setupSnakeAndApple();
+      startLoop();
+      announce('Snake reset. Round restarted.');
       render();
     });
   }
 
-  // Initial setup and loop launch
-  setupSnakeAndApple(collected.length > 0 && !isWon);
+  // Initial setup and immediate board draw
+  setupSnakeAndApple();
   render();
   startLoop();
 
@@ -825,10 +793,8 @@ export function mount(root, data, ctx) {
   activeModuleInstance = {
     checkStatus: () => {
       if (isWon) {
-        announce('Target word ROADSTER already fully assembled!');
-        ctx.onSolved();
+        announce('Target word CHOMP already fully assembled!');
       } else {
-        const remaining = wordLength - collected.length;
         announce(`In progress: ${collected.length} of ${wordLength} letters collected. Next letter: ${targetWord[collected.length]}.`);
       }
     }
@@ -844,4 +810,3 @@ export function mount(root, data, ctx) {
     dpadHandlers.forEach(({ el, fn }) => el.removeEventListener('pointerdown', fn));
   };
 }
-

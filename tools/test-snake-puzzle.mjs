@@ -1,11 +1,11 @@
-// /* DEV-ONLY */ Apple Eats Snake Verification & Integration Test
+// /* DEV-ONLY */ Apple Eats Snake (Bonus Mini-Game) Verification & Integration Test
 
 import { CONFIG } from '../js/config.js';
 import { GameState } from '../js/state.js';
 import { PUZZLE_REGISTRY } from '../js/puzzles/index.js';
 import * as snakeModule from '../js/puzzles/snake.js';
 
-console.log('=== TESTING APPLE EATS SNAKE PUZZLE MODULE ===');
+console.log('=== TESTING APPLE EATS SNAKE BONUS MINI-GAME ===');
 
 let passCount = 0;
 function assert(name, condition) {
@@ -24,24 +24,23 @@ assert('snakeModule exports unmount', typeof snakeModule.unmount === 'function')
 assert('snakeModule exports checkAnswer', typeof snakeModule.checkAnswer === 'function');
 assert('PUZZLE_REGISTRY.snake is registered', PUZZLE_REGISTRY.snake === snakeModule);
 
-// 2. Config Verification
+// 2. Bonus Config Verification
 const p11 = CONFIG.PUZZLES.puzzle_11;
 assert('puzzle_11 type is snake', p11.type === 'snake');
-assert('puzzle_11 targetWord is ROADSTER', p11.data.targetWord === 'ROADSTER');
-assert('puzzle_11 clue type is text', p11.clue.type === 'text');
-assert('puzzle_11 clue content is ROADSTER', p11.clue.content === 'ROADSTER');
-assert('puzzle_11 has 480s time override in config', CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE.puzzle_11 === 480);
-assert('puzzle_11 is listed in CONFIG.NO_HINT_PUZZLES', Array.isArray(CONFIG.NO_HINT_PUZZLES) && CONFIG.NO_HINT_PUZZLES.includes('puzzle_11'));
-assert('puzzle_11 config has no hint string', !p11.hint);
-assert('puzzle_11 difficulty is hard', CONFIG.TILE_DIFFICULTY.puzzle_11 === 'hard');
-assert('puzzle_10 difficulty is medium', CONFIG.TILE_DIFFICULTY.puzzle_10 === 'medium');
+assert('puzzle_11 bonus is true', p11.bonus === true);
+assert('puzzle_11 targetWord is CHOMP', p11.data.targetWord === 'CHOMP');
+assert('puzzle_11 has no clue', !p11.clue && !p11.clueType);
+assert('puzzle_11 has no hint', !p11.hint);
+assert('puzzle_11 is not in CONFIG.TILE_DIFFICULTY', !CONFIG.TILE_DIFFICULTY.puzzle_11);
+assert('puzzle_11 is not in CONFIG.MOCK_ANSWERS', !CONFIG.MOCK_ANSWERS.puzzle_11);
 
-// Count difficulty split: 2 easy, 5 medium, 4 hard
+// Quest difficulty split: 10 items (2 easy, 5 medium, 3 hard)
 const diffCounts = { easy: 0, medium: 0, hard: 0 };
 Object.values(CONFIG.TILE_DIFFICULTY).forEach(d => diffCounts[d]++);
+assert('Quest difficulty split has 10 total', Object.keys(CONFIG.TILE_DIFFICULTY).length === 10);
 assert('Difficulty split is 2 easy', diffCounts.easy === 2);
 assert('Difficulty split is 5 medium', diffCounts.medium === 5);
-assert('Difficulty split is 4 hard', diffCounts.hard === 4);
+assert('Difficulty split is 3 hard', diffCounts.hard === 3);
 
 // 3. Mock DOM environment for mounting
 class MockElement {
@@ -135,8 +134,10 @@ const mockCtx = {
 // Mount in regular mode
 snakeModule.mount(root, p11.data, mockCtx);
 assert('Mount executed and populated innerHTML', root.innerHTML.includes('snake-canvas'));
-assert('Root innerHTML contains TARGET WORD: ROADSTER reference', root.innerHTML.includes('ROADSTER') || root.innerHTML.includes('snake-hud-tag'));
+assert('Root innerHTML contains TARGET WORD: CHOMP', root.innerHTML.includes('CHOMP'));
 assert('Root innerHTML contains D-pad', root.innerHTML.includes('snake-dpad'));
+assert('Root innerHTML contains start banner', root.innerHTML.includes('snake-start-banner'));
+assert('Root innerHTML contains New Snake button', root.innerHTML.includes('New Snake'));
 
 // Test checkAnswer export
 snakeModule.checkAnswer();
@@ -153,19 +154,39 @@ assert('Mounts cleanly with lite-mode class', true);
 snakeModule.unmount();
 global.document.body.classList.remove('lite-mode');
 
-// 5. State Timer Override & No-Hint Tests
+// 5. State Bonus Exclusions Tests
 GameState.initSession('Test Team', 'Test School');
+assert('Initial contest summary total is 10', GameState.getSummary().total === 10);
+assert('Initial contest summary solved is 0', GameState.getSummary().solved === 0);
+
+// Open bonus puzzle
 GameState.openPuzzle('puzzle_11');
-assert('puzzle_11 starts with 480 seconds (8 min)', GameState.getPuzzleRemainingSeconds('puzzle_11') === 480);
+assert('puzzle_11 timer remaining is 0', GameState.getPuzzleRemainingSeconds('puzzle_11') === 0);
+assert('puzzle_11 does not set activeBlock in state', GameState.state.activeBlock === null);
+assert('puzzle_11 status remains UNOPENED', GameState.state.blocks.puzzle_11.status === 'UNOPENED');
+
+// Bonus puzzle ignores hint usage
 assert('GameState.useHint returns false for puzzle_11', GameState.useHint('puzzle_11') === false);
 assert('GameState.state.hintsRemaining remains 3', GameState.state.hintsRemaining === 3);
 
-GameState.devSkipTimer('puzzle_11', 10);
-assert('puzzle_11 has <= 10 seconds remaining after devSkipTimer', GameState.getPuzzleRemainingSeconds('puzzle_11') <= 10);
-
+// Bonus puzzle ignores failPuzzle & markSolved
 GameState.failPuzzle('puzzle_11');
-assert('puzzle_11 status is FAILED', GameState.state.blocks.puzzle_11.status === 'FAILED');
-assert('puzzle_11 spent time frozen at 480000ms (8 min)', GameState.state.blocks.puzzle_11.timeSpentMs === 480000);
+assert('puzzle_11 status is NOT changed to FAILED by failPuzzle', GameState.state.blocks.puzzle_11.status === 'UNOPENED');
+
+GameState.markSolved('puzzle_11');
+assert('puzzle_11 status is NOT changed to SOLVED by markSolved', GameState.state.blocks.puzzle_11.status === 'UNOPENED');
+
+// Summary remains 0 / 10
+const summaryAfterBonus = GameState.getSummary();
+assert('Summary total remains 10', summaryAfterBonus.total === 10);
+assert('Summary solved remains 0', summaryAfterBonus.solved === 0);
+
+// Solve a real quest puzzle (puzzle_1) and verify summary is 1 / 10
+GameState.openPuzzle('puzzle_1');
+GameState.markSolved('puzzle_1');
+const summaryAfterQ1 = GameState.getSummary();
+assert('Summary solved is 1 after solving puzzle_1', summaryAfterQ1.solved === 1);
+assert('Summary total is still 10', summaryAfterQ1.total === 10);
 
 console.log(`=============================================`);
-console.log(`ALL APPLE EATS SNAKE TESTS PASSED (${passCount}/${passCount})!`);
+console.log(`ALL APPLE EATS SNAKE BONUS TESTS PASSED (${passCount}/${passCount})!`);

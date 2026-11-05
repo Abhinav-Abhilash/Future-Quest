@@ -377,11 +377,13 @@ export const Screens = {
     const isVaultEntered = state.vaultEntered;
     const gridOrder = state.gridOrder || [];
 
-    // Calculate solved, failed, and progress
+    // Calculate solved, failed, and progress (excluding bonus puzzles)
     let solvedCount = 0;
     let failedCount = 0;
-    gridOrder.forEach(id => {
-      if (id === 'vault_12') return;
+    const questIds = gridOrder.filter(id => id !== 'vault_12' && !CONFIG.PUZZLES[id]?.bonus);
+    const totalQuestCount = questIds.length;
+
+    questIds.forEach(id => {
       const b = state.blocks[id];
       if (b) {
         if (b.status === 'SOLVED') solvedCount++;
@@ -389,10 +391,10 @@ export const Screens = {
       }
     });
 
-    const isAllAttempted = (solvedCount + failedCount === 11);
-    const progressPct = Math.round((solvedCount / 11) * 100);
+    const isAllAttempted = (solvedCount + failedCount === totalQuestCount);
+    const progressPct = Math.round((solvedCount / totalQuestCount) * 100);
     const ringCircumference = 150.8; // 2 * pi * 24
-    const ringDashOffset = ringCircumference * (1 - (solvedCount / 11));
+    const ringDashOffset = ringCircumference * (1 - (solvedCount / totalQuestCount));
     const masterRemaining = GameState.getMasterRemainingSeconds();
 
     // Check if first load in this session for deal-in motion
@@ -403,13 +405,12 @@ export const Screens = {
     const isFirstLoad = !isDealt && !document.body.classList.contains('lite-mode');
 
     // Clue pouch route line dash calculation
-    const routePct = Math.max(0, Math.min(1, solvedCount / 11));
+    const routePct = Math.max(0, Math.min(1, solvedCount / totalQuestCount));
     const routeDashOffset = 960 * (1 - routePct);
 
-    // Build Clue Pouch 11-slot strip
+    // Build Clue Pouch 10-slot strip (excluding bonus puzzles)
     let pouchSlotsHtml = '';
-    gridOrder.forEach((itemId, idx) => {
-      if (itemId === 'vault_12') return;
+    questIds.forEach((itemId, idx) => {
       const tileNum = idx + 1;
       const formattedNum = String(tileNum).padStart(2, '0');
       const block = state.blocks[itemId];
@@ -459,7 +460,7 @@ export const Screens = {
     let tilesHtml = '';
 
     // Submit tile: static until ready, then ONE gentle pulse, never looping
-    const isSubmitReady = (isAllAttempted || solvedCount === 11);
+    const isSubmitReady = (isAllAttempted || solvedCount === totalQuestCount);
     let submitPulseClass = '';
     if (isSubmitReady && !sessionStorage.getItem('future_quest_submit_pulsed')) {
       submitPulseClass = 'tile-submit-ready';
@@ -490,48 +491,53 @@ export const Screens = {
         `;
       } else {
         // Tiles 1..11
+        const isBonus = !!(CONFIG.PUZZLES[itemId]?.bonus);
         const block = state.blocks[itemId] || { status: 'UNOPENED' };
         const status = block.status; // UNOPENED, OPENED_IN_PROGRESS, SOLVED, FAILED
 
-        let statusClass = 'status-unopened';
+        let statusClass = isBonus ? 'status-bonus' : 'status-unopened';
         let statusBadgeHtml = '';
         let isClickable = true;
         let elapsedIndicator = '';
 
-        if (status === 'OPENED_IN_PROGRESS') {
-          statusClass = 'status-in-progress';
-          statusBadgeHtml = `
-            <div class="tile-corner-badge badge-in-progress" aria-label="Status: In progress">
-              <span class="badge-icon">${ICONS.clock}</span>
-              <span class="badge-text">In progress</span>
-            </div>
-          `;
-          elapsedIndicator = `<div class="tile-time-elapsed">In progress</div>`;
-        } else if (status === 'SOLVED') {
-          statusClass = 'status-solved';
-          statusBadgeHtml = `
-            <div class="tile-corner-badge badge-solved" aria-label="Status: Solved">
-              <span class="badge-icon">${ICONS.check}</span>
-              <span class="badge-text">Solved</span>
-            </div>
-          `;
-        } else if (status === 'FAILED') {
-          statusClass = 'status-failed';
-          statusBadgeHtml = `
-            <div class="tile-corner-badge badge-failed" aria-label="Status: Failed">
-              <span class="badge-icon">${ICONS.cross}</span>
-              <span class="badge-text">Failed</span>
-            </div>
-          `;
-          isClickable = false; // Failed tiles are locked for good
+        if (!isBonus) {
+          if (status === 'OPENED_IN_PROGRESS') {
+            statusClass = 'status-in-progress';
+            statusBadgeHtml = `
+              <div class="tile-corner-badge badge-in-progress" aria-label="Status: In progress">
+                <span class="badge-icon">${ICONS.clock}</span>
+                <span class="badge-text">In progress</span>
+              </div>
+            `;
+            elapsedIndicator = `<div class="tile-time-elapsed">In progress</div>`;
+          } else if (status === 'SOLVED') {
+            statusClass = 'status-solved';
+            statusBadgeHtml = `
+              <div class="tile-corner-badge badge-solved" aria-label="Status: Solved">
+                <span class="badge-icon">${ICONS.check}</span>
+                <span class="badge-text">Solved</span>
+              </div>
+            `;
+          } else if (status === 'FAILED') {
+            statusClass = 'status-failed';
+            statusBadgeHtml = `
+              <div class="tile-corner-badge badge-failed" aria-label="Status: Failed">
+                <span class="badge-icon">${ICONS.cross}</span>
+                <span class="badge-text">Failed</span>
+              </div>
+            `;
+            isClickable = false; // Failed tiles are locked for good
+          }
         }
 
-        if (isVaultEntered) {
-          isClickable = false; // All tiles read-only once vault entered
+        if (isVaultEntered && !isBonus) {
+          isClickable = false; // All quest tiles read-only once vault entered
         }
 
         let statusHumanLabel = 'Unopened';
-        if (status === 'OPENED_IN_PROGRESS') {
+        if (isBonus) {
+          statusHumanLabel = 'Bonus Arcade';
+        } else if (status === 'OPENED_IN_PROGRESS') {
           statusHumanLabel = 'In progress';
         } else if (status === 'SOLVED') {
           statusHumanLabel = 'Solved';
@@ -539,9 +545,16 @@ export const Screens = {
           statusHumanLabel = 'Failed';
         }
 
-        
         const diff = CONFIG.TILE_DIFFICULTY[itemId] || 'easy';
         const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1);
+        const foodBadgeHtml = isBonus ? '' : `
+            <div class="tile-food-badge">
+              <span class="food-badge food-badge-${diff}" aria-label="Difficulty: ${diffLabel}">
+                <span class="food-badge-icon" aria-hidden="true"><span class="food-badge-dot"></span></span>
+                <span class="food-badge-label">${diff}</span>
+              </span>
+            </div>
+        `;
 
         tilesHtml += `
           <button 
@@ -552,18 +565,13 @@ export const Screens = {
             data-tile-num="${tileNumber}"
             ${staggerDelay}
             ${!isClickable ? 'disabled aria-disabled="true"' : ''}
-            aria-label="Task ${tileNumber}, Difficulty: ${diffLabel}, Status: ${statusHumanLabel}"
+            aria-label="Task ${tileNumber}${isBonus ? ', Bonus Arcade Mini-game' : `, Difficulty: ${diffLabel}, Status: ${statusHumanLabel}`}"
           >
             <div class="tile-task-tag">Task ${tileNumber}</div>
             <div class="tile-gradient-number mono">${formattedNum}</div>
             ${elapsedIndicator}
             ${statusBadgeHtml}
-            <div class="tile-food-badge">
-              <span class="food-badge food-badge-${diff}" aria-label="Difficulty: ${diffLabel}">
-                <span class="food-badge-icon" aria-hidden="true"><span class="food-badge-dot"></span></span>
-                <span class="food-badge-label">${diff}</span>
-              </span>
-            </div>
+            ${foodBadgeHtml}
           </button>
         `;
       }
@@ -591,13 +599,13 @@ export const Screens = {
         <!-- Grid HUD Header -->
         <div class="grid-hud-header" role="region" aria-label="Contest HUD Bar">
           <div class="hud-stat-group">
-            <div class="hud-progress-ring-box" title="Solved ${solvedCount} of 11 puzzles (${progressPct}%)">
+            <div class="hud-progress-ring-box" title="Solved ${solvedCount} of ${totalQuestCount} puzzles (${progressPct}%)">
               <div class="hud-progress-ring">
                 <svg class="hud-ring-svg" viewBox="0 0 56 56" aria-hidden="true">
                   <circle class="hud-ring-bg" cx="28" cy="28" r="24" fill="none" stroke-width="4"></circle>
                   <circle class="hud-ring-fill" cx="28" cy="28" r="24" fill="none" stroke-width="4" stroke-dasharray="150.8" stroke-dashoffset="${ringDashOffset}"></circle>
                 </svg>
-                <div class="hud-ring-text">${solvedCount}/11</div>
+                <div class="hud-ring-text">${solvedCount}/${totalQuestCount}</div>
               </div>
               <div class="hud-stat-item">
                 <span class="hud-stat-label">Progress</span>
@@ -759,22 +767,23 @@ export const Screens = {
     // NOTE: Difficulty is a mystery until opened. In production, difficulty and time
     // limits must come from the server later, since anything in client code can be read with DevTools.
     // They appear only on the puzzle screen after the tile has been opened and stay visible afterwards.
+    const isBonus = !!(puzzleConfig && puzzleConfig.bonus);
     const block = GameState.openPuzzle(puzzleId);
     const difficulty = CONFIG.TILE_DIFFICULTY[puzzleId] || 'easy';
     const hasTimeOverride = !!(CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE[puzzleId]);
     const totalPuzzleSec = hasTimeOverride
       ? CONFIG.PUZZLE_TIME_OVERRIDE[puzzleId]
       : (CONFIG.DIFFICULTY_TIME[difficulty] || 600);
-    const isNoHint = !!(CONFIG.NO_HINT_PUZZLES && CONFIG.NO_HINT_PUZZLES.includes(puzzleId));
+    const isNoHint = isBonus || !!(CONFIG.NO_HINT_PUZZLES && CONFIG.NO_HINT_PUZZLES.includes(puzzleId));
 
     // Find tile index in gridOrder for display and determine tile label
     const tileIndex = (state.gridOrder || []).indexOf(puzzleId);
     const tileNumber = tileIndex !== -1 ? String(tileIndex + 1).padStart(2, '0') : '00';
     const tileLabel = getTileLabel(tileIndex);
 
-    // Initial check for puzzle timer expiration
-    const initialRemainingSec = GameState.getPuzzleRemainingSeconds(puzzleId);
-    if (initialRemainingSec <= 0 && block.status === 'OPENED_IN_PROGRESS') {
+    // Initial check for puzzle timer expiration (skip for bonus puzzles)
+    const initialRemainingSec = isBonus ? 0 : GameState.getPuzzleRemainingSeconds(puzzleId);
+    if (!isBonus && initialRemainingSec <= 0 && block.status === 'OPENED_IN_PROGRESS') {
       GameState.failPuzzle(puzzleId, 'TIMEOUT');
       this.showNotice(`Time expired for ${tileLabel}. The puzzle has failed.`, 'danger');
       router.navigate('/grid');
@@ -812,9 +821,9 @@ export const Screens = {
         { num: '3', title: 'VERIFY & UNLOCK', text: 'Click Check Answer or complete the phrase to lock in your solution and reveal the secret clue.' }
       ],
       snake: [
-        { num: '1', title: 'NAVIGATE APPLE', text: 'Use Arrow keys, WASD, touch swipe or the on-screen D-pad to steer the hungry red apple.' },
-        { num: '2', title: 'CHOMP IN ORDER', text: 'Eat the snake body segments one-by-one in the exact letter sequence of the secret word.' },
-        { num: '3', title: 'PRESERVE LIVES', text: 'Avoid out-of-order segments or walls; lose 3 lives and you restart. Consume the full word to win!' }
+        { num: '1', title: 'NAVIGATE APPLE', text: 'Use Arrow keys, WASD, touch swipe or on-screen D-pad to steer the hungry red apple.' },
+        { num: '2', title: 'CHOMP IN ORDER', text: 'Eat the snake body segments one-by-one in the exact letter sequence of CHOMP.' },
+        { num: '3', title: 'JUST FOR FUN', text: 'No timer, no lives, no score impact. Relax and enjoy the bonus arcade challenge!' }
       ]
     };
 
@@ -872,30 +881,38 @@ export const Screens = {
               </button>
               <div class="puzzle-header-task-info">
                 <span id="puzzle-band-task-heading" class="puzzle-band-task-label mono">TASK ${tileNumber}</span>
-                <div class="difficulty-badge ${hasTimeOverride ? 'difficulty-override' : `difficulty-${difficulty}`}">
-                  ${hasTimeOverride ? `${Math.floor(totalPuzzleSec / 60)} MIN` : `${difficulty.toUpperCase()} (${Math.floor(totalPuzzleSec / 60)} MIN)`}
-                </div>
+                ${isBonus ? `
+                  <span class="bonus-tag keycap">Bonus: just for fun</span>
+                ` : `
+                  <div class="difficulty-badge ${hasTimeOverride ? 'difficulty-override' : `difficulty-${difficulty}`}">
+                    ${hasTimeOverride ? `${Math.floor(totalPuzzleSec / 60)} MIN` : `${difficulty.toUpperCase()} (${Math.floor(totalPuzzleSec / 60)} MIN)`}
+                  </div>
+                `}
                 <div class="puzzle-category-tag mono">${puzzleConfig.category}</div>
               </div>
             </div>
             
             <div class="puzzle-header-right">
-              <div class="puzzle-timer-badge ${initialRemainingSec < 120 && block.status === 'OPENED_IN_PROGRESS' ? 'timer-low' : ''}">
-                <span class="timer-icon">${ICONS.clock}</span>
-                <span class="timer-value mono" id="puzzle-countdown">${this.formatTime(initialRemainingSec)}</span>
-              </div>
+              ${!isBonus ? `
+                <div class="puzzle-timer-badge ${initialRemainingSec < 120 && block.status === 'OPENED_IN_PROGRESS' ? 'timer-low' : ''}">
+                  <span class="timer-icon">${ICONS.clock}</span>
+                  <span class="timer-value mono" id="puzzle-countdown">${this.formatTime(initialRemainingSec)}</span>
+                </div>
+              ` : ''}
               <div class="puzzle-band-big-num mono" aria-hidden="true">${tileNumber}</div>
             </div>
           </div>
 
-          <!-- Per-puzzle Timer Progress Scale Bar -->
-          <div class="puzzle-timer-track">
-            <div 
-              class="puzzle-timer-scale-bar ${initialRemainingSec < 120 ? 'timer-amber' : ''}" 
-              id="puzzle-timer-scale" 
-              style="transform: scaleX(${initialScalePct});"
-            ></div>
-          </div>
+          ${!isBonus ? `
+            <!-- Per-puzzle Timer Progress Scale Bar -->
+            <div class="puzzle-timer-track">
+              <div 
+                class="puzzle-timer-scale-bar ${initialRemainingSec < 120 ? 'timer-amber' : ''}" 
+                id="puzzle-timer-scale" 
+                style="transform: scaleX(${initialScalePct});"
+              ></div>
+            </div>
+          ` : ''}
         </header>
 
         <!-- Status Notification Banner -->
@@ -924,18 +941,20 @@ export const Screens = {
           </div>
         </div>
 
-        <!-- Revealed Hint Box (if used) -->
-        <div id="puzzle-hint-display" class="puzzle-hint-display ${block.hintUsed ? 'hint-visible' : ''}">
-          ${block.hintUsed ? `
-            <div class="revealed-hint-box keycap" role="region" aria-label="Revealed Hint">
-              <span class="hint-icon">${ICONS.hint}</span>
-              <div class="hint-content">
-                <strong class="mono">PUZZLE HINT:</strong>
-                <p class="hint-text">${puzzleConfig.hint}</p>
+        ${!isBonus ? `
+          <!-- Revealed Hint Box (if used) -->
+          <div id="puzzle-hint-display" class="puzzle-hint-display ${block.hintUsed ? 'hint-visible' : ''}">
+            ${block.hintUsed ? `
+              <div class="revealed-hint-box keycap" role="region" aria-label="Revealed Hint">
+                <span class="hint-icon">${ICONS.hint}</span>
+                <div class="hint-content">
+                  <strong class="mono">PUZZLE HINT:</strong>
+                  <p class="hint-text">${puzzleConfig.hint}</p>
+                </div>
               </div>
-            </div>
-          ` : ''}
-        </div>
+            ` : ''}
+          </div>
+        ` : ''}
 
         <!-- 3. Puzzle Stage: Flat full-width surface -->
         <main id="puzzle-stage" class="puzzle-stage-surface theme-${puzzleType}" data-puzzle-type="${puzzleType}">
@@ -943,11 +962,13 @@ export const Screens = {
           <div id="puzzle-interactive-container"></div>
         </main>
 
-        <!-- 4. Unlocked Technical Clue Container (slides in below stage when solved) -->
-        <div id="puzzle-clue-container" class="puzzle-clue-container"></div>
+        ${!isBonus ? `
+          <!-- 4. Unlocked Technical Clue Container (slides in below stage when solved) -->
+          <div id="puzzle-clue-container" class="puzzle-clue-container"></div>
+        ` : ''}
 
         <!-- DEV-ONLY: Puzzle Testing Toolbar -->
-        ${CONFIG.DEV_MODE ? `
+        ${CONFIG.DEV_MODE && !isBonus ? `
           <div class="dev-toolbar dev-only" style="margin: 12px 16px; padding: 8px 14px; background: rgba(255, 153, 0, 0.08); border: 1px dashed #FF9900; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
             <span class="mono" style="font-size: 11px; color: #FFB340;">/* DEV-ONLY */ Puzzle Shortcuts:</span>
             <div style="display: flex; gap: 8px;">
@@ -958,61 +979,78 @@ export const Screens = {
           </div>
         ` : ''}
 
-        <!-- 5. Sticky Bottom Action Bar -->
-        <footer class="puzzle-sticky-action-bar" id="puzzle-sticky-action-bar" role="region" aria-label="Puzzle Actions">
-          <div class="action-bar-inner">
-            <div class="action-bar-left">
-              <!-- Attempts with Tactile Key Icons -->
-              <div class="action-bar-attempts" id="action-attempts-box" title="${attemptsLeft} attempts remaining">
-                <span class="action-bar-label mono">ATTEMPTS</span>
-                <div class="key-pips-row" id="action-attempts-pips">
-                  ${Array.from({ length: CONFIG.MAX_ATTEMPTS }, (_, i) => `
-                    <span class="key-pip ${i < attemptsLeft ? '' : 'key-snapped'}" title="${i < attemptsLeft ? 'Attempt available' : 'Attempt spent'}">
-                      ${i < attemptsLeft ? ICONS.key : ICONS.keyBroken}
-                    </span>
-                  `).join('')}
+        ${isBonus ? `
+          <!-- Sticky Bottom Action Bar for Bonus Game -->
+          <footer class="puzzle-sticky-action-bar bonus-action-bar" id="puzzle-sticky-action-bar" role="region" aria-label="Bonus Game Actions">
+            <div class="action-bar-inner bonus-bar-inner">
+              <div class="action-bar-left" style="display: flex; align-items: center; gap: 10px;">
+                <span class="bonus-tag keycap">Bonus: just for fun</span>
+                <span class="bonus-sub-note">No timer, no clues, no score impact.</span>
+              </div>
+              <div class="action-bar-right">
+                <button type="button" class="btn btn-primary keycap" id="btn-back-grid-bottom">
+                  Back to Grid
+                </button>
+              </div>
+            </div>
+          </footer>
+        ` : `
+          <!-- 5. Sticky Bottom Action Bar -->
+          <footer class="puzzle-sticky-action-bar" id="puzzle-sticky-action-bar" role="region" aria-label="Puzzle Actions">
+            <div class="action-bar-inner">
+              <div class="action-bar-left">
+                <!-- Attempts with Tactile Key Icons -->
+                <div class="action-bar-attempts" id="action-attempts-box" title="${attemptsLeft} attempts remaining">
+                  <span class="action-bar-label mono">ATTEMPTS</span>
+                  <div class="key-pips-row" id="action-attempts-pips">
+                    ${Array.from({ length: CONFIG.MAX_ATTEMPTS }, (_, i) => `
+                      <span class="key-pip ${i < attemptsLeft ? '' : 'key-snapped'}" title="${i < attemptsLeft ? 'Attempt available' : 'Attempt spent'}">
+                        ${i < attemptsLeft ? ICONS.key : ICONS.keyBroken}
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+                
+                <!-- Hints with Lantern Icon Button -->
+                <div class="action-bar-hints" id="action-hints-box">
+                  <button 
+                    type="button" 
+                    class="btn btn-secondary btn-sm keycap action-hint-btn" 
+                    id="btn-use-hint"
+                    ${isNoHint || state.hintsRemaining <= 0 || block.hintUsed || block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled aria-disabled="true"' : ''}
+                  >
+                    <span class="btn-hint-lantern ${isNoHint || block.hintUsed ? 'lantern-dark' : 'lantern-lit'}">${isNoHint || block.hintUsed ? ICONS.lanternDark : ICONS.lanternLit}</span>
+                    <span>${isNoHint ? 'No hints here' : (block.hintUsed ? 'Hint Used' : 'Hint')}</span>
+                    ${!isNoHint ? `
+                      <span class="hint-mini-pips" id="action-hint-pips">
+                        ${Array.from({ length: 3 }, (_, i) => `
+                          <span class="hint-mini-pip ${i < state.hintsRemaining ? 'pip-active' : 'pip-used'}">${i < state.hintsRemaining ? PUZZLE_ART.pipFilled : PUZZLE_ART.pipHollow}</span>
+                        `).join('')}
+                      </span>
+                    ` : ''}
+                  </button>
                 </div>
               </div>
-              
-              <!-- Hints with Lantern Icon Button -->
-              <div class="action-bar-hints" id="action-hints-box">
-                <button 
-                  type="button" 
-                  class="btn btn-secondary btn-sm keycap action-hint-btn" 
-                  id="btn-use-hint"
-                  ${isNoHint || state.hintsRemaining <= 0 || block.hintUsed || block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled aria-disabled="true"' : ''}
-                >
-                  <span class="btn-hint-lantern ${isNoHint || block.hintUsed ? 'lantern-dark' : 'lantern-lit'}">${isNoHint || block.hintUsed ? ICONS.lanternDark : ICONS.lanternLit}</span>
-                  <span>${isNoHint ? 'No hints here' : (block.hintUsed ? 'Hint Used' : 'Hint')}</span>
-                  ${!isNoHint ? `
-                    <span class="hint-mini-pips" id="action-hint-pips">
-                      ${Array.from({ length: 3 }, (_, i) => `
-                        <span class="hint-mini-pip ${i < state.hintsRemaining ? 'pip-active' : 'pip-used'}">${i < state.hintsRemaining ? PUZZLE_ART.pipFilled : PUZZLE_ART.pipHollow}</span>
-                      `).join('')}
-                    </span>
-                  ` : ''}
-                </button>
+
+              <div class="action-bar-center" id="action-notice-center">
+                <span class="action-bar-notice" id="action-bar-notice-text"></span>
+              </div>
+
+              <div class="action-bar-right">
+                ${puzzleType !== 'wordsearch' ? `
+                  <button 
+                    type="button" 
+                    class="btn btn-primary keycap action-check-btn" 
+                    id="btn-check-main"
+                    ${block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled' : ''}
+                  >
+                    Check Answer
+                  </button>
+                ` : ''}
               </div>
             </div>
-
-            <div class="action-bar-center" id="action-notice-center">
-              <span class="action-bar-notice" id="action-bar-notice-text"></span>
-            </div>
-
-            <div class="action-bar-right">
-              ${puzzleType !== 'wordsearch' ? `
-                <button 
-                  type="button" 
-                  class="btn btn-primary keycap action-check-btn" 
-                  id="btn-check-main"
-                  ${block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled' : ''}
-                >
-                  Check Answer
-                </button>
-              ` : ''}
-            </div>
-          </div>
-        </footer>
+          </footer>
+        `}
       </section>
     `;
 
@@ -1037,6 +1075,7 @@ export const Screens = {
 
     // Helper: Update status banner, action bar notice, and unlocked clue view
     const renderStatusAndClue = () => {
+      if (isBonus) return;
       const currentBlock = GameState.state?.blocks[puzzleId] || block;
       const statusBanner = container.querySelector('#puzzle-status-banner');
       const clueContainer = container.querySelector('#puzzle-clue-container');
@@ -1360,57 +1399,68 @@ export const Screens = {
       }
     }
 
-    // 1-second interval to update puzzle countdown display smoothly
-    this.activePuzzleInterval = setInterval(() => {
-      const remainingSec = GameState.getPuzzleRemainingSeconds(puzzleId);
-      const timerEl = document.getElementById('puzzle-countdown');
-      const scaleBar = document.getElementById('puzzle-timer-scale');
+    const backGridBottom = container.querySelector('#btn-back-grid-bottom');
+    if (backGridBottom) {
+      backGridBottom.addEventListener('click', () => {
+        this.unmountCurrentPuzzle();
+        GameState.leavePuzzle(puzzleId);
+        router.navigate('/grid');
+      });
+    }
 
-      if (timerEl) {
-        timerEl.textContent = this.formatTime(remainingSec);
-        const badge = timerEl.closest('.puzzle-timer-badge');
-        if (badge) {
-          const b = GameState.state?.blocks[puzzleId];
-          if (remainingSec < 120 && b && b.status === 'OPENED_IN_PROGRESS') {
-            badge.classList.add('timer-low');
-          } else {
-            badge.classList.remove('timer-low');
+    // 1-second interval to update puzzle countdown display smoothly (skip for bonus puzzles)
+    if (!isBonus && block.status === 'OPENED_IN_PROGRESS') {
+      this.activePuzzleInterval = setInterval(() => {
+        const remainingSec = GameState.getPuzzleRemainingSeconds(puzzleId);
+        const timerEl = document.getElementById('puzzle-countdown');
+        const scaleBar = document.getElementById('puzzle-timer-scale');
+
+        if (timerEl) {
+          timerEl.textContent = this.formatTime(remainingSec);
+          const badge = timerEl.closest('.puzzle-timer-badge');
+          if (badge) {
+            const b = GameState.state?.blocks[puzzleId];
+            if (remainingSec < 120 && b && b.status === 'OPENED_IN_PROGRESS') {
+              badge.classList.add('timer-low');
+            } else {
+              badge.classList.remove('timer-low');
+            }
           }
         }
-      }
 
-      if (scaleBar) {
-        const pct = Math.max(0, Math.min(1, remainingSec / totalPuzzleSec));
-        scaleBar.style.transform = `scaleX(${pct})`;
-        if (remainingSec < 120) {
-          scaleBar.classList.add('timer-amber');
-        } else {
-          scaleBar.classList.remove('timer-amber');
+        if (scaleBar) {
+          const pct = Math.max(0, Math.min(1, remainingSec / totalPuzzleSec));
+          scaleBar.style.transform = `scaleX(${pct})`;
+          if (remainingSec < 120) {
+            scaleBar.classList.add('timer-amber');
+          } else {
+            scaleBar.classList.remove('timer-amber');
+          }
         }
-      }
 
-      // Polite voice/text announcements at 2:00 and 0:30
-      if (remainingSec === 120 && !this.announced120) {
-        this.announced120 = true;
-        showToast(`2 minutes remaining for Task ${tileNumber}`, 'amber');
-      }
-      if (remainingSec === 30 && !this.announced30) {
-        this.announced30 = true;
-        showToast(`30 seconds remaining for Task ${tileNumber}!`, 'danger');
-      }
+        // Polite voice/text announcements at 2:00 and 0:30
+        if (remainingSec === 120 && !this.announced120) {
+          this.announced120 = true;
+          showToast(`2 minutes remaining for Task ${tileNumber}`, 'amber');
+        }
+        if (remainingSec === 30 && !this.announced30) {
+          this.announced30 = true;
+          showToast(`30 seconds remaining for Task ${tileNumber}!`, 'danger');
+        }
 
-      // Handle expiration
-      const b = GameState.state?.blocks[puzzleId];
-      if (remainingSec <= 0 && b && b.status === 'OPENED_IN_PROGRESS') {
-        GameState.failPuzzle(puzzleId, 'TIMEOUT');
-        this.unmountCurrentPuzzle();
-        clearInterval(this.activePuzzleInterval);
-        this.activePuzzleInterval = null;
-        this.showNotice(`Time expired for ${tileLabel}. The puzzle has failed.`, 'danger');
-        showToast(`Time expired for Task ${tileNumber}!`, 'danger');
-        router.navigate('/grid');
-      }
-    }, 1000);
+        // Handle expiration
+        const b = GameState.state?.blocks[puzzleId];
+        if (remainingSec <= 0 && b && b.status === 'OPENED_IN_PROGRESS') {
+          GameState.failPuzzle(puzzleId, 'TIMEOUT');
+          this.unmountCurrentPuzzle();
+          clearInterval(this.activePuzzleInterval);
+          this.activePuzzleInterval = null;
+          this.showNotice(`Time expired for ${tileLabel}. The puzzle has failed.`, 'danger');
+          showToast(`Time expired for Task ${tileNumber}!`, 'danger');
+          router.navigate('/grid');
+        }
+      }, 1000);
+    }
   },
 
   // =========================================================================
@@ -1458,7 +1508,7 @@ export const Screens = {
     const allClueTexts = [];
 
     gridOrder.forEach((itemId, idx) => {
-      if (itemId === 'vault_12') return;
+      if (itemId === 'vault_12' || CONFIG.PUZZLES[itemId]?.bonus) return;
 
       const tileNum = idx + 1;
       const formattedNum = String(tileNum).padStart(2, '0');
@@ -1844,6 +1894,9 @@ export const Screens = {
                 Tiles 1 through 11 are randomized in order at contest initialization. All 11 puzzle tiles are unlocked from the start and can be attempted in any order. Each puzzle permits a maximum of <strong>3 attempts</strong>. Entering 3 incorrect answers permanently marks the puzzle as <strong>FAILED</strong>.
               </p>
               <p class="rule-text">
+                One tile is a bonus mini-game. It has no clue and does not affect your score.
+              </p>
+              <p class="rule-text">
                 Some puzzles involve reading code or using your browser's developer tools. Everything you need is on the page or in your browser.
               </p>
             </details>
@@ -1852,9 +1905,6 @@ export const Screens = {
               <summary>5. Hint Allocation</summary>
               <p class="rule-text">
                 Each team is allocated exactly <strong>3 hints total</strong> for the entire 2-hour competition (shared across all 11 puzzles). Spending a hint permanently reveals a clue for that puzzle. Hints are non-refundable and cannot be re-assigned.
-              </p>
-              <p class="rule-text">
-                A few special puzzles have their own time limit and do not allow hints.
               </p>
             </details>
 
