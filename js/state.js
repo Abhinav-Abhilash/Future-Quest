@@ -61,7 +61,12 @@ class StateManager {
       if (!serialized) return null;
       const parsed = JSON.parse(serialized);
       if (parsed && parsed.teamName && parsed.gridOrder) {
+        // Sanitize gridOrder: preserve only valid quest puzzles and append vault_12 strictly once
+        const validQuestIds = new Set(Object.keys(CONFIG.PUZZLES));
+        const cleanQuestOrder = parsed.gridOrder.filter(id => validQuestIds.has(id));
+        parsed.gridOrder = [...cleanQuestOrder, 'vault_12'];
         if (parsed.blocks) {
+          delete parsed.blocks['puzzle_11'];
           for (const bid in parsed.blocks) {
             parsed.blocks[bid].progress = parsed.blocks[bid].progress || {};
           }
@@ -114,7 +119,9 @@ class StateManager {
       const blocks = {};
       const gridOrder = [];
 
+      const validQuestIds = new Set(Object.keys(CONFIG.PUZZLES));
       tiles.forEach((t) => {
+        if (!validQuestIds.has(t.puzzleId)) return; // skip legacy or invalid puzzles like puzzle_11
         gridOrder.push(t.puzzleId);
         blocks[t.puzzleId] = {
           status: t.status, // AVAILABLE, OPENED, SOLVED, FAILED
@@ -134,10 +141,8 @@ class StateManager {
         }
       });
 
-      // Always fix vault_12 at slot 12
-      if (!gridOrder.includes('vault_12')) {
-        gridOrder.push('vault_12');
-      }
+      // Always fix vault_12 as the single last tile
+      gridOrder.push('vault_12');
 
       this.state = {
         teamName: team.teamName,

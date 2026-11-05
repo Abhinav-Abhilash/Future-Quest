@@ -391,12 +391,14 @@ export const Screens = {
     GameState.checkExpiredPuzzles();
 
     const isVaultEntered = state.vaultEntered;
-    const gridOrder = state.gridOrder || [];
+    const rawGridOrder = state.gridOrder || [];
+    const validQuestIds = new Set(Object.keys(CONFIG.PUZZLES));
+    const questIds = rawGridOrder.filter(id => validQuestIds.has(id));
+    const gridOrder = [...questIds, 'vault_12'];
 
     // Calculate solved, failed, and progress
     let solvedCount = 0;
     let failedCount = 0;
-    const questIds = gridOrder.filter(id => id !== 'vault_12');
     const totalQuestCount = questIds.length;
 
     questIds.forEach(id => {
@@ -489,7 +491,7 @@ export const Screens = {
       const staggerClass = isFirstLoad ? 'tile-deal-in' : '';
       const staggerDelay = isFirstLoad ? `style="animation-delay: ${index * 40}ms;"` : '';
 
-      if (itemId === 'vault_12' || index === 10) {
+      if (itemId === 'vault_12') {
         // Submit Button (static until ready, then ONE gentle pulse)
         tilesHtml += `
           <button 
@@ -782,7 +784,7 @@ export const Screens = {
     const isNoHint = !!(CONFIG.NO_HINT_PUZZLES && CONFIG.NO_HINT_PUZZLES.includes(puzzleId));
 
     // Find tile index in gridOrder for display and determine tile label
-    const tileIndex = (state.gridOrder || []).indexOf(puzzleId);
+    const tileIndex = (state.gridOrder || []).filter(id => id !== 'vault_12').indexOf(puzzleId);
     const tileNumber = tileIndex !== -1 ? String(tileIndex + 1).padStart(2, '0') : '00';
     const tileLabel = getTileLabel(tileIndex);
 
@@ -1468,12 +1470,13 @@ export const Screens = {
     const summary = GameState.getSummary();
 
     // Assemble Clue Inventory
-    const gridOrder = state.gridOrder || [];
+    const rawGridOrder = state.gridOrder || [];
+    const validQuestIds = new Set(Object.keys(CONFIG.PUZZLES));
+    const gridOrder = rawGridOrder.filter(id => validQuestIds.has(id));
     let inventoryHtml = '';
     const allClueTexts = [];
 
     gridOrder.forEach((itemId, idx) => {
-      if (itemId === 'vault_12') return;
 
       const tileNum = idx + 1;
       const formattedNum = String(tileNum).padStart(2, '0');
