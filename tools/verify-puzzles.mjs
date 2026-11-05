@@ -1,9 +1,9 @@
 // /* DEV-ONLY */ Puzzle Data Verification Script
-// Imports CONFIG directly and dynamically validates all 11 puzzles against CONFIG.PUZZLES.
+// Validates all 11 puzzles against the server-side source of truth (server/puzzles/definitions.js).
 
-import { CONFIG } from '../js/config.js';
+import { PUZZLES, checkPuzzleAnswer } from '../server/puzzles/definitions.js';
 
-console.log('=== FUTURE QUEST 2026 - DYNAMIC PUZZLE DATA VERIFICATION ===');
+console.log('=== FUTURE QUEST 2026 - SERVER PUZZLE DATA & ANSWER VERIFICATION ===');
 
 let allPassed = true;
 function report(name, passed, detail = '') {
@@ -15,11 +15,9 @@ function report(name, passed, detail = '') {
   }
 }
 
-// Safely evaluate simple arithmetic expressions without arbitrary code execution
+// Safely evaluate simple arithmetic expressions
 function evaluateMath(expr) {
-  // Convert ^ into JS exponentiation **
   let cleaned = expr.replace(/\^/g, '**');
-  // Evaluate arithmetic using Function
   return Function(`'use strict'; return (${cleaned});`)();
 }
 
@@ -61,147 +59,120 @@ function findWordInGrid(word, grid) {
 // -------------------------------------------------------------
 // T1: ASCII Quote Decoder (Tomorrow starts with the code you write today)
 // -------------------------------------------------------------
-const t1 = CONFIG.PUZZLES.puzzle_1.data;
-const t1_decoded = t1.words.map(w => w.codes.map(c => String.fromCharCode(c)).join('')).join(' ');
-const t1_expected = t1.groupSolutions.join(' ');
-report('T1 ASCII Dynamic Check', t1_decoded === t1_expected && t1_decoded === 'Tomorrow starts with the code you write today', t1_decoded);
+const t1 = PUZZLES.puzzle_1;
+const t1_decoded = t1.clientData.words.map(w => w.codes.map(c => String.fromCharCode(c)).join('')).join(' ');
+const t1_ok = checkPuzzleAnswer('puzzle_1', t1_decoded) && t1_decoded === 'Tomorrow starts with the code you write today';
+report('T1 ASCII Dynamic Check (Tomorrow starts with the code you write today)', t1_ok, t1_decoded);
 
 // -------------------------------------------------------------
 // T2: Coordinates Grid (LEARN, BUILD, LEAD)
 // -------------------------------------------------------------
-const t2 = CONFIG.PUZZLES.puzzle_2.data;
+const t2 = PUZZLES.puzzle_2;
 let t2_ok = true;
-t2.groupedChips.forEach(grp => {
-  const spelled = grp.coords.map(([c, r, expectedCh]) => {
-    const cellCh = t2.grid[r - 1][c - 1];
-    if (cellCh !== expectedCh) t2_ok = false;
-    return cellCh;
-  }).join('');
-  if (spelled !== grp.name) t2_ok = false;
-});
-report('T2 COORDS Dynamic Check (LEARN, BUILD, LEAD)', t2_ok);
+const t2_words = t2.clientData.groupedChips.map(grp => {
+  return grp.coords.map(([c, r]) => t2.clientData.grid[r - 1][c - 1]).join('');
+}).join(' ');
+t2_ok = checkPuzzleAnswer('puzzle_2', t2_words) && t2_words === 'LEARN BUILD LEAD';
+report('T2 COORDS Dynamic Check (LEARN BUILD LEAD)', t2_ok, t2_words);
 
 // -------------------------------------------------------------
 // T3: BODMAS Decoder (CODE THE FUTURE)
 // -------------------------------------------------------------
-const t3 = CONFIG.PUZZLES.puzzle_3.data;
-let t3_ok = true;
-t3.groupedEquations.forEach(grp => {
-  const spelled = grp.equations.map(eq => {
+const t3 = PUZZLES.puzzle_3;
+const t3_words = t3.clientData.groupedEquations.map(grp => {
+  return grp.equations.map(eq => {
     const val = evaluateMath(eq.expr);
-    if (val !== eq.expected) t3_ok = false;
-    const letter = String.fromCharCode(64 + val);
-    if (letter !== eq.letter) t3_ok = false;
-    return letter;
+    return String.fromCharCode(64 + val);
   }).join('');
-  if (spelled !== grp.solution) t3_ok = false;
-});
-report('T3 BODMAS Dynamic Check (CODE THE FUTURE)', t3_ok);
+}).join(' ');
+const t3_ok = checkPuzzleAnswer('puzzle_3', t3_words) && t3_words === 'CODE THE FUTURE';
+report('T3 BODMAS Dynamic Check (CODE THE FUTURE)', t3_ok, t3_words);
 
 // -------------------------------------------------------------
 // T4: Riddle - The 17-Year-Old OS (CINNAMON BUN)
 // -------------------------------------------------------------
-const t4 = CONFIG.PUZZLES.puzzle_4.data;
-const t4_ok = t4.solution === 'CINNAMON BUN' && 
-  t4.acceptedSolutions.includes('CINNAMON BUN') &&
-  t4.words.map(w => w.length).reduce((a, b) => a + b, 0) === 11 &&
-  t4.riddleLines.length >= 3;
+const t4 = PUZZLES.puzzle_4;
+const t4_ok = checkPuzzleAnswer('puzzle_4', 'CINNAMON BUN') && 
+  checkPuzzleAnswer('puzzle_4', 'cinnamon roll') &&
+  t4.difficulty === 'medium' &&
+  t4.timeLimit === 900;
 report('T4 Riddle Dynamic Check (CINNAMON BUN)', t4_ok);
 
 // -------------------------------------------------------------
 // T5: Reverse-Index Cipher (WHERE HUMAN MEETS AI)
 // -------------------------------------------------------------
-const t5 = CONFIG.PUZZLES.puzzle_5.data;
-const t5_decoded = t5.words.map(w => w.codes.map(c => String.fromCharCode(64 + (27 - c))).join('')).join(' ');
-const t5_expected = t5.groupSolutions.join(' ');
-report('T5 Reverse-Index Cipher Dynamic Check (WHERE HUMAN MEETS AI)', t5_decoded === t5_expected && t5_decoded === 'WHERE HUMAN MEETS AI', t5_decoded);
+const t5 = PUZZLES.puzzle_5;
+const t5_decoded = t5.clientData.words.map(w => w.codes.map(c => String.fromCharCode(64 + (27 - c))).join('')).join(' ');
+const t5_ok = checkPuzzleAnswer('puzzle_5', t5_decoded) && t5_decoded === 'WHERE HUMAN MEETS AI';
+report('T5 Reverse-Index Cipher Dynamic Check (WHERE HUMAN MEETS AI)', t5_ok, t5_decoded);
 
 // -------------------------------------------------------------
 // T6: Institutional Identity Riddle (JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY)
 // -------------------------------------------------------------
-const t6 = CONFIG.PUZZLES.puzzle_6.data;
-const t6_ok = t6.solution === 'JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY' &&
-  t6.acceptedSolutions.includes('JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY') &&
-  t6.words.map(w => w.length).reduce((a, b) => a + b, 0) === 38;
+const t6 = PUZZLES.puzzle_6;
+const t6_ok = checkPuzzleAnswer('puzzle_6', 'JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY') &&
+  checkPuzzleAnswer('puzzle_6', 'SCHOOL OF FUTURE TECHNOLOGY');
 report('T6 Institutional Riddle Dynamic Check (JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY)', t6_ok);
 
 // -------------------------------------------------------------
 // T7: Word Search (20 Words)
 // -------------------------------------------------------------
-const t7 = CONFIG.PUZZLES.puzzle_7.data;
-let t7_ok = true;
-t7.words.forEach(word => {
-  const found = findWordInGrid(word, t7.grid);
+const t7 = PUZZLES.puzzle_7;
+let t7_allFound = true;
+t7.targetWordList.forEach(word => {
+  const found = findWordInGrid(word, t7.clientData.grid);
   if (!found) {
-    t7_ok = false;
+    t7_allFound = false;
     console.error(`  [NOT FOUND] T7 word in grid: ${word}`);
   }
 });
+const t7_ok = t7_allFound && checkPuzzleAnswer('puzzle_7', { foundWords: t7.targetWordList });
 report('T7 Word Search Dynamic Check (20 words in grid)', t7_ok);
 
 // -------------------------------------------------------------
 // T8: Riddle - The Orbital Starman (ROADSTER)
 // -------------------------------------------------------------
-const t8 = CONFIG.PUZZLES.puzzle_8.data;
-const t8_ok = t8.solution === 'ROADSTER' &&
-  t8.acceptedSolutions.includes('ROADSTER') &&
-  t8.words.map(w => w.length).reduce((a, b) => a + b, 0) === 8 &&
-  t8.riddleLines.length >= 3;
+const t8 = PUZZLES.puzzle_8;
+const t8_ok = checkPuzzleAnswer('puzzle_8', 'ROADSTER') &&
+  checkPuzzleAnswer('puzzle_8', 'roadster') &&
+  t8.difficulty === 'hard' &&
+  t8.timeLimit === 1200;
 report('T8 Riddle Dynamic Check (ROADSTER)', t8_ok);
 
 // -------------------------------------------------------------
 // T9: Dual Color Palette Riddle (DARK BLUE AND LIGHT STEEL BLUE)
 // -------------------------------------------------------------
-const t9 = CONFIG.PUZZLES.puzzle_9.data;
-const t9_ok = t9.solution === 'DARK BLUE AND LIGHT STEEL BLUE' &&
-  t9.acceptedSolutions.includes('DARK BLUE AND LIGHT STEEL BLUE') &&
-  t9.words.map(w => w.length).reduce((a, b) => a + b, 0) === 25;
+const t9 = PUZZLES.puzzle_9;
+const t9_ok = checkPuzzleAnswer('puzzle_9', 'DARK BLUE AND LIGHT STEEL BLUE') &&
+  checkPuzzleAnswer('puzzle_9', 'DARK BLUE LIGHT STEEL BLUE');
 report('T9 Dual Color Riddle Dynamic Check (DARK BLUE AND LIGHT STEEL BLUE)', t9_ok);
 
 // -------------------------------------------------------------
 // T10: Coordinates Grid (FUTURE QUEST)
 // -------------------------------------------------------------
-const t10 = CONFIG.PUZZLES.puzzle_10.data;
-let t10_ok = true;
-const t10_spelledWords = t10.groupedChips.map(grp => {
-  const spelled = grp.coords.map(([c, r, expectedCh]) => {
-    const cellCh = t10.grid[r - 1][c - 1];
-    if (cellCh !== expectedCh) t10_ok = false;
-    return cellCh;
-  }).join('');
-  if (spelled !== grp.name) t10_ok = false;
-  return spelled;
-});
-const t10_full = t10_spelledWords.join(' ');
-report('T10 COORDS Dynamic Check (FUTURE QUEST)', t10_ok && t10_full === 'FUTURE QUEST', t10_full);
+const t10 = PUZZLES.puzzle_10;
+const t10_words = t10.clientData.groupedChips.map(grp => {
+  return grp.coords.map(([c, r]) => t10.clientData.grid[r - 1][c - 1]).join('');
+}).join(' ');
+const t10_ok = checkPuzzleAnswer('puzzle_10', t10_words) && t10_words === 'FUTURE QUEST';
+report('T10 COORDS Dynamic Check (FUTURE QUEST)', t10_ok, t10_words);
 
 // -------------------------------------------------------------
 // T11: Apple Eats Snake (Pure Bonus Mini-Game: CHOMP)
 // -------------------------------------------------------------
-const t11 = CONFIG.PUZZLES.puzzle_11;
-const t11_data = t11.data;
-const t11_targetWord = t11_data.targetWord;
-const t11_letters = t11_targetWord.split('');
-const t11_isBonus = t11.bonus === true;
-const t11_hasNoClue = !t11.clue && !t11.clueType;
-const t11_hasNoHint = !t11.hint;
-const t11_notInDifficulty = !(CONFIG.TILE_DIFFICULTY && CONFIG.TILE_DIFFICULTY.puzzle_11);
-const t11_notInAnswers = !(CONFIG.MOCK_ANSWERS && CONFIG.MOCK_ANSWERS.puzzle_11);
-const t11_ok = t11.type === 'snake' &&
-  t11_isBonus &&
-  t11_targetWord === 'CHOMP' &&
-  t11_letters.length === 5 &&
-  t11_letters.join('') === 'CHOMP' &&
-  t11_hasNoClue &&
-  t11_hasNoHint &&
-  t11_notInDifficulty &&
-  t11_notInAnswers;
-report('T11 Apple Eats Snake Bonus Check (CHOMP, length 5, no clue/hint/answers)', t11_ok, `Bonus: ${t11_isBonus}, Word: ${t11_targetWord}, Length: ${t11_letters.length}`);
+const t11 = PUZZLES.puzzle_11;
+const t11_ok = t11.bonus === true &&
+  t11.difficulty === null &&
+  t11.timeLimit === null &&
+  t11.hint === null &&
+  t11.clue === null &&
+  t11.clientData.targetWord === 'CHOMP';
+report('T11 Apple Eats Snake Bonus Check (CHOMP, purely client-side bonus)', t11_ok);
 
 console.log('=============================================================');
 if (allPassed) {
-  console.log('ALL CONFIG.PUZZLES DATA CHECKS PASSED 100% DYNAMICALLY!');
+  console.log('ALL SERVER PUZZLE DEFINITIONS & ANSWERS VERIFIED 100%!');
 } else {
-  console.error('SOME DYNAMIC DATA CHECKS FAILED!');
+  console.error('SOME SERVER PUZZLE VERIFICATIONS FAILED!');
   process.exit(1);
 }

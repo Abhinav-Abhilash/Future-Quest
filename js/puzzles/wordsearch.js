@@ -386,7 +386,15 @@ export function mount(root, data, ctx) {
 
       // Check if all words found
       if (foundWords.size === targetWords.length) {
-        ctx.onSolved();
+        if (typeof ctx.checkAnswer === 'function') {
+          ctx.checkAnswer({ foundWords: Array.from(foundWords) }).then(res => {
+            if (res && res.correct && ctx.onSolved) {
+              ctx.onSolved(res);
+            }
+          });
+        } else if (ctx.onSolved) {
+          ctx.onSolved();
+        }
       }
       return true;
     }

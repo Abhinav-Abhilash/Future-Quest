@@ -97,7 +97,7 @@ export function mount(root, data, ctx) {
         const val = entries[key] || '';
         const letter = numToLetter(val);
         return `
-          <div class="bodmas-calc-card ${isGrpSolved ? 'calc-card-locked' : ''}" data-key="${key}" data-expected="${eq.expected}">
+          <div class="bodmas-calc-card ${isGrpSolved ? 'calc-card-locked' : ''}" data-key="${key}">
             <div class="calc-expr-box mono">${formatMathExpr(eq.display || eq.expr)}</div>
             <div class="calc-input-row">
               <span class="calc-equal mono">=</span>
@@ -110,8 +110,6 @@ export function mount(root, data, ctx) {
                 data-group="${gIdx}"
                 data-idx="${eIdx}"
                 data-key="${key}"
-                data-expected="${eq.expected}"
-                data-letter="${eq.letter}"
                 value="${val}"
                 placeholder="?"
                 ${isGrpSolved || isLocked ? 'disabled' : ''}
@@ -147,7 +145,7 @@ export function mount(root, data, ctx) {
       const letter = numToLetter(val);
       const slotBadge = eq.slot ? `<span class="calc-slot-badge mono">Slot #${eq.slot}</span>` : '';
       return `
-        <div class="bodmas-calc-card" data-key="${key}" data-expected="${eq.expected}">
+        <div class="bodmas-calc-card" data-key="${key}">
           <div class="calc-card-header">
             ${slotBadge}
             <div class="calc-expr-box mono">${formatMathExpr(eq.display || eq.expr)}</div>
@@ -162,8 +160,6 @@ export function mount(root, data, ctx) {
               class="bodmas-keycap-input mono" 
               data-idx="${eIdx}"
               data-key="${key}"
-              data-expected="${eq.expected}"
-              data-letter="${eq.letter}"
               value="${val}"
               placeholder="?"
               ${isLocked ? 'disabled' : ''}
@@ -512,130 +508,58 @@ export function mount(root, data, ctx) {
   }
 
   // Answer Check Verification
-  const checkAll = () => {
-    let anyWrong = false;
-    let wrongInputs = [];
+  const checkAll = async () => {
+    if (ctx.isLocked && ctx.isLocked()) return;
 
     if (data.groupedEquations) {
-      // T3: Check by group
-      data.groupedEquations.forEach((group, gIdx) => {
-        if (solvedGroups.has(gIdx)) return;
+      // Collect entered letters for all words
+      const fullSentence = data.groupedEquations.map((group, gIdx) => {
+        return group.equations.map((_, eIdx) => {
+          const val = (entries[`g${gIdx}_e${eIdx}`] || '').trim();
+          return numToLetter(val) || '';
+        }).join('');
+      }).join(' ').trim();
 
-        let grpFilled = true;
-        let grpMatches = true;
-        const groupInputs = [];
+      if (!fullSentence) return;
 
-        group.equations.forEach((eq, eIdx) => {
-          const key = `g${gIdx}_e${eIdx}`;
-          const input = wrap.querySelector(`.bodmas-keycap-input[data-key="${key}"]`);
-          groupInputs.push(input);
-          const val = (entries[key] || '').trim();
+      let res = null;
+      if (typeof ctx.checkAnswer === 'function') {
+        res = await ctx.checkAnswer(fullSentence);
+      }
 
-          if (!val) {
-            grpFilled = false;
-          } else if (parseInt(val, 10) !== eq.expected) {
-            grpMatches = false;
-          }
-        });
-
-        if (grpFilled && grpMatches) {
+      if (res && res.correct) {
+        data.groupedEquations.forEach((_, gIdx) => {
           solvedGroups.add(gIdx);
-          groupInputs.forEach(inp => { if (inp) inp.disabled = true; });
-
           const panel = wrap.querySelector(`#bodmas-group-${gIdx}`);
           if (panel) panel.classList.add('group-locked');
-
-          const slotEl = wrap.querySelector(`#poster-slot-${gIdx}`);
-          animateGroupLock(groupInputs, slotEl, group.solution || group.name, root);
-        } else if (grpFilled && !grpMatches) {
-          anyWrong = true;
-          groupInputs.forEach(inp => {
-            if (inp && parseInt(inp.value, 10) !== parseInt(inp.dataset.expected, 10)) {
-              wrongInputs.push(inp);
-            }
-          });
-        }
-      });
-
-      persist();
-
-      if (solvedGroups.size === data.groupedEquations.length) {
-        ctx.onSolved();
-      }
-    } else if (data.hasAnagramTray) {
-      // T5: Unlock Anagram Tray
-      let allEqsCorrect = true;
-      allInputs.forEach(inp => {
-        const val = parseInt(inp.value, 10);
-        const expected = parseInt(inp.dataset.expected, 10);
-        if (isNaN(val) || val !== expected) {
-          allEqsCorrect = false;
-          if (!isNaN(val)) {
-            anyWrong = true;
-            wrongInputs.push(inp);
-          }
-        }
-      });
-
-      if (allEqsCorrect) {
-        saved.trayUnlocked = true;
-        const trayPanel = wrap.querySelector('#anagram-tray-panel');
-        if (trayPanel) {
-          trayPanel.classList.remove('locked');
-          trayPanel.classList.add('unlocked');
-          const badge = trayPanel.querySelector('#anagram-badge');
-          if (badge) badge.textContent = 'UNLOCKED';
-          wrap.querySelectorAll('#btn-anagram-reset, #btn-anagram-confirm').forEach(b => b.disabled = false);
-        }
-        allInputs.forEach(inp => inp.disabled = true);
+        });
+        allInputs.forEach(inp => { if (inp) inp.disabled = true; });
         persist();
+        if (ctx.onSolved) ctx.onSolved(res);
+      } else {
+        const errorBar = document.querySelector('#bar-error-text');
+        playWrongFeedback(allInputs, errorBar);
+        if (ctx.onWrongCheck) ctx.onWrongCheck(res);
       }
     } else {
-      // T9: Slotted Equations (SIGNAL)
-      let allFilled = true;
-      let allCorrect = true;
+      // Slotted / flat equations
+      const fullSentence = allInputs.map(inp => numToLetter(inp.value.trim()) || '').join('');
+      if (!fullSentence) return;
 
-      allInputs.forEach(inp => {
-        const val = parseInt(inp.value, 10);
-        const expected = parseInt(inp.dataset.expected, 10);
-        if (isNaN(val)) {
-          allFilled = false;
-        } else if (val !== expected) {
-          allCorrect = false;
-          anyWrong = true;
-          wrongInputs.push(inp);
-        }
-      });
-
-      if (allFilled && allCorrect) {
-        solvedGroups.add(0);
-        allInputs.forEach(inp => inp.disabled = true);
-        const slotEl = wrap.querySelector('#poster-slot-0');
-        animateGroupLock(allInputs, slotEl, data.finalWord || 'SIGNAL', root, () => {
-          persist();
-          ctx.onSolved();
-        });
+      let res = null;
+      if (typeof ctx.checkAnswer === 'function') {
+        res = await ctx.checkAnswer(fullSentence);
       }
-    }
 
-    if (anyWrong) {
-      const errorBar = document.querySelector('#bar-error-text');
-      playWrongFeedback(wrongInputs, errorBar);
-      setTimeout(() => {
-        wrongInputs.forEach(inp => {
-          inp.value = '';
-          delete entries[inp.dataset.key];
-          const flipper = inp.closest('.calc-input-row')?.querySelector('.letter-bay-flipper');
-          if (flipper) {
-            flipper.classList.remove('flipped');
-            flipper.querySelector('.bay-letter').textContent = '?';
-          }
-        });
-        if (wrongInputs[0]) wrongInputs[0].focus();
+      if (res && res.correct) {
+        allInputs.forEach(inp => { if (inp) inp.disabled = true; });
         persist();
-      }, 450);
-
-      ctx.onWrongCheck();
+        if (ctx.onSolved) ctx.onSolved(res);
+      } else {
+        const errorBar = document.querySelector('#bar-error-text');
+        playWrongFeedback(allInputs, errorBar);
+        if (ctx.onWrongCheck) ctx.onWrongCheck(res);
+      }
     }
   };
 

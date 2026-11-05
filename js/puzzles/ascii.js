@@ -325,7 +325,7 @@ export function mount(root, data, ctx) {
       const chars = wObj.codes.map((_, cIdx) => {
         const char = entries[`w${wIdx}_c${cIdx}`];
         if (isWordSolved) {
-          return `<span class="decode-char char-entered" style="color: #4ADE80;">${char || wObj.expectedChars[cIdx]}</span>`;
+          return `<span class="decode-char char-entered" style="color: #4ADE80;">${char || ''}</span>`;
         }
         return char 
           ? `<span class="decode-char char-entered">${char}</span>` 
@@ -387,53 +387,13 @@ export function mount(root, data, ctx) {
     });
   });
 
-  // Check and lock a single word if all letters match
+  // Check and lock a single word when solved
   const checkWordLock = (wIdx) => {
     const wordObj = words[wIdx];
-    if (!wordObj || solvedGroups.has(wIdx)) return;
-
-    let full = true;
-    let match = true;
-    wordObj.codes.forEach((_, cIdx) => {
-      const key = `w${wIdx}_c${cIdx}`;
-      const entered = entries[key] || '';
-      const expected = wordObj.expectedChars[cIdx];
-      if (!entered) full = false;
-      else if (entered.toLowerCase() !== expected.toLowerCase()) match = false;
-    });
-
-    if (full && match) {
-      solvedGroups.add(wIdx);
-      const wordGroupEl = wrap.querySelector(`#ascii-word-${wIdx}`);
-      if (wordGroupEl) {
-        wordGroupEl.classList.add('word-bar-locked');
-        wordGroupEl.querySelectorAll('.ascii-keycap-input').forEach(i => i.disabled = true);
-        const clearBtn = wordGroupEl.querySelector('.btn-group-clear');
-        if (clearBtn) clearBtn.remove();
-
-        const header = wordGroupEl.querySelector('.word-group-header');
-        if (header && !header.querySelector('.word-stamp-badge')) {
-          const badge = document.createElement('span');
-          badge.className = 'word-stamp-badge mono';
-          badge.textContent = 'STAMPED: LOCKED';
-          badge.style.color = '#4ADE80';
-          badge.style.fontSize = '10px';
-          badge.style.fontWeight = '700';
-          badge.style.padding = '2px 6px';
-          badge.style.background = 'rgba(74, 222, 128, 0.15)';
-          badge.style.border = '1px solid rgba(74, 222, 128, 0.4)';
-          badge.style.borderRadius = '3px';
-          header.appendChild(badge);
-        }
-      }
-      updatePosterStrip();
-      updateLiveSentence();
-      persist();
-
-      if (!data.isCaesarHybrid && solvedGroups.size === words.length) {
-        ctx.onSolved();
-      }
-    }
+    if (!wordObj) return;
+    persist();
+    updatePosterStrip();
+    updateLiveSentence();
   };
 
   // Initial live sentence render
@@ -702,81 +662,37 @@ export function mount(root, data, ctx) {
   }
 
   // Answer Check Verification
-  const checkAll = () => {
-    let anyWrong = false;
-    let wrongCards = [];
+  const checkAll = async () => {
+    if (ctx.isLocked && ctx.isLocked()) return;
 
-    words.forEach((wordObj, wIdx) => {
-      if (solvedGroups.has(wIdx)) return;
+    const fullSentence = words.map((wObj, wIdx) => {
+      return wObj.codes.map((_, cIdx) => (entries[`w${wIdx}_c${cIdx}`] || '').toUpperCase()).join('');
+    }).join(' ').trim();
 
-      let wordFilled = true;
-      let wordMatches = true;
-      const groupInputs = [];
+    if (!fullSentence) return;
 
-      wordObj.codes.forEach((code, cIdx) => {
-        const key = `w${wIdx}_c${cIdx}`;
-        const input = wrap.querySelector(`.ascii-keycap-input[data-key="${key}"]`);
-        groupInputs.push(input);
-        const entered = (entries[key] || '').toUpperCase();
-        const expected = wordObj.expectedChars[cIdx].toUpperCase();
+    let res = null;
+    if (typeof ctx.checkAnswer === 'function') {
+      res = await ctx.checkAnswer(fullSentence);
+    }
 
-        if (!entered) {
-          wordFilled = false;
-        } else if (entered !== expected) {
-          wordMatches = false;
+    if (res && res.correct) {
+      words.forEach((_, wIdx) => {
+        solvedGroups.add(wIdx);
+        const wordGroupEl = wrap.querySelector(`#ascii-word-${wIdx}`);
+        if (wordGroupEl) {
+          wordGroupEl.classList.add('word-bar-locked');
+          wordGroupEl.querySelectorAll('.ascii-keycap-input').forEach(i => i.disabled = true);
         }
       });
-
-      if (wordFilled && wordMatches) {
-        checkWordLock(wIdx);
-      } else if (wordFilled && !wordMatches) {
-        anyWrong = true;
-        groupInputs.forEach(inp => {
-          if (inp && (entries[inp.dataset.key] || '').toUpperCase() !== wordObj.expectedChars[parseInt(inp.dataset.char, 10)].toUpperCase()) {
-            wrongCards.push(inp);
-          }
-        });
-      }
-    });
-
-    persist();
-
-    // Check Phase 2 unlock for T8
-    if (data.isCaesarHybrid && !phase2Unlocked) {
-      if (solvedGroups.has(0) && solvedGroups.has(1)) {
-        phase2Unlocked = true;
-        const dialSec = wrap.querySelector('#caesar-dial-section');
-        if (dialSec) {
-          dialSec.classList.remove('dial-disabled');
-          dialSec.classList.add('dial-active');
-          const badge = dialSec.querySelector('.caesar-status-badge');
-          if (badge) badge.textContent = 'UNLOCKED';
-          wrap.querySelectorAll('#btn-dial-minus, #btn-dial-plus, #btn-caesar-confirm').forEach(b => b.disabled = false);
-        }
-        persist();
-      }
-    }
-
-    if (anyWrong) {
+      persist();
+      updateLiveSentence();
+      if (ctx.onSolved) ctx.onSolved(res);
+    } else {
       const errorBar = document.querySelector('#bar-error-text');
-      playWrongFeedback(wrongCards, errorBar);
-      setTimeout(() => {
-        wrongCards.forEach(inp => {
-          inp.value = '';
-          delete entries[inp.dataset.key];
-          const flipper = inp.closest('.card-slot-flipper');
-          if (flipper) flipper.classList.remove('flipped');
-        });
-        if (wrongCards[0]) wrongCards[0].focus();
-        updateLiveSentence();
-        persist();
-      }, 450);
-
-      ctx.onWrongCheck();
-    }
-
-    if (!data.isCaesarHybrid && solvedGroups.size === words.length) {
-      ctx.onSolved();
+      const allActiveInputs = Array.from(wrap.querySelectorAll('.ascii-keycap-input:not(:disabled)'));
+      playWrongFeedback(allActiveInputs, errorBar);
+      if (ctx.onWrongCheck) ctx.onWrongCheck(res);
     }
   };
 

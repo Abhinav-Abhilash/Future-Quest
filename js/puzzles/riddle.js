@@ -3,7 +3,7 @@
  * 
  * Interactive riddle workstation featuring poetic/cryptic clues,
  * auto-advancing tactile keycap letter slots, live sentence preview,
- * and stamping feedback.
+ * and server-validated stamping feedback.
  */
 
 import { PUZZLE_ART } from './art.js';
@@ -22,7 +22,7 @@ export function mount(root, data, ctx) {
   const savedLetters = progress.enteredLetters || {};
 
   const words = data.words || [
-    { name: "Word 1", length: (data.solution || '').replace(/\s+/g, '').length }
+    { name: "Word 1", length: 8 }
   ];
 
   let slotsHtml = '';
@@ -196,45 +196,57 @@ function updateLivePreview() {
   }
 }
 
-export function checkAnswer() {
+export async function checkAnswer() {
   if (!containerEl || !currentData || !currentCtx) return;
   if (currentCtx.isLocked && currentCtx.isLocked()) return;
 
   const currentText = getCurrentDeduction().replace(/_/g, '').trim().toUpperCase();
-  const primarySolution = (currentData.solution || '').trim().toUpperCase();
-  const acceptedList = (currentData.acceptedSolutions || [primarySolution]).map(s => s.trim().toUpperCase());
+  if (!currentText) return;
 
-  // Normalize comparisons (with and without space)
-  const isMatch = acceptedList.some(sol => {
-    return currentText === sol || currentText.replace(/\s+/g, '') === sol.replace(/\s+/g, '');
-  });
+  const statusBar = containerEl.querySelector('#riddle-status-bar');
+  if (statusBar) {
+    statusBar.innerHTML = '<span class="riddle-helper-text mono" style="color: #F59E0B;">Validating with contest server...</span>';
+  }
 
-  if (isMatch) {
-    // Solved!
-    const slots = containerEl.querySelectorAll('.riddle-letter-slot');
-    slots.forEach(s => {
-      s.disabled = true;
-      s.classList.add('slot-solved');
-    });
-    const statusBar = containerEl.querySelector('#riddle-status-bar');
+  try {
+    let result = null;
+    if (typeof currentCtx.checkAnswer === 'function') {
+      result = await currentCtx.checkAnswer(currentText);
+    }
+
+    if (result && result.correct) {
+      // Solved!
+      const slots = containerEl.querySelectorAll('.riddle-letter-slot');
+      slots.forEach(s => {
+        s.disabled = true;
+        s.classList.add('slot-solved');
+      });
+      if (statusBar) {
+        statusBar.innerHTML = '<span class="riddle-stamp-badge mono">STAMPED: SOLVED</span>';
+      }
+      const container = containerEl.querySelector('#riddle-words-container');
+      if (container) container.classList.add('riddle-locked');
+
+      if (currentCtx.onSolved) {
+        currentCtx.onSolved(result);
+      }
+    } else {
+      // Wrong check
+      const wordsContainer = containerEl.querySelector('#riddle-words-container');
+      if (wordsContainer) {
+        wordsContainer.classList.add('key-shake');
+        setTimeout(() => wordsContainer.classList.remove('key-shake'), 400);
+      }
+      if (statusBar) {
+        statusBar.innerHTML = `<span class="riddle-helper-text mono" style="color: #EF4444;">${result?.message || 'Incorrect deduction. Check your clues.'}</span>`;
+      }
+      if (currentCtx.onWrongCheck) {
+        currentCtx.onWrongCheck(result);
+      }
+    }
+  } catch (err) {
     if (statusBar) {
-      statusBar.innerHTML = '<span class="riddle-stamp-badge mono">STAMPED: SOLVED</span>';
-    }
-    const container = containerEl.querySelector('#riddle-words-container');
-    if (container) container.classList.add('riddle-locked');
-
-    if (currentCtx.onSolved) {
-      currentCtx.onSolved();
-    }
-  } else {
-    // Wrong check
-    const wordsContainer = containerEl.querySelector('#riddle-words-container');
-    if (wordsContainer) {
-      wordsContainer.classList.add('key-shake');
-      setTimeout(() => wordsContainer.classList.remove('key-shake'), 400);
-    }
-    if (currentCtx.onWrongCheck) {
-      currentCtx.onWrongCheck();
+      statusBar.innerHTML = `<span class="riddle-helper-text mono" style="color: #EF4444;">Verification error: ${err.message}</span>`;
     }
   }
 }
@@ -244,4 +256,3 @@ export function unmount() {
   currentData = null;
   containerEl = null;
 }
-

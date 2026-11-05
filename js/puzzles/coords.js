@@ -146,7 +146,6 @@ export function mount(root, data, ctx) {
             data-key="${key}"
             data-col="${pair[0]}"
             data-row="${pair[1]}"
-            data-expected-char="${pair[2]}"
             id="coord-chip-${key}"
             ${isGrpSolved || isLocked ? 'disabled' : ''}
             aria-label="Word ${gIdx + 1} letter ${cIdx + 1}, coordinate (${pair[0]}, ${pair[1]})"
@@ -186,7 +185,6 @@ export function mount(root, data, ctx) {
           data-key="${key}"
           data-col="${item.col}"
           data-row="${item.row}"
-          data-expected-char="${item.letter}"
           id="coord-chip-${key}"
           ${isGrpSolved || isLocked ? 'disabled' : ''}
           aria-label="Coordinate ${item.expr}, target (${item.col}, ${item.row})"
@@ -705,122 +703,61 @@ export function mount(root, data, ctx) {
   });
 
   // Verification
-  const checkCoordinates = () => {
-    let anyWrong = false;
-    let firstWrongChip = null;
+  const checkCoordinates = async () => {
+    if (ctx.isLocked && ctx.isLocked()) return;
 
     if (data.groupedChips) {
-      // Tile 2: Check by group
-      data.groupedChips.forEach((grp, gIdx) => {
-        if (solvedGroups.has(gIdx)) return;
+      const fullSentence = data.groupedChips.map((grp, gIdx) => {
+        return grp.coords.map((_, cIdx) => entries[`g${gIdx}_c${cIdx}`] || '').join('');
+      }).join(' ').trim();
 
-        let grpFilled = true;
-        let grpMatches = true;
-        const grpChips = [];
+      if (!fullSentence) return;
 
-        grp.coords.forEach((pair, cIdx) => {
-          const key = `g${gIdx}_c${cIdx}`;
-          const chip = moduleRoot.querySelector(`.coord-chip-btn[data-key="${key}"]`);
-          grpChips.push(chip);
-          const entered = entries[key] || '';
-          const expected = pair[2];
+      let res = null;
+      if (typeof ctx.checkAnswer === 'function') {
+        res = await ctx.checkAnswer(fullSentence);
+      }
 
-          if (!entered) {
-            grpFilled = false;
-          } else if (entered !== expected) {
-            grpMatches = false;
-          }
-        });
-
-        if (grpFilled && grpMatches) {
+      if (res && res.correct) {
+        data.groupedChips.forEach((grp, gIdx) => {
           solvedGroups.add(gIdx);
-          grpChips.forEach(c => { if (c) c.disabled = true; });
-
           const grpEl = moduleRoot.querySelector(`#coord-group-${gIdx}`);
           if (grpEl) {
             grpEl.classList.add('group-solved');
-            grpEl.querySelector('.coord-group-status').textContent = 'SOLVED';
-            const clearB = grpEl.querySelector('.btn-group-clear');
-            if (clearB) clearB.remove();
+            const statusEl = grpEl.querySelector('.coord-group-status');
+            if (statusEl) statusEl.textContent = 'SOLVED';
           }
-
-          const slotEl = moduleRoot.querySelector(`#poster-slot-${gIdx}`);
-          animateGroupLock(grpChips.filter(Boolean), slotEl, grp.name);
-          showRewardPopup(root, grp.name);
-        } else if (grpFilled && !grpMatches) {
-          anyWrong = true;
-          grpChips.forEach(chip => {
-            if (chip && entries[chip.dataset.key] !== chip.dataset.expectedChar) {
-              chip.classList.add('chip-wrong');
-              if (!firstWrongChip) firstWrongChip = chip;
-            }
-          });
-        }
-      });
-
-      persist();
-
-      if (solvedGroups.size === data.groupedChips.length) {
-        ctx.onSolved();
-      }
-    } else if (data.mathCoords) {
-      // Tile 10: Check CYBER
-      let allFilled = true;
-      let allMatches = true;
-
-      allChipBtns.forEach(chip => {
-        const entered = entries[chip.dataset.key] || '';
-        const expected = chip.dataset.expectedChar;
-        if (!entered) {
-          allFilled = false;
-        } else if (entered !== expected) {
-          allMatches = false;
-          anyWrong = true;
-          chip.classList.add('chip-wrong');
-          if (!firstWrongChip) firstWrongChip = chip;
-        }
-      });
-
-      if (allFilled && allMatches) {
-        solvedGroups.add(0);
-        allChipBtns.forEach(c => c.disabled = true);
-        const grpEl = moduleRoot.querySelector('#coord-group-0');
-        if (grpEl) {
-          grpEl.classList.add('group-solved');
-          const clearB = grpEl.querySelector('.btn-group-clear');
-          if (clearB) clearB.remove();
-        }
-
-        const slotEl = moduleRoot.querySelector('#poster-slot-0');
-        const finalWord = data.finalWord || 'CYBER';
-        animateGroupLock(allChipBtns, slotEl, finalWord);
-        showRewardPopup(root, finalWord);
-        persist();
-        ctx.onSolved();
-      }
-    }
-
-    if (anyWrong) {
-      const wrongChips = moduleRoot.querySelectorAll('.chip-wrong');
-      wrongChips.forEach(c => {
-        c.classList.add('chip-shake');
-        playWrongFeedback(c);
-      });
-
-      setTimeout(() => {
-        wrongChips.forEach(c => {
-          c.classList.remove('chip-shake', 'chip-wrong', 'chip-filled');
-          const span = c.querySelector('.chip-letter');
-          if (span) span.innerHTML = '&bull;';
-          delete entries[c.dataset.key];
         });
-        if (firstWrongChip) {
-          firstWrongChip.click();
-        }
+        allChipBtns.forEach(c => { if (c) c.disabled = true; });
         persist();
-      }, 450);
+        if (ctx.onSolved) ctx.onSolved(res);
+      } else {
+        allChipBtns.forEach(c => {
+          c.classList.add('chip-wrong');
+          setTimeout(() => c.classList.remove('chip-wrong'), 500);
+        });
+        if (ctx.onWrongCheck) ctx.onWrongCheck(res);
+      }
+    } else {
+      const fullSentence = allChipBtns.map(c => entries[c.dataset.key] || '').join('');
+      if (!fullSentence) return;
 
-      ctx.onWrongCheck();
+      let res = null;
+      if (typeof ctx.checkAnswer === 'function') {
+        res = await ctx.checkAnswer(fullSentence);
+      }
+
+      if (res && res.correct) {
+        allChipBtns.forEach(c => { if (c) c.disabled = true; });
+        persist();
+        if (ctx.onSolved) ctx.onSolved(res);
+      } else {
+        allChipBtns.forEach(c => {
+          c.classList.add('chip-wrong');
+          setTimeout(() => c.classList.remove('chip-wrong'), 500);
+        });
+        if (ctx.onWrongCheck) ctx.onWrongCheck(res);
+      }
     }
   };
 

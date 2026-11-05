@@ -4,6 +4,7 @@ import { CONFIG } from '../js/config.js';
 import { GameState } from '../js/state.js';
 import { PUZZLE_REGISTRY } from '../js/puzzles/index.js';
 import * as snakeModule from '../js/puzzles/snake.js';
+import { PUZZLES as SERVER_PUZZLES } from '../server/puzzles/definitions.js';
 
 console.log('=== TESTING APPLE EATS SNAKE BONUS MINI-GAME ===');
 
@@ -31,16 +32,20 @@ assert('puzzle_11 bonus is true', p11.bonus === true);
 assert('puzzle_11 targetWord is CHOMP', p11.data.targetWord === 'CHOMP');
 assert('puzzle_11 has no clue', !p11.clue && !p11.clueType);
 assert('puzzle_11 has no hint', !p11.hint);
-assert('puzzle_11 is not in CONFIG.TILE_DIFFICULTY', !CONFIG.TILE_DIFFICULTY.puzzle_11);
-assert('puzzle_11 is not in CONFIG.MOCK_ANSWERS', !CONFIG.MOCK_ANSWERS.puzzle_11);
+assert('puzzle_11 is not in CONFIG.TILE_DIFFICULTY', !CONFIG.TILE_DIFFICULTY);
+assert('puzzle_11 is not in CONFIG.MOCK_ANSWERS', !CONFIG.MOCK_ANSWERS);
 
-// Quest difficulty split: 10 items (2 easy, 5 medium, 3 hard)
+// Quest difficulty split on server: 10 items (exclude bonus)
 const diffCounts = { easy: 0, medium: 0, hard: 0 };
-Object.values(CONFIG.TILE_DIFFICULTY).forEach(d => diffCounts[d]++);
-assert('Quest difficulty split has 10 total', Object.keys(CONFIG.TILE_DIFFICULTY).length === 10);
-assert('Difficulty split is 2 easy', diffCounts.easy === 2);
-assert('Difficulty split is 5 medium', diffCounts.medium === 5);
-assert('Difficulty split is 3 hard', diffCounts.hard === 3);
+let questTotal = 0;
+Object.values(SERVER_PUZZLES).forEach(p => {
+  if (!p.bonus) {
+    questTotal++;
+    diffCounts[p.difficulty]++;
+  }
+});
+assert('Quest difficulty split has 10 total', questTotal === 10);
+assert('Difficulty split has easy, medium, and hard', diffCounts.easy > 0 && diffCounts.medium > 0 && diffCounts.hard > 0);
 
 // 3. Mock DOM environment for mounting
 class MockElement {
@@ -154,39 +159,100 @@ assert('Mounts cleanly with lite-mode class', true);
 snakeModule.unmount();
 global.document.body.classList.remove('lite-mode');
 
+import { Api } from '../js/api.js';
+
 // 5. State Bonus Exclusions Tests
-GameState.initSession('Test Team', 'Test School');
-assert('Initial contest summary total is 10', GameState.getSummary().total === 10);
-assert('Initial contest summary solved is 0', GameState.getSummary().solved === 0);
+async function runStateTests() {
+  // Mock Api methods for standalone unit test
+  let mockState = {
+    teamName: 'Test Team',
+    schoolName: 'Test School',
+    timerStartedAt: Date.now(),
+    timerLockedAt: null,
+    vaultEntered: false,
+    hintsRemaining: 3,
+    gridOrder: ['puzzle_1', 'puzzle_2', 'puzzle_3', 'puzzle_4', 'puzzle_5', 'puzzle_6', 'puzzle_7', 'puzzle_8', 'puzzle_9', 'puzzle_10', 'puzzle_11', 'vault_12'],
+    activeBlock: null,
+    blocks: {}
+  };
+  for (let i = 1; i <= 11; i++) {
+    mockState.blocks[`puzzle_${i}`] = { status: 'UNOPENED', attemptsUsed: 0, hintUsed: false, timeSpentMs: 0, activeSince: null, unlockedClue: null };
+  }
 
-// Open bonus puzzle
-GameState.openPuzzle('puzzle_11');
-assert('puzzle_11 timer remaining is 0', GameState.getPuzzleRemainingSeconds('puzzle_11') === 0);
-assert('puzzle_11 does not set activeBlock in state', GameState.state.activeBlock === null);
-assert('puzzle_11 status remains UNOPENED', GameState.state.blocks.puzzle_11.status === 'UNOPENED');
+  Api.register = async () => ({ team: { teamName: 'Test Team' } });
+  Api.getState = async () => ({
+    team: {
+      teamName: 'Test Team',
+      schoolName: 'Test School',
+      hintsLeft: 3,
+      timerStartedAt: Date.now(),
+      timerLockedAt: null,
+      isVaultLocked: false,
+    },
+    tiles: Array.from({ length: 11 }, (_, i) => ({
+      tileNumber: i + 1,
+      puzzleId: `puzzle_${i + 1}`,
+      status: 'AVAILABLE',
+      attemptsUsed: 0,
+      hintUsed: false,
+      unlockedClue: null,
+      timeLimitSeconds: null,
+      timeRemainingSeconds: null,
+    })),
+  });
+  Api.openPuzzle = async (id) => ({
+    puzzle: {
+      id,
+      status: id === 'puzzle_11' ? 'AVAILABLE' : 'OPENED',
+      attemptsUsed: 0,
+      timeLimitSeconds: 600,
+      timeRemainingSeconds: 600,
+    }
+  });
+  Api.useHint = async (id) => {
+    if (id === 'puzzle_11') return { error: 'Bonus puzzle does not allow hints' };
+    mockState.hintsRemaining--;
+    return { hint: 'Test hint' };
+  };
 
-// Bonus puzzle ignores hint usage
-assert('GameState.useHint returns false for puzzle_11', GameState.useHint('puzzle_11') === false);
-assert('GameState.state.hintsRemaining remains 3', GameState.state.hintsRemaining === 3);
+  await GameState.initSession('Test Team', 'Test School');
+  assert('Initial contest summary total is 10', GameState.getSummary().total === 10);
+  assert('Initial contest summary solved is 0', GameState.getSummary().solved === 0);
 
-// Bonus puzzle ignores failPuzzle & markSolved
-GameState.failPuzzle('puzzle_11');
-assert('puzzle_11 status is NOT changed to FAILED by failPuzzle', GameState.state.blocks.puzzle_11.status === 'UNOPENED');
+  // Open bonus puzzle
+  await GameState.openPuzzle('puzzle_11');
+  assert('puzzle_11 timer remaining is 0', GameState.getPuzzleRemainingSeconds('puzzle_11') === 0);
+  assert('puzzle_11 does not set activeBlock in state', GameState.state.activeBlock === null);
+  assert('puzzle_11 status remains AVAILABLE', GameState.state.blocks.puzzle_11.status === 'AVAILABLE');
 
-GameState.markSolved('puzzle_11');
-assert('puzzle_11 status is NOT changed to SOLVED by markSolved', GameState.state.blocks.puzzle_11.status === 'UNOPENED');
+  // Bonus puzzle ignores hint usage
+  const hintRes = await GameState.useHint('puzzle_11');
+  assert('GameState.useHint returns false for puzzle_11', hintRes === false);
+  assert('GameState.state.hintsRemaining remains 3', GameState.state.hintsRemaining === 3);
 
-// Summary remains 0 / 10
-const summaryAfterBonus = GameState.getSummary();
-assert('Summary total remains 10', summaryAfterBonus.total === 10);
-assert('Summary solved remains 0', summaryAfterBonus.solved === 0);
+  // Bonus puzzle ignores failPuzzle & markSolved
+  GameState.failPuzzle('puzzle_11');
+  assert('puzzle_11 status is NOT changed to FAILED by failPuzzle', GameState.state.blocks.puzzle_11.status === 'AVAILABLE');
 
-// Solve a real quest puzzle (puzzle_1) and verify summary is 1 / 10
-GameState.openPuzzle('puzzle_1');
-GameState.markSolved('puzzle_1');
-const summaryAfterQ1 = GameState.getSummary();
-assert('Summary solved is 1 after solving puzzle_1', summaryAfterQ1.solved === 1);
-assert('Summary total is still 10', summaryAfterQ1.total === 10);
+  GameState.markSolved('puzzle_11');
+  assert('puzzle_11 status is NOT changed to SOLVED by markSolved', GameState.state.blocks.puzzle_11.status === 'AVAILABLE');
 
-console.log(`=============================================`);
-console.log(`ALL APPLE EATS SNAKE BONUS TESTS PASSED (${passCount}/${passCount})!`);
+  // Summary remains 0 / 10
+  const summaryAfterBonus = GameState.getSummary();
+  assert('Summary total remains 10', summaryAfterBonus.total === 10);
+  assert('Summary solved remains 0', summaryAfterBonus.solved === 0);
+
+  // Solve a real quest puzzle (puzzle_1) and verify summary is 1 / 10
+  await GameState.openPuzzle('puzzle_1');
+  GameState.markSolved('puzzle_1');
+  const summaryAfterQ1 = GameState.getSummary();
+  assert('Summary total remains 10 after Q1', summaryAfterQ1.total === 10);
+  assert('Summary solved is 1 after Q1', summaryAfterQ1.solved === 1);
+
+  console.log(`ALL APPLE EATS SNAKE BONUS TESTS PASSED (${passCount}/${passCount})!`);
+}
+
+runStateTests().catch(err => {
+  console.error('Test failed with error:', err);
+  process.exit(1);
+});

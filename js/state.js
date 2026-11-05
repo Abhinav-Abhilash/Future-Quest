@@ -1,22 +1,35 @@
 /**
- * Future Quest 2026 - Game State Management
- * 
- * NOTE: localStorage is only a client-side cache for this prototype.
- * In the production deployment, all state transitions, validation,
- * timer enforcement, and clues must be verified and issued by the
- * backend server to prevent client-side tampering.
+ * Future Quest 2026 - Game State Management (Backend API Integrated)
+ *
+ * All state transitions, timers, validations, clues, and verification hashes
+ * are strictly sourced from the Node.js + Express + MongoDB Atlas backend.
+ * localStorage acts purely as an ephemeral client cache to prevent UI flash on load.
  */
 
 import { CONFIG } from './config.js';
+import { Api, getServerNow, recordServerTime, OfflineError } from './api.js';
 
 const STORAGE_KEY = 'future_quest_2026_state';
 
 class StateManager {
   constructor() {
     this.state = this.loadState();
-    // Cache listeners for reactive UI updates
     this.listeners = new Set();
-    this.checkExpiredPuzzles();
+    this.syncInProgress = false;
+
+    // Periodic synchronization every 60 seconds
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', () => {
+        this.syncWithServer().catch(() => {});
+      });
+
+      setInterval(() => {
+        this.syncWithServer().catch(() => {});
+      }, 60000);
+
+      // Initial server sync in background on script load
+      this.syncWithServer().catch(() => {});
+    }
   }
 
   /**
@@ -39,18 +52,15 @@ class StateManager {
   }
 
   /**
-   * Load state from localStorage or return default null if uninitialized.
+   * Load cached state from localStorage to render initial view without flash.
    */
   loadState() {
     try {
+      if (typeof localStorage === 'undefined') return null;
       const serialized = localStorage.getItem(STORAGE_KEY);
       if (!serialized) return null;
       const parsed = JSON.parse(serialized);
       if (parsed && parsed.teamName && parsed.gridOrder) {
-        if (!CONFIG.SHUFFLE_TILES) {
-          // In style test mode, enforce fixed sequential order
-          parsed.gridOrder = [...Object.keys(CONFIG.PUZZLES), 'vault_12'];
-        }
         if (parsed.blocks) {
           for (const bid in parsed.blocks) {
             parsed.blocks[bid].progress = parsed.blocks[bid].progress || {};
@@ -60,15 +70,16 @@ class StateManager {
       }
       return null;
     } catch (e) {
-      console.warn('Failed to parse localStorage state:', e);
+      console.warn('Failed to parse localStorage cache:', e);
       return null;
     }
   }
 
   /**
-   * Save current state to localStorage.
+   * Save current state cache to localStorage.
    */
   saveState() {
+    if (typeof localStorage === 'undefined') return;
     if (!this.state) {
       localStorage.removeItem(STORAGE_KEY);
     } else {
@@ -82,6 +93,82 @@ class StateManager {
   }
 
   /**
+   * Re-sync state with MongoDB Atlas backend truth.
+   */
+  async syncWithServer() {
+    if (this.syncInProgress) return this.state;
+    this.syncInProgress = true;
+
+    try {
+      const data = await Api.getState();
+      if (!data || !data.team) {
+        this.state = null;
+        this.saveState();
+        return null;
+      }
+
+      const team = data.team;
+      const tiles = data.tiles || [];
+
+      // Reconstruct local blocks map from server tiles
+      const blocks = {};
+      const gridOrder = [];
+
+      tiles.forEach((t) => {
+        gridOrder.push(t.puzzleId);
+        blocks[t.puzzleId] = {
+          status: t.status, // AVAILABLE, OPENED, SOLVED, FAILED
+          attemptsUsed: t.attemptsUsed || 0,
+          hintUsed: !!t.hintUsed,
+          timeSpentMs: 0,
+          activeSince: t.status === 'OPENED' ? getServerNow() : null,
+          unlockedClue: t.unlockedClue || null,
+          timeLimitSeconds: t.timeLimitSeconds || null,
+          timeRemainingSeconds: t.timeRemainingSeconds ?? null,
+          progress: (this.state?.blocks?.[t.puzzleId]?.progress) || {},
+        };
+
+        // Cache any unlocked clue into client config
+        if (t.unlockedClue && CONFIG.PUZZLES[t.puzzleId]) {
+          CONFIG.PUZZLES[t.puzzleId].clue = t.unlockedClue;
+        }
+      });
+
+      // Always fix vault_12 at slot 12
+      if (!gridOrder.includes('vault_12')) {
+        gridOrder.push('vault_12');
+      }
+
+      this.state = {
+        teamName: team.teamName,
+        schoolName: team.schoolName,
+        timerStartedAt: team.timerStartedAt,
+        timerLockedAt: team.timerLockedAt,
+        vaultEntered: !!team.isVaultLocked,
+        hintsRemaining: team.hintsLeft ?? 3,
+        gridOrder,
+        activeBlock: this.state?.activeBlock || null,
+        blocks,
+        verificationHash: this.state?.verificationHash || null,
+      };
+
+      this.saveState();
+      return this.state;
+    } catch (err) {
+      if (err.status === 401) {
+        // No active session on server
+        this.state = null;
+        this.saveState();
+        return null;
+      }
+      // Offline / network failure: keep existing cache
+      return this.state;
+    } finally {
+      this.syncInProgress = false;
+    }
+  }
+
+  /**
    * Check if a valid session exists.
    */
   hasSession() {
@@ -89,7 +176,7 @@ class StateManager {
   }
 
   /**
-   * Reset session (useful for tests or complete game restart).
+   * Reset session locally.
    */
   resetSession() {
     this.state = null;
@@ -97,65 +184,33 @@ class StateManager {
   }
 
   /**
-   * Fisher-Yates shuffle algorithm.
+   * Register a new team with the backend server.
+   * Calls POST /api/register.
    */
-  shuffleArray(array) {
-    const arr = [...array];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
-
-  /**
-   * Initialize a new contest session.
-   * Shuffles puzzle 1..11 ONCE and fixes vault_12 at slot 12.
-   * Records timerStartedAt = Date.now().
-   */
-  initSession(teamName, schoolName) {
-    const puzzleIds = Object.keys(CONFIG.PUZZLES); // 11 puzzle IDs
-    const puzzleOrder = CONFIG.SHUFFLE_TILES ? this.shuffleArray(puzzleIds) : [...puzzleIds];
-    // Vault 12 is always the 12th slot (index 11)
-    const gridOrder = [...puzzleOrder, 'vault_12'];
-
-    const blocks = {};
-    for (const id of puzzleIds) {
-      blocks[id] = {
-        status: 'UNOPENED', // UNOPENED | OPENED_IN_PROGRESS | SOLVED | FAILED
-        attemptsUsed: 0,
-        hintUsed: false,
-        timeSpentMs: 0,
-        activeSince: null,
-        unlockedClue: null,
-        progress: {}
-      };
-    }
-
-    this.state = {
+  async initSession(teamName, schoolName, members = []) {
+    const res = await Api.register({
       teamName: teamName.trim(),
       schoolName: schoolName.trim(),
-      timerStartedAt: Date.now(),
-      timerLockedAt: null,
-      vaultEntered: false,
-      hintsRemaining: CONFIG.TOTAL_HINTS,
-      gridOrder,
-      activeBlock: null,
-      blocks
-    };
+      members,
+    });
 
-    this.saveState();
+    if (!res || !res.team) {
+      throw new Error(res?.error || 'Registration failed');
+    }
+
+    // Immediately sync state to load seeded grid order and initialized blocks
+    await this.syncWithServer();
     return this.state;
   }
 
   /**
-   * Computes master remaining seconds.
+   * Computes master countdown seconds using server clock offset.
    */
   getMasterRemainingSeconds() {
     if (!this.state || !this.state.timerStartedAt) return CONFIG.MASTER_TIME;
-    
+
     const start = this.state.timerStartedAt;
-    const end = this.state.timerLockedAt || Date.now();
+    const end = this.state.timerLockedAt || getServerNow();
     const elapsedSec = Math.floor((end - start) / 1000);
     return Math.max(0, CONFIG.MASTER_TIME - elapsedSec);
   }
@@ -168,369 +223,274 @@ class StateManager {
   }
 
   /**
-   * Computes puzzle remaining seconds.
-   * NOTE: In production, puzzle difficulties and time limits must come from the
-   * server later, since anything in client code can be read with DevTools.
+   * Computes puzzle remaining seconds using server data.
    */
   getPuzzleRemainingSeconds(id) {
-    if (!this.state || !this.state.blocks[id]) return 0;
-    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) return 0;
-    const block = this.state.blocks[id];
-    const difficulty = CONFIG.TILE_DIFFICULTY[id] || 'easy';
-    const maxSec = (CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE[id]) || CONFIG.DIFFICULTY_TIME[difficulty] || 600;
+    if (!this.state || !this.state.blocks?.[id]) return 0;
+    if (CONFIG.PUZZLES[id]?.bonus) return 0;
 
-    let totalSpentMs = block.timeSpentMs || 0;
-    if (block.activeSince && !this.state.vaultEntered && block.status === 'OPENED_IN_PROGRESS') {
-      totalSpentMs += (Date.now() - block.activeSince);
+    const block = this.state.blocks[id];
+    if (block.status === 'SOLVED' || block.status === 'FAILED') return 0;
+
+    const timeLimitSec = block.timeLimitSeconds || (CONFIG.PUZZLES[id]?.timeLimit) || 600;
+    let spentMs = block.timeSpentMs || 0;
+
+    if (block.activeSince && !this.state.vaultEntered && (block.status === 'OPENED' || block.status === 'OPENED_IN_PROGRESS')) {
+      spentMs += (getServerNow() - block.activeSince);
     }
 
-    const remaining = Math.max(0, maxSec - Math.floor(totalSpentMs / 1000));
-    return remaining;
+    return Math.max(0, timeLimitSec - Math.floor(spentMs / 1000));
   }
 
   /**
-   * Check all OPENED_IN_PROGRESS puzzles. Any with 0 seconds remaining
-   * becomes FAILED immediately, so the grid never shows an expired puzzle as "In progress".
+   * Check all opened puzzles for timeouts locally between server syncs.
    */
   checkExpiredPuzzles() {
     if (!this.state || !this.state.blocks) return;
-    let changed = false;
     for (const id in this.state.blocks) {
-      if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) continue;
+      if (CONFIG.PUZZLES[id]?.bonus) continue;
       const block = this.state.blocks[id];
-      if (block.status === 'OPENED_IN_PROGRESS') {
+      if (block.status === 'OPENED' || block.status === 'OPENED_IN_PROGRESS') {
         const remaining = this.getPuzzleRemainingSeconds(id);
         if (remaining <= 0) {
-          this.failPuzzle(id, 'TIMEOUT');
-          changed = true;
+          block.status = 'FAILED';
+          block.activeSince = null;
         }
       }
     }
-    if (changed) {
+  }
+
+  /**
+   * Activate / Open a puzzle. Calls POST /api/puzzle/:id/open.
+   * Receives server-validated puzzle data, time limit, and active status.
+   */
+  async openPuzzle(id) {
+    if (!this.state) return null;
+
+    // Bonus arcade puzzle: purely client-side, does not start a timer or change status
+    if (CONFIG.PUZZLES[id]?.bonus) {
+      return this.state.blocks[id];
+    }
+
+    try {
+      const res = await Api.openPuzzle(id);
+
+      // Merge server-returned interactive puzzle payload
+      if (res.puzzle && CONFIG.PUZZLES[id]) {
+        CONFIG.PUZZLES[id].data = res.puzzle.data;
+        CONFIG.PUZZLES[id].timeLimit = res.puzzle.timeLimit;
+      }
+
+      if (res.unlockedClue && CONFIG.PUZZLES[id]) {
+        CONFIG.PUZZLES[id].clue = res.unlockedClue;
+      }
+
+      // Update block state
+      if (!this.state.blocks[id]) {
+        this.state.blocks[id] = {};
+      }
+
+      const block = this.state.blocks[id];
+      block.status = res.status;
+      block.attemptsUsed = res.attemptsUsed || 0;
+      block.attemptsRemaining = res.attemptsRemaining;
+      block.hintUsed = !!res.hintUsed;
+      block.timeLimitSeconds = res.puzzle?.timeLimit || 600;
+      block.timeRemainingSeconds = res.timeRemainingSeconds;
+      block.activeSince = res.status === 'OPENED' ? getServerNow() : null;
+      block.unlockedClue = res.unlockedClue || null;
+
+      this.state.activeBlock = id;
+      this.state.hintsRemaining = res.hintsLeft ?? this.state.hintsRemaining;
+
       this.saveState();
+      return block;
+    } catch (err) {
+      console.error(`Failed to open puzzle ${id}:`, err);
+      throw err;
     }
   }
 
   /**
-   * Called when opening a puzzle screen.
-   * If UNOPENED, transitions to OPENED_IN_PROGRESS.
-   * Never overwrites an existing activeSince: only sets activeSince = Date.now()
-   * when it is null, so reloading or reopening a puzzle never discards elapsed time.
-   * Guarantees only one puzzle may have activeSince set at a time.
+   * Leave a puzzle. Calls POST /api/puzzle/:id/leave.
    */
-  openPuzzle(id) {
-    if (!this.state || !this.state.blocks[id]) return null;
-    const block = this.state.blocks[id];
-
-    // Ensure only one puzzle may have activeSince set at a time
-    if (this.state.activeBlock && this.state.activeBlock !== id) {
-      this.leavePuzzle(this.state.activeBlock);
-    }
-    for (const otherId in this.state.blocks) {
-      if (otherId !== id && this.state.blocks[otherId].activeSince != null) {
-        this.leavePuzzle(otherId);
-      }
-    }
-
-    // Bonus puzzle: do not start a puzzle timer and never set OPENED_IN_PROGRESS
-    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) {
-      this.state.activeBlock = null;
-      return block;
-    }
-
-    // If master timer or vault entered, do not update timer
-    if (this.state.vaultEntered || this.isMasterExpired()) {
-      return block;
-    }
-
-    // Set active block
-    this.state.activeBlock = id;
-
-    // Transition unopened to in-progress
-    if (block.status === 'UNOPENED') {
-      block.status = 'OPENED_IN_PROGRESS';
-    }
-
-    // If still in progress and not locked, start tracking active time.
-    // Never overwrite an existing activeSince (only set when null)
-    // so reloading or reopening a puzzle never discards elapsed time.
-    if (block.status === 'OPENED_IN_PROGRESS') {
-      if (block.activeSince == null) {
-        block.activeSince = Date.now();
-      }
-    }
-
-    this.saveState();
-    return block;
-  }
-
-  /**
-   * Called when leaving a puzzle screen ("Back to grid" or routing away).
-   * Pauses the puzzle timer and accumulates elapsed milliseconds.
-   */
-  leavePuzzle(id) {
+  async leavePuzzle(id) {
     if (!this.state) return;
     const targetId = id || this.state.activeBlock;
-    if (!targetId || !this.state.blocks[targetId]) return;
+    if (!targetId) return;
 
-    if (CONFIG.PUZZLES[targetId] && CONFIG.PUZZLES[targetId].bonus) {
+    if (CONFIG.PUZZLES[targetId]?.bonus) {
       if (this.state.activeBlock === targetId) {
         this.state.activeBlock = null;
+        this.saveState();
       }
       return;
     }
 
-    const block = this.state.blocks[targetId];
-    if (block.activeSince) {
-      const elapsed = Date.now() - block.activeSince;
-      block.timeSpentMs = (block.timeSpentMs || 0) + elapsed;
-      block.activeSince = null;
-    }
+    try {
+      if (this.state.blocks?.[targetId]?.activeSince) {
+        this.state.blocks[targetId].activeSince = null;
+      }
+      this.state.activeBlock = null;
+      this.saveState();
 
-    this.state.activeBlock = null;
-    this.saveState();
+      // Notify backend to pause timer
+      await Api.leavePuzzle(targetId).catch(() => {});
+    } catch (err) {
+      console.warn('Error pausing puzzle on server:', err);
+    }
   }
 
   /**
-   * Submits an answer for the given puzzle.
-   * Returns result object: { correct: boolean, failed: boolean, attemptsLeft: number, clue: object | null }
+   * Submit an answer for server validation.
+   * Calls POST /api/puzzle/:id/check.
    */
-  submitAnswer(id, rawAnswer) {
-    if (!this.state || !this.state.blocks[id]) {
+  async submitAnswer(id, rawAnswerOrPayload) {
+    if (!this.state || !this.state.blocks?.[id]) {
       return { error: 'Invalid puzzle' };
     }
-    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) {
-      return { error: 'Bonus puzzle cannot be submitted.' };
+
+    if (CONFIG.PUZZLES[id]?.bonus) {
+      return { success: true, correct: true, bonus: true };
     }
 
-    const block = this.state.blocks[id];
+    try {
+      const res = await Api.checkAnswer(id, rawAnswerOrPayload);
 
-    if (this.state.vaultEntered) {
-      return { error: 'Contest is locked; vault has been entered.' };
-    }
+      const block = this.state.blocks[id];
+      block.status = res.status;
+      block.attemptsUsed = res.attemptsUsed || 0;
 
-    if (block.status === 'SOLVED' || block.status === 'FAILED') {
-      return { error: 'Puzzle is already locked.' };
-    }
-
-    // Accumulate time spent up to this moment
-    if (block.activeSince) {
-      const elapsed = Date.now() - block.activeSince;
-      block.timeSpentMs = (block.timeSpentMs || 0) + elapsed;
-      block.activeSince = Date.now(); // reset anchor for continued play if not solved
-    }
-
-    const normalizedAnswer = (rawAnswer || '').trim().toUpperCase();
-    const correctAnswer = (CONFIG.MOCK_ANSWERS[id] || '').trim().toUpperCase();
-
-    if (normalizedAnswer === correctAnswer) {
-      // Puzzle Solved!
-      block.status = 'SOLVED';
-      block.activeSince = null; // puzzle timer stops permanently
-      block.unlockedClue = CONFIG.PUZZLES[id].clue;
-      this.saveState();
-      return {
-        correct: true,
-        failed: false,
-        attemptsLeft: CONFIG.MAX_ATTEMPTS - block.attemptsUsed,
-        clue: block.unlockedClue
-      };
-    } else {
-      // Incorrect answer
-      block.attemptsUsed = (block.attemptsUsed || 0) + 1;
-      const attemptsLeft = CONFIG.MAX_ATTEMPTS - block.attemptsUsed;
-
-      if (attemptsLeft <= 0) {
-        // Attempts exhausted: FAIL permanently
-        block.status = 'FAILED';
+      if (res.correct) {
+        block.unlockedClue = res.clue;
         block.activeSince = null;
-        this.saveState();
-        return {
-          correct: false,
-          failed: true,
-          attemptsLeft: 0,
-          clue: null
-        };
-      } else {
-        this.saveState();
-        return {
-          correct: false,
-          failed: false,
-          attemptsLeft,
-          clue: null
-        };
+        if (CONFIG.PUZZLES[id]) {
+          CONFIG.PUZZLES[id].clue = res.clue;
+        }
+      } else if (res.status === 'FAILED') {
+        block.activeSince = null;
       }
+
+      this.saveState();
+
+      return {
+        correct: !!res.correct,
+        failed: res.status === 'FAILED',
+        attemptsLeft: res.attemptsRemaining ?? Math.max(0, 3 - (res.attemptsUsed || 0)),
+        clue: res.clue || null,
+        message: res.message || '',
+      };
+    } catch (err) {
+      console.error('Answer check error:', err);
+      throw err;
     }
   }
 
   /**
-   * Save partial puzzle progress object (player entries, selections, etc.)
-   * Does NOT store plaintext answers.
+   * Request a hint from the server.
+   * Calls POST /api/puzzle/:id/hint.
+   */
+  async useHint(id) {
+    if (!this.state || !this.state.blocks?.[id]) return false;
+    if (CONFIG.PUZZLES[id]?.bonus) return false;
+
+    try {
+      const res = await Api.useHint(id);
+
+      if (res.success && res.hint) {
+        this.state.hintsRemaining = res.hintsRemaining ?? res.hintsLeft ?? this.state.hintsRemaining;
+        if (this.state.blocks[id]) {
+          this.state.blocks[id].hintUsed = true;
+          this.state.blocks[id].revealedHint = res.hint;
+        }
+        if (CONFIG.PUZZLES[id]) {
+          CONFIG.PUZZLES[id].hint = res.hint;
+        }
+        this.saveState();
+        return { success: true, hint: res.hint, hintsRemaining: this.state.hintsRemaining };
+      }
+
+      return false;
+    } catch (err) {
+      console.error('Hint request error:', err);
+      throw err;
+    }
+  }
+
+  /**
+   * Save partial progress locally (selections, entered letters).
    */
   saveProgress(id, progressObj) {
-    if (!this.state || !this.state.blocks[id]) return;
-    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) return;
+    if (!this.state || !this.state.blocks?.[id]) return;
+    if (CONFIG.PUZZLES[id]?.bonus) return;
+
     this.state.blocks[id].progress = {
       ...(this.state.blocks[id].progress || {}),
-      ...progressObj
+      ...progressObj,
     };
     this.saveState();
   }
 
   /**
-   * Marks a puzzle as solved via an interactive module.
-   * Freezes puzzle timer and unlocks the corresponding poster clue.
-   */
-  markSolved(id) {
-    if (!this.state || !this.state.blocks[id]) return;
-    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) return;
-    const block = this.state.blocks[id];
-    if (block.status === 'SOLVED') return;
-
-    if (block.activeSince) {
-      const elapsed = Date.now() - block.activeSince;
-      block.timeSpentMs = (block.timeSpentMs || 0) + elapsed;
-      block.activeSince = null;
-    }
-
-    block.status = 'SOLVED';
-    block.activeSince = null;
-    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].clue) {
-      block.unlockedClue = CONFIG.PUZZLES[id].clue;
-    }
-    this.saveState();
-  }
-
-  /**
-   * Records a failed/incorrect answer check from an interactive puzzle.
-   * Increments attemptsUsed; locks puzzle as FAILED if max attempts reached.
-   */
-  recordWrong(id) {
-    if (!this.state || !this.state.blocks[id]) return { failed: false, attemptsLeft: 0 };
-    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) return { failed: false, attemptsLeft: 0 };
-    const block = this.state.blocks[id];
-    if (block.status === 'SOLVED' || block.status === 'FAILED') {
-      return { failed: block.status === 'FAILED', attemptsLeft: 0 };
-    }
-
-    block.attemptsUsed = (block.attemptsUsed || 0) + 1;
-    const attemptsLeft = Math.max(0, CONFIG.MAX_ATTEMPTS - block.attemptsUsed);
-
-    if (attemptsLeft <= 0) {
-      block.status = 'FAILED';
-      block.activeSince = null;
-      this.saveState();
-      return { failed: true, attemptsLeft: 0 };
-    }
-
-    this.saveState();
-    return { failed: false, attemptsLeft };
-  }
-
-  /**
-   * Spend one of the 3 shared hints on a puzzle.
-   */
-  useHint(id) {
-    if (!this.state || !this.state.blocks[id]) return false;
-    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) return false;
-    if (CONFIG.NO_HINT_PUZZLES && CONFIG.NO_HINT_PUZZLES.includes(id)) return false;
-    const block = this.state.blocks[id];
-
-    if (this.state.vaultEntered || this.isMasterExpired()) return false;
-    if (block.hintUsed) return true; // already revealed
-    if (this.state.hintsRemaining <= 0) return false;
-
-    this.state.hintsRemaining -= 1;
-    block.hintUsed = true;
-    this.saveState();
-    return true;
-  }
-
-  /**
-   * Mark a puzzle as failed (e.g. when puzzle timer hits zero).
-   */
-  failPuzzle(id, reason = 'TIMEOUT') {
-    if (!this.state || !this.state.blocks[id]) return;
-    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) return;
-    const block = this.state.blocks[id];
-    if (block.status === 'SOLVED' || block.status === 'FAILED') return;
-
-    // Freeze spent time at max
-    const difficulty = CONFIG.TILE_DIFFICULTY[id] || 'easy';
-    const maxSec = (CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE[id]) || CONFIG.DIFFICULTY_TIME[difficulty] || 600;
-    block.timeSpentMs = maxSec * 1000;
-    block.activeSince = null;
-    block.status = 'FAILED';
-    this.saveState();
-  }
-
-  /**
-   * DEV-ONLY: Fast-forward spent time so only secondsLeft remain on puzzle countdown.
-   */
-  devSkipTimer(id, secondsLeft = 10) {
-    if (!CONFIG.DEV_MODE) return;
-    if (!this.state || !this.state.blocks[id]) return;
-    if (CONFIG.PUZZLES[id] && CONFIG.PUZZLES[id].bonus) return;
-    const block = this.state.blocks[id];
-    const difficulty = CONFIG.TILE_DIFFICULTY[id] || 'easy';
-    const maxSec = (CONFIG.PUZZLE_TIME_OVERRIDE && CONFIG.PUZZLE_TIME_OVERRIDE[id]) || CONFIG.DIFFICULTY_TIME[difficulty] || 600;
-    const targetSpentMs = Math.max(0, (maxSec - secondsLeft)) * 1000;
-    block.timeSpentMs = targetSpentMs;
-    if (block.activeSince) {
-      block.activeSince = Date.now();
-    }
-    this.saveState();
-  }
-
-  /**
    * Enter the submission vault.
-   * Locks the master timer, freezes all tiles, transitions to vault.
+   * Calls POST /api/vault/enter to freeze timers & generate HMAC verification hash.
    */
-  enterVault(isTimerExpired = false) {
-    if (!this.state) return;
-    if (this.state.vaultEntered) return;
+  async enterVault() {
+    if (!this.state) return null;
 
-    // Freeze any currently active puzzle timer
-    if (this.state.activeBlock && this.state.blocks[this.state.activeBlock]) {
-      const active = this.state.blocks[this.state.activeBlock];
-      if (active.activeSince) {
-        active.timeSpentMs = (active.timeSpentMs || 0) + (Date.now() - active.activeSince);
-        active.activeSince = null;
+    try {
+      const res = await Api.enterVault();
+
+      this.state.vaultEntered = true;
+      this.state.timerLockedAt = res.timerLockedAt || getServerNow();
+      this.state.verificationHash = res.verificationHash;
+
+      if (this.state.activeBlock && this.state.blocks?.[this.state.activeBlock]) {
+        this.state.blocks[this.state.activeBlock].activeSince = null;
+        this.state.activeBlock = null;
       }
-      this.state.activeBlock = null;
-    }
 
-    this.state.vaultEntered = true;
-    if (isTimerExpired) {
-      this.state.timerLockedAt = this.state.timerStartedAt + (CONFIG.MASTER_TIME * 1000);
-    } else {
-      this.state.timerLockedAt = Date.now();
+      this.saveState();
+      return res;
+    } catch (err) {
+      console.error('Vault enter error:', err);
+      throw err;
     }
+  }
 
-    this.saveState();
+  /**
+   * Submit final contest poster URL.
+   * Calls POST /api/submit.
+   */
+  async submitVault(posterUrl) {
+    if (!this.state) return null;
+    return Api.submit({
+      posterUrl,
+      hash: this.state.verificationHash || '',
+    });
   }
 
   /**
    * Get contest summary statistics.
    */
   getSummary() {
-    const questPuzzleIds = Object.keys(CONFIG.PUZZLES).filter(id => !CONFIG.PUZZLES[id].bonus);
+    const questPuzzleIds = Object.keys(CONFIG.PUZZLES).filter((id) => !CONFIG.PUZZLES[id]?.bonus);
     const totalQuestPuzzles = questPuzzleIds.length;
 
-    if (!this.state) return { solved: 0, total: totalQuestPuzzles, hintsUsed: 0, timeTakenFormatted: '00:00:00' };
+    if (!this.state) {
+      return { solved: 0, total: totalQuestPuzzles, hintsUsed: 0, timeTakenFormatted: '00:00:00', verificationHash: '' };
+    }
 
     let solvedCount = 0;
     for (const id of questPuzzleIds) {
-      if (this.state.blocks[id] && this.state.blocks[id].status === 'SOLVED') {
+      if (this.state.blocks?.[id]?.status === 'SOLVED') {
         solvedCount++;
       }
     }
 
-    const hintsUsed = CONFIG.TOTAL_HINTS - this.state.hintsRemaining;
-    
-    // Time taken: from timerStartedAt to timerLockedAt or Date.now()
-    const start = this.state.timerStartedAt || Date.now();
-    const end = this.state.timerLockedAt || Date.now();
+    const hintsUsed = CONFIG.TOTAL_HINTS - (this.state.hintsRemaining ?? 3);
+    const start = this.state.timerStartedAt || getServerNow();
+    const end = this.state.timerLockedAt || getServerNow();
     const elapsedSec = Math.min(CONFIG.MASTER_TIME, Math.max(0, Math.floor((end - start) / 1000)));
 
     const hrs = String(Math.floor(elapsedSec / 3600)).padStart(2, '0');
@@ -542,36 +502,31 @@ class StateManager {
       total: totalQuestPuzzles,
       hintsUsed,
       timeTakenFormatted: `${hrs}:${mins}:${secs}`,
-      elapsedSec
+      elapsedSec,
+      verificationHash: this.state.verificationHash || '',
     };
   }
 
   /**
-   * DEV-ONLY: Generate client-side placeholder verification hash.
-   * NOTE: In production, this must be cryptographically generated and signed
-   * on the server (e.g. HMAC-SHA256) to prevent client-side forgery.
+   * Mark puzzle solved (dev/test helper; ignores bonus).
    */
-  generateVerificationHash() {
-    if (!this.state) return 'FQ2026-UNINITIALIZED';
+  markSolved(id) {
+    if (!this.state || !this.state.blocks?.[id]) return;
+    if (CONFIG.PUZZLES[id]?.bonus) return;
+    this.state.blocks[id].status = 'SOLVED';
+    this.state.blocks[id].activeSince = null;
+    this.saveState();
+  }
 
-    const { teamName, schoolName, timerStartedAt, timerLockedAt } = this.state;
-    const summary = this.getSummary();
-    const solvedIds = Object.keys(this.state.blocks)
-      .filter(id => !CONFIG.PUZZLES[id]?.bonus && this.state.blocks[id].status === 'SOLVED')
-      .sort()
-      .join(',');
-
-    // Simple deterministic pseudo-hash for mockup
-    const seed = `${teamName}|${schoolName}|${timerStartedAt}|${timerLockedAt}|${summary.solved}|${solvedIds}`;
-    let hashNum = 0;
-    for (let i = 0; i < seed.length; i++) {
-      hashNum = ((hashNum << 5) - hashNum) + seed.charCodeAt(i);
-      hashNum |= 0;
-    }
-    const hex = Math.abs(hashNum).toString(16).toUpperCase().padStart(8, '0');
-    const teamSlug = teamName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 6).toUpperCase() || 'TEAM';
-    
-    return `FQ26-JU-${teamSlug}-S${summary.solved}-H${summary.hintsUsed}-${hex}`;
+  /**
+   * Mark puzzle failed (dev/test helper; ignores bonus).
+   */
+  failPuzzle(id, reason = 'TIMEOUT') {
+    if (!this.state || !this.state.blocks?.[id]) return;
+    if (CONFIG.PUZZLES[id]?.bonus) return;
+    this.state.blocks[id].status = 'FAILED';
+    this.state.blocks[id].activeSince = null;
+    this.saveState();
   }
 }
 

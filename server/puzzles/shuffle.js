@@ -53,3 +53,4 @@ export function getTeamPuzzleOrder(seed) {
   // Puzzle 11 is always the 11th tile (bonus arcade)
   return [...questPuzzles, 'puzzle_11'];
 }
+

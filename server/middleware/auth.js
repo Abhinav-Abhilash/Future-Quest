@@ -148,3 +148,4 @@ export async function requireAuth(req, res, next) {
     res.status(500).json({ error: 'Failed to authenticate session.' });
   }
 }
+

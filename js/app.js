@@ -12,6 +12,7 @@ import { Router } from './router.js';
 import { Screens } from './screens.js';
 import { ICONS } from './icons.js';
 import { Modal } from './modal.js';
+import { Api } from './api.js';
 
 /**
  * Accessible Toast Notification System
@@ -109,6 +110,51 @@ class App {
       this.updateNavbar(navContainer, this.router.currentRoute);
     });
 
+    // Server-sync loop & Tab refocus re-sync
+    if (GameState.hasSession()) {
+      GameState.syncWithServer().catch(() => {});
+    }
+    setInterval(() => {
+      if (GameState.hasSession()) {
+        GameState.syncWithServer().catch(() => {});
+      }
+    }, 60000);
+
+    window.addEventListener('focus', () => {
+      if (GameState.hasSession()) {
+        GameState.syncWithServer().catch(() => {});
+      }
+    });
+
+    // Offline banner management
+    const showOfflineBanner = (isOffline) => {
+      let banner = document.getElementById('offline-banner');
+      if (isOffline) {
+        if (!banner) {
+          banner = document.createElement('div');
+          banner.id = 'offline-banner';
+          banner.className = 'offline-banner';
+          banner.innerHTML = `
+            <span>You are currently offline. Actions will retry when connected.</span>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-offline-retry">Retry Now</button>
+          `;
+          document.body.prepend(banner);
+          banner.querySelector('#btn-offline-retry').addEventListener('click', () => {
+            GameState.syncWithServer().then(() => showOfflineBanner(false)).catch(() => {});
+          });
+        }
+        banner.style.display = 'flex';
+      } else if (banner) {
+        banner.style.display = 'none';
+      }
+    };
+
+    window.addEventListener('offline', () => showOfflineBanner(true));
+    window.addEventListener('online', () => {
+      showOfflineBanner(false);
+      GameState.syncWithServer().catch(() => {});
+    });
+
     // DEV-ONLY: Initialize fixed dev reset bar across all screens
     this.initDevResetBar();
   }
@@ -146,7 +192,14 @@ class App {
   /**
    * DEV-ONLY: Comprehensive first-time visit reset wiping all client state.
    */
-  performDevReset() {
+  async performDevReset() {
+    // 0. Reset server contest state if DEV_MODE is enabled
+    try {
+      await Api.devReset();
+    } catch (e) {
+      console.warn('Server dev reset call error:', e);
+    }
+
     // 1. Clear all storage completely (not just future_quest keys)
     try {
       localStorage.clear();

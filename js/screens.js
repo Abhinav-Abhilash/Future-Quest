@@ -316,37 +316,53 @@ export const Screens = {
         return;
       }
 
-      // 3-2-1 Countdown Overlay Ceremony BEFORE GameState.initSession()
-      const overlay = document.createElement('div');
-      overlay.className = 'launch-countdown-overlay';
-      overlay.setAttribute('role', 'alert');
-      overlay.setAttribute('aria-live', 'assertive');
-      overlay.innerHTML = `
-        <div class="launch-countdown-digit show" id="launch-digit">3</div>
-        <div class="launch-countdown-caption">Preparing Contest Round...</div>
-      `;
-      document.body.appendChild(overlay);
+      // Disable button during server registration call
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Registering team...';
 
-      let count = 3;
-      const digitEl = overlay.querySelector('#launch-digit');
-      const interval = setInterval(() => {
-        count--;
-        if (count > 0) {
-          digitEl.classList.remove('show');
-          void digitEl.offsetWidth; // Reflow for animation trigger
-          digitEl.textContent = count;
-          digitEl.classList.add('show');
-        } else {
-          clearInterval(interval);
-          digitEl.textContent = 'GO!';
-          setTimeout(() => {
-            overlay.remove();
-            // Official 2-hour timer begins right now
-            GameState.initSession(teamVal, schoolVal);
-            router.navigate('/grid');
-          }, 500);
-        }
-      }, 1000);
+      GameState.initSession(teamVal, schoolVal)
+        .then(() => {
+          // 3-2-1 Countdown Overlay Ceremony
+          const overlay = document.createElement('div');
+          overlay.className = 'launch-countdown-overlay';
+          overlay.setAttribute('role', 'alert');
+          overlay.setAttribute('aria-live', 'assertive');
+          overlay.innerHTML = `
+            <div class="launch-countdown-digit show" id="launch-digit">3</div>
+            <div class="launch-countdown-caption">Preparing Contest Round...</div>
+          `;
+          document.body.appendChild(overlay);
+
+          let count = 3;
+          const digitEl = overlay.querySelector('#launch-digit');
+          const interval = setInterval(() => {
+            count--;
+            if (count > 0) {
+              digitEl.classList.remove('show');
+              void digitEl.offsetWidth; // Reflow for animation trigger
+              digitEl.textContent = count;
+              digitEl.classList.add('show');
+            } else {
+              clearInterval(interval);
+              digitEl.textContent = 'GO!';
+              setTimeout(() => {
+                overlay.remove();
+                router.navigate('/grid');
+              }, 500);
+            }
+          }, 1000);
+        })
+        .catch(err => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Begin Round';
+          const errMsg = err.message || 'Registration failed. Please try again.';
+          alertError.textContent = errMsg;
+          alertError.style.display = 'block';
+          if (errMsg.toLowerCase().includes('team')) {
+            teamInput.classList.add('input-invalid');
+            teamError.textContent = errMsg;
+          }
+        });
     });
   },
 

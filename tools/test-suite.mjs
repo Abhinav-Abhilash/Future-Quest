@@ -4,6 +4,8 @@ import { PUZZLE_REGISTRY } from '../js/puzzles/index.js';
 import { PUZZLE_ART, ART_KEYS } from '../js/puzzles/art.js';
 import { CONFIG } from '../js/config.js';
 
+import { PUZZLES as SERVER_PUZZLES } from '../server/puzzles/definitions.js';
+
 console.log('=== RUNNING INTERACTIVE PUZZLE TEST SUITE ===');
 
 let pass = true;
@@ -30,24 +32,26 @@ assert('PUZZLE_ART has 6 keys', ART_KEYS.length === 6);
   assert(`PUZZLE_ART contains ${key}`, typeof PUZZLE_ART[key] === 'string' && PUZZLE_ART[key].includes('<svg'));
 });
 
-// 3. Puzzle Configurations Verification (Puzzles 1..11)
+// 3. Client Puzzle Configurations Verification (Puzzles 1..11) - Client is fully sanitized
 for (let i = 1; i <= 11; i++) {
   const pid = `puzzle_${i}`;
   const p = CONFIG.PUZZLES[pid];
-  assert(`${pid} is defined`, !!p);
-  assert(`${pid} has valid type`, ['ascii', 'bodmas', 'coords', 'wordsearch', 'riddle', 'snake'].includes(p.type));
-  assert(`${pid} has data object`, typeof p.data === 'object');
-  assert(`${pid} has prompt`, typeof p.prompt === 'string' && p.prompt.length > 0);
-  assert(`${pid} has whatToDo`, typeof p.whatToDo === 'string' && p.whatToDo.length > 0);
-  if (p.bonus) {
-    assert(`${pid} bonus is true`, p.bonus === true);
-    assert(`${pid} has no hint`, !p.hint);
-    assert(`${pid} has no clue`, !p.clue);
-    assert(`${pid} is not in TILE_DIFFICULTY`, !CONFIG.TILE_DIFFICULTY[pid]);
+  const sp = SERVER_PUZZLES[pid];
+  assert(`${pid} is defined in client`, !!p);
+  assert(`${pid} has valid type in client`, ['ascii', 'bodmas', 'coords', 'wordsearch', 'riddle', 'snake'].includes(p.type));
+  assert(`${pid} client has no embedded answers/solutions`, !p.solution && !p.solutions && !p.mockAnswer);
+  assert(`${pid} client has no unsealed hints or clues`, !p.hint && !p.clue);
+
+  // Server definitions check
+  assert(`${pid} exists in server definitions`, !!sp);
+  if (sp.bonus) {
+    assert(`${pid} server bonus is true`, sp.bonus === true);
+    assert(`${pid} server has no hint`, !sp.hint);
+    assert(`${pid} server has no clue`, !sp.clue);
   } else {
-    assert(`${pid} has hint`, typeof p.hint === 'string' && p.hint.length > 0);
-    assert(`${pid} has clue`, typeof p.clue === 'object' && !!p.clue.title);
-    assert(`${pid} difficulty is mapped`, ['easy', 'medium', 'hard'].includes(CONFIG.TILE_DIFFICULTY[pid]));
+    assert(`${pid} server has hint`, typeof sp.hint === 'string' && sp.hint.length > 0);
+    assert(`${pid} server has clue`, typeof sp.clue === 'object' && !!sp.clue.title);
+    assert(`${pid} server difficulty is mapped`, ['easy', 'medium', 'hard'].includes(sp.difficulty));
   }
 }
 

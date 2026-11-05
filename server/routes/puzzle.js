@@ -435,3 +435,4 @@ router.post('/puzzle/:id/hint', requireAuth, async (req, res) => {
 });
 
 export default router;
+
