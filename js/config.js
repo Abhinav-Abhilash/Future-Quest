@@ -175,16 +175,20 @@ export const CONFIG = {
     puzzle_6: {
       id: "puzzle_6",
       type: "riddle",
-      title: "Host Institution Cryptogram",
+      title: "Visual Clue: Host Institution",
       category: "Institutional Identity",
-      whatToDo: "Deduce the complete hosting department and university name. Type the letters into the keycaps.",
-      prompt: "What department and school hosts this quest?",
+      whatToDo: "Inspect the cosmic illustration to identify the host institution and department. Deduce the 6 words and type the letters into the keycaps.",
+      prompt: "Examine the visual clues in the artwork to deduce the 6-word hosting institution and school.",
       data: {
         id: "puzzle_6",
         categoryTag: "HOST INSTITUTION & DEPARTMENT",
         formatBadge: "6 WORDS (4 + 10 + 6 + 2 + 6 + 10 LETTERS)",
+        imageUrl: "assets/jain_future_tech.jpg",
         riddleLines: [
-          "What department and school hosts this quest?"
+          "Deduce the 6 words illustrated across this futuristic cosmic artwork:",
+          "• Heritage: The revered meditative figure seated at center",
+          "• Education: The illuminated book of learning and wisdom",
+          "• Innovation: The cybernetic campus, neural brain, and robotic arm"
         ],
         words: [
           { name: "Word 1", length: 4 },

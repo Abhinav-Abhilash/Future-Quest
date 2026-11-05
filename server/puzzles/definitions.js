@@ -230,13 +230,13 @@ export const PUZZLES = {
   puzzle_6: {
     id: 'puzzle_6',
     type: 'riddle',
-    title: 'Host Institution Cryptogram',
+    title: 'Visual Clue: Host Institution',
     category: 'Institutional Identity',
     difficulty: 'medium',
     timeLimit: 900,
-    whatToDo: 'Deduce the complete hosting department and university name. Type the letters into the keycaps.',
-    prompt: 'What department and school hosts this quest?',
-    hint: 'Look at the official header at the top of the event branding. It combines the university name and its specialized technology division.',
+    whatToDo: 'Inspect the cosmic illustration to identify the host institution and department. Deduce the 6 words and type the letters into the keycaps.',
+    prompt: 'Examine the visual clues in the artwork to deduce the 6-word hosting institution and school.',
+    hint: 'Examine the 4 visual cues: the Jain meditative figure, the glowing open book (University), the futuristic academy (School), and the AI brain + robotic arm (Future Technology).',
     clue: {
       title: 'Clue Fragment 2: Institution Branding & Logo Spec',
       type: 'spec',
@@ -253,7 +253,13 @@ export const PUZZLES = {
       id: 'puzzle_6',
       categoryTag: 'HOST INSTITUTION & DEPARTMENT',
       formatBadge: '6 WORDS (4 + 10 + 6 + 2 + 6 + 10 LETTERS)',
-      riddleLines: ['What department and school hosts this quest?'],
+      imageUrl: 'assets/jain_future_tech.jpg',
+      riddleLines: [
+        'Deduce the 6 words illustrated across this futuristic cosmic artwork:',
+        '• Heritage: The revered meditative figure seated at center',
+        '• Education: The illuminated open book of learning and wisdom',
+        '• Innovation: The cybernetic campus, neural brain, and robotic arm',
+      ],
       words: [
         { name: 'Word 1', length: 4 },
         { name: 'Word 2', length: 10 },

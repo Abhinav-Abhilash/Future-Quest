@@ -97,7 +97,7 @@ Every puzzle tile corresponds to a specific element of the final competition pos
 | **Task 3** | `puzzle_3` | `bodmas` | 🟡 Medium | `"CODE THE FUTURE"` | **Sub-headline Title Spec** (`Arial Black`, Yellow, `20pt/24pt`) |
 | **Task 4** | `puzzle_4` | `riddle` | 🟡 Medium | `"CINNAMON BUN"` | **Mascot Icon Spec** (Green Android Bugdroid / System Architecture) |
 | **Task 5** | `puzzle_5` | `ascii` | 🟡 Medium | `"WHERE HUMAN MEETS AI"` | **Centerpiece Graphic Asset** (`assets/human_meets_ai.png`, Robot & Human hand) |
-| **Task 6** | `puzzle_6` | `riddle` | 🟡 Medium | `"JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY"` | **Institution Branding Spec** (`JAIN UNIVERSITY. SCHOOL OF FUTURE TECHNOLOGY`) |
+| **Task 6** | `puzzle_6` | `riddle` | 🟡 Medium | `"JAIN UNIVERSITY SCHOOL OF FUTURE TECHNOLOGY"` | **Visual Cryptogram** (`assets/jain_future_tech.jpg`) & **Institution Branding Spec** (`JAIN UNIVERSITY. SCHOOL OF FUTURE TECHNOLOGY`) |
 | **Task 7** | `puzzle_7` | `wordsearch` | 🔴 Hard | `20 Technology Words` | **Word Bank Spec** (20 tech words for body paragraph) |
 | **Task 8** | `puzzle_8` | `riddle` | 🔴 Hard | `"ROADSTER"` | **Vehicle Spec** (Tesla Roadster / Aerospace Telemetry) |
 | **Task 9** | `puzzle_9` | `riddle` | 🔴 Hard | `"DARK BLUE AND LIGHT STEEL BLUE"` | **Canvas Background Asset** (`assets/poster_background_palette.png`, gradient) |
