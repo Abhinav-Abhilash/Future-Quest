@@ -823,7 +823,10 @@ export const Screens = {
         const puzzleId = slot.dataset.puzzleId;
         if (!puzzleId) return;
         const b = state.blocks[puzzleId];
-        if (b && b.status === 'FAILED') return;
+        if (b && b.status === 'FAILED') {
+          showToast('This task time limit expired and is permanently locked.', 'warning');
+          return;
+        }
         if (isVaultEntered) {
           router.navigate('/vault');
         } else {

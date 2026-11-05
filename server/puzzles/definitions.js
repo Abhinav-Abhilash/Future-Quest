@@ -421,6 +421,10 @@ export const PUZZLES = {
       'DARK BLUE AND LIGHT STEEL BLUE',
       'DARK BLUE LIGHT STEEL BLUE',
       'DARK BLUE & LIGHT STEEL BLUE',
+      'DARK BLUE TO LIGHT STEEL BLUE',
+      'MIDNIGHT BLUE AND LIGHT STEEL BLUE',
+      'MIDNIGHT BLUE LIGHT STEEL BLUE',
+      'MIDNIGHT BLUE TO LIGHT STEEL BLUE',
     ],
   },
 
@@ -508,10 +512,13 @@ export function checkPuzzleAnswer(puzzleId, submission) {
   // Text string comparison
   const raw = typeof submission === 'string' ? submission : (submission?.answer || '');
   const normalized = String(raw).toUpperCase().replace(/\s+/g, ' ').trim();
+  const noSpaceNorm = normalized.replace(/[^A-Z0-9]/g, '');
 
   return puz.acceptedAnswers.some((ans) => {
     const cleanAns = ans.toUpperCase().replace(/\s+/g, ' ').trim();
-    return cleanAns === normalized;
+    if (cleanAns === normalized) return true;
+    const noSpaceAns = cleanAns.replace(/[^A-Z0-9]/g, '');
+    return noSpaceAns.length > 0 && noSpaceAns === noSpaceNorm;
   });
 }
 
