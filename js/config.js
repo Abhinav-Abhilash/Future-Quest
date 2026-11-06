@@ -306,7 +306,7 @@ export const CONFIG = {
       difficulty: "hard",
       title: "Word Search",
       category: "Applied Cryptography",
-      whatToDo: "Locate all 20 tech terms from the word list in the 15×15 matrix. Words can go in any of 8 directions (horizontal, vertical, diagonal, forward, or backward).",
+      whatToDo: "Locate all 20 tech terms from the word list in the 15×15 matrix. Words can go in any of 8 directions (horizontal, vertical, diagonal, forward, or backward). Use these words to make a paragraph.",
       prompt: "Find the 20 technology words listed in the checklist below.",
       data: {
         id: "puzzle_7",

@@ -300,7 +300,7 @@ export const PUZZLES = {
     category: 'Applied Cryptography',
     difficulty: 'hard',
     timeLimit: 1200,
-    whatToDo: 'Locate all 20 tech terms from the word list in the 15×15 matrix. Words can go in any of 8 directions (horizontal, vertical, diagonal, forward, or backward).',
+    whatToDo: 'Locate all 20 tech terms from the word list in the 15×15 matrix. Words can go in any of 8 directions (horizontal, vertical, diagonal, forward, or backward). Use these words to make a paragraph.',
     prompt: 'Find the 20 technology words listed in the checklist below.',
     hint: "Scan the matrix in all 8 directions—words can run horizontally, vertically, or diagonally. Try searching for uncommon letters like 'Q' in Quantum, 'Z', or distinctive double-letter clusters.",
     clue: {
