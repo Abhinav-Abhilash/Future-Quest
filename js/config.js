@@ -46,7 +46,7 @@ export const CONFIG = {
     puzzle_5: "medium",
     puzzle_6: "medium",
     puzzle_7: "hard",
-    puzzle_8: "hard",
+    puzzle_8: "medium",
     puzzle_9: "hard",
     puzzle_10: "medium"
   },
@@ -337,9 +337,9 @@ export const CONFIG = {
     },
     puzzle_8: {
       id: "puzzle_8",
-      timeLimit: 1200,
+      timeLimit: 900,
       type: "riddle",
-      difficulty: "hard",
+      difficulty: "medium",
       title: "Aerospace Riddle",
       category: "Automotive & Aerospace",
       whatToDo: "Deduce the vehicle described in the cosmic riddle. Type the 8-letter model name into the tactile keycaps.",

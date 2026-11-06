@@ -135,8 +135,8 @@ report('T7 Word Search Dynamic Check (20 words in grid)', t7_ok);
 const t8 = PUZZLES.puzzle_8;
 const t8_ok = checkPuzzleAnswer('puzzle_8', 'ROADSTER') &&
   checkPuzzleAnswer('puzzle_8', 'roadster') &&
-  t8.difficulty === 'hard' &&
-  t8.timeLimit === 1200;
+  t8.difficulty === 'medium' &&
+  t8.timeLimit === 900;
 report('T8 Riddle Dynamic Check (ROADSTER)', t8_ok);
 
 // -------------------------------------------------------------
