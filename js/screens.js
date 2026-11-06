@@ -163,6 +163,199 @@ export const Screens = {
     showToast(`Downloading ${link.download}`, 'info');
   },
 
+  /**
+   * Canonical Unified Clue Card Component.
+   * Used identically across Task Screen, Vault Inventory, and Clue Pouch Modal.
+   * Requirement 7: The same clue card component is used in the task screen, the vault and the pouch,
+   * so wording can never differ between them.
+   */
+  renderClueCardHtml(clue, tileNumber, options = {}) {
+    if (!clue) return '';
+    const numStr = String(tileNumber).padStart(2, '0');
+    const animateClass = options.animate ? 'clue-fade-in' : '';
+    const context = options.context || 'task'; // 'task' | 'vault' | 'pouch'
+
+    let typeTag = 'POSTER CLUE';
+    if (clue.type === 'text') typeTag = 'TEXT CLUE';
+    else if (clue.type === 'image') typeTag = 'GRAPHIC ASSET';
+
+    const specRows = (clue.specs || []).map(s => `
+      <tr>
+        <th scope="row" class="spec-label">${s.label}</th>
+        <td class="spec-value"><code>${s.value}</code></td>
+      </tr>
+    `).join('');
+
+    let bodyContentHtml = '';
+    let actionBtnHtml = '';
+
+    if (clue.type === 'spec') {
+      bodyContentHtml = `
+        <div class="clue-body">
+          <table class="spec-table">
+            <tbody>${specRows}</tbody>
+          </table>
+        </div>
+      `;
+      const specExport = [
+        clue.answerText ? `Answer: ${clue.answerText}` : '',
+        clue.placementTip ? `Placement Tip: ${clue.placementTip}` : '',
+        ...(clue.specs || []).map(s => `${s.label}: ${s.value}`)
+      ].filter(Boolean).join('\n');
+
+      actionBtnHtml = `
+        <button type="button" class="btn btn-secondary btn-sm keycap btn-copy-clue-specs" data-text="${encodeURIComponent(specExport)}">
+          ${ICONS.copy} <span>Copy Specifications</span>
+        </button>
+      `;
+    } else if (clue.type === 'text') {
+      bodyContentHtml = `
+        <div class="clue-body">
+          <div class="clue-copy-box">
+            <pre class="clue-pre mono"><code>${clue.content}</code></pre>
+          </div>
+        </div>
+      `;
+      const textExport = [
+        clue.answerText ? `Answer: ${clue.answerText}` : '',
+        clue.placementTip ? `Placement Tip: ${clue.placementTip}` : '',
+        clue.content
+      ].filter(Boolean).join('\n\n');
+
+      actionBtnHtml = `
+        <button type="button" class="btn btn-secondary btn-sm keycap btn-copy-clue-text" data-text="${encodeURIComponent(textExport)}">
+          ${ICONS.copy} <span>Copy Text</span>
+        </button>
+      `;
+    } else if (clue.type === 'image') {
+      const isRaster = !!clue.imageUrl;
+      if (isRaster) {
+        bodyContentHtml = `
+          <div class="clue-body">
+            <div class="clue-image-preview-wrapper" style="text-align:center; padding:16px; background:#0B0814; border-radius:8px; border:1px solid #3D3063;">
+              <img src="${clue.imageUrl}" alt="${clue.title}" class="clue-raster-preview" style="max-width:100%; max-height:240px; border-radius:6px; object-fit:contain;" />
+              <div style="font-size:12px; color:#A78BFA; font-family:var(--font-mono); margin-top:8px;">${clue.filename || 'asset.png'}</div>
+            </div>
+            ${specRows ? `
+              <table class="spec-table" style="margin-top: 14px;">
+                <tbody>${specRows}</tbody>
+              </table>
+            ` : ''}
+          </div>
+        `;
+        actionBtnHtml = `
+          <a href="${clue.imageUrl}" download="${clue.filename || 'asset.png'}" class="btn btn-primary btn-sm keycap">
+            ${ICONS.download} <span>Download Image Asset</span>
+          </a>
+        `;
+      } else {
+        bodyContentHtml = `
+          <div class="clue-body">
+            <div class="clue-svg-preview-wrapper" style="text-align:center; padding:12px; background:#0B0814; border-radius:8px; border:1px solid #3D3063;">
+              ${clue.svgContent}
+            </div>
+            ${specRows ? `
+              <table class="spec-table" style="margin-top: 14px;">
+                <tbody>${specRows}</tbody>
+              </table>
+            ` : ''}
+          </div>
+        `;
+        actionBtnHtml = `
+          <button type="button" class="btn btn-primary btn-sm keycap btn-download-clue-svg" data-svg="${encodeURIComponent(clue.svgContent)}" data-filename="${clue.filename || 'asset.svg'}">
+            ${ICONS.download} <span>Download SVG Asset</span>
+          </button>
+        `;
+      }
+    }
+
+    const backGridBtn = (options.backToGrid && context === 'task') ? `
+      <button type="button" class="btn btn-secondary btn-sm keycap btn-clue-back-grid-action">
+        ${ICONS.arrowLeft} <span>Back to Grid</span>
+      </button>
+    ` : '';
+
+    const openTaskBtn = (context === 'pouch' && options.puzzleId) ? `
+      <button type="button" class="btn btn-secondary btn-sm keycap btn-modal-open-task" data-puzzle-id="${options.puzzleId}">
+        ${ICONS.arrowRight || '➔'} <span>Open Task Screen</span>
+      </button>
+    ` : '';
+
+    return `
+      <div class="clue-card clue-${clue.type} keycap ${animateClass}" data-task-num="${numStr}" aria-labelledby="clue-heading-${numStr}">
+        <div class="clue-header">
+          <div class="clue-header-badges">
+            <span class="clue-tag mono">TASK ${numStr} SOLVED ✓ UNLOCKED ${typeTag}</span>
+            ${clue.textSize ? `<span class="clue-size-pill mono">TEXT SIZE: ${clue.textSize}</span>` : ''}
+          </div>
+          <h3 id="clue-heading-${numStr}" class="clue-title">${clue.title}</h3>
+          ${clue.caption ? `<p class="clue-caption">${clue.caption}</p>` : ''}
+        </div>
+
+        ${clue.answerText ? `
+          <div class="clue-unlocked-answer-box">
+            <span class="answer-box-label mono">UNLOCKED CLUE / ANSWER:</span>
+            <div class="answer-box-value mono">"${clue.answerText}"</div>
+          </div>
+        ` : ''}
+
+        ${clue.placementTip ? `
+          <div class="clue-placement-banner">
+            <div class="placement-badge mono">💡 WHERE TO USE IT</div>
+            <p class="placement-text">${clue.placementTip}</p>
+            <div class="placement-subtext mono">Position this element at the specified location on your final poster.</div>
+          </div>
+        ` : ''}
+
+        ${bodyContentHtml}
+
+        <div class="clue-actions">
+          ${actionBtnHtml}
+          ${openTaskBtn}
+          ${backGridBtn}
+        </div>
+      </div>
+    `;
+  },
+
+  /**
+   * Bind event listeners for actions inside rendered clue cards.
+   */
+  bindClueCardEvents(scopeEl, router, puzzleId) {
+    if (!scopeEl) return;
+
+    scopeEl.querySelectorAll('.btn-copy-clue-specs, .btn-vault-copy').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const text = decodeURIComponent(btn.dataset.text || '');
+        this.copyToClipboard(text, btn);
+      });
+    });
+
+    scopeEl.querySelectorAll('.btn-copy-clue-text').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const text = decodeURIComponent(btn.dataset.text || '');
+        this.copyToClipboard(text, btn);
+      });
+    });
+
+    scopeEl.querySelectorAll('.btn-download-clue-svg, .btn-vault-download').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const svgContent = decodeURIComponent(btn.dataset.svg || '');
+        const filename = btn.dataset.filename || 'asset.svg';
+        this.downloadSvg(svgContent, filename);
+      });
+    });
+
+    scopeEl.querySelectorAll('.btn-clue-back-grid-action').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.unmountCurrentPuzzle();
+        if (puzzleId) GameState.leavePuzzle(puzzleId);
+        if (router) router.navigate('/grid');
+      });
+    });
+  },
+
   // =========================================================================
   // 1. REGISTRATION SCREEN (#/register)
   // =========================================================================
@@ -826,7 +1019,7 @@ export const Screens = {
       });
     }
 
-    // Bind clicks to pouch slots (navigates to puzzle if opened/solved)
+    // Bind clicks to pouch slots (shows clue modal if solved, or navigates to puzzle)
     const pouchSlots = container.querySelectorAll('.pouch-slot');
     pouchSlots.forEach(slot => {
       slot.addEventListener('click', () => {
@@ -836,6 +1029,26 @@ export const Screens = {
         if (b && b.status === 'FAILED') {
           showToast('This task time limit expired and is permanently locked.', 'warning');
           return;
+        }
+        if (b && b.status === 'SOLVED') {
+          const clue = b.unlockedClue || CONFIG.PUZZLES[puzzleId]?.clue;
+          const questPuzzles = !CONFIG.SHUFFLE_TILES
+            ? Object.keys(CONFIG.PUZZLES)
+            : (state.gridOrder || []).filter(id => id !== 'vault_12');
+          const tileIndex = questPuzzles.indexOf(puzzleId);
+          const tileNum = tileIndex !== -1 ? tileIndex + 1 : 1;
+          if (clue) {
+            const clueHtml = this.renderClueCardHtml(clue, tileNum, {
+              context: 'pouch',
+              animate: false,
+              puzzleId: puzzleId
+            });
+            Modal.showClueModal(`Task ${String(tileNum).padStart(2, '0')}: ${clue.title}`, clueHtml, () => {
+              router.navigate(`/puzzle/${puzzleId}`);
+            });
+            this.bindClueCardEvents(Modal.modalRoot, router, puzzleId);
+            return;
+          }
         }
         if (isVaultEntered) {
           router.navigate('/vault');
@@ -1079,9 +1292,6 @@ export const Screens = {
         <!-- Status Notification Banner -->
         <div id="puzzle-status-banner"></div>
 
-        <!-- Unlocked Poster Clue & Placement Tip Container (featured prominently when solved) -->
-        <div id="puzzle-clue-container" class="puzzle-clue-container"></div>
-
         <!-- 2. Objective & How to Play Row -->
         <div class="puzzle-instruction-row">
           <div class="puzzle-instruction-text">
@@ -1119,10 +1329,13 @@ export const Screens = {
         </div>
 
         <!-- 3. Puzzle Stage: Flat full-width surface -->
-        <main id="puzzle-stage" class="puzzle-stage-surface theme-${puzzleType}" data-puzzle-type="${puzzleType}">
+        <main id="puzzle-stage" class="puzzle-stage-surface theme-${puzzleType} ${block.status === 'SOLVED' ? 'puzzle-stage-solved-locked' : ''}" data-puzzle-type="${puzzleType}">
           <!-- Dynamic Interactive Module -->
           <div id="puzzle-interactive-container"></div>
         </main>
+
+        <!-- Unlocked Poster Clue & Placement Tip Container (directly below the puzzle area) -->
+        <div id="puzzle-clue-container" class="puzzle-clue-container"></div>
 
         <!-- 4. Sticky Bottom Action Bar -->
         <footer class="puzzle-sticky-action-bar" id="puzzle-sticky-action-bar" role="region" aria-label="Puzzle Actions">
@@ -1163,16 +1376,25 @@ export const Screens = {
             </div>
 
             <div class="action-bar-right">
-              ${puzzleType !== 'wordsearch' ? `
+              ${block.status === 'SOLVED' ? `
+                <div class="action-solved-state mono" id="action-solved-state-indicator" role="status">
+                  <span class="action-solved-icon">${ICONS.check}</span>
+                  <span>Solved. Clue unlocked below.</span>
+                </div>
+              ` : (block.status === 'FAILED' ? `
+                <div class="action-failed-state mono" id="action-failed-state-indicator" role="status">
+                  <span class="action-failed-icon">${ICONS.cross}</span>
+                  <span>Task Failed</span>
+                </div>
+              ` : (puzzleType !== 'wordsearch' ? `
                 <button 
                   type="button" 
                   class="btn btn-primary keycap action-check-btn" 
                   id="btn-check-main"
-                  ${block.status === 'SOLVED' || block.status === 'FAILED' ? 'disabled' : ''}
                 >
                   Check Answer
                 </button>
-              ` : ''}
+              ` : ''))}
             </div>
           </div>
         </footer>
@@ -1199,14 +1421,16 @@ export const Screens = {
     };
 
     // Helper: Update status banner, action bar notice, and unlocked clue view
-    const renderStatusAndClue = () => {
+    const renderStatusAndClue = (freshlySolved = false) => {
       const currentBlock = GameState.state?.blocks[puzzleId] || block;
       const statusBanner = container.querySelector('#puzzle-status-banner');
       const clueContainer = container.querySelector('#puzzle-clue-container');
-      const attemptsPipsEl = container.querySelector('#action-attempts-pips');
       const actionNotice = container.querySelector('#action-bar-notice-text');
-      const checkBtnMain = container.querySelector('#btn-check-main');
+      const actionBarRight = container.querySelector('.action-bar-right');
       const hintBtn = container.querySelector('#btn-use-hint');
+      const stage = container.querySelector('#puzzle-stage');
+      const timerEl = document.getElementById('puzzle-countdown');
+
       if (hintBtn && isNoHint) {
         hintBtn.disabled = true;
         hintBtn.setAttribute('aria-disabled', 'true');
@@ -1219,28 +1443,67 @@ export const Screens = {
 
       // Status Banners & Action Notice
       if (currentBlock.status === 'SOLVED') {
-        if (checkBtnMain) checkBtnMain.disabled = true;
         if (hintBtn) hintBtn.disabled = true;
         if (actionNotice) {
           actionNotice.textContent = 'SOLVED ✓ Technical clue unlocked';
           actionNotice.className = 'action-bar-notice notice-success mono';
+        }
+        if (actionBarRight) {
+          actionBarRight.innerHTML = `
+            <div class="action-solved-state mono" id="action-solved-state-indicator" role="status">
+              <span class="action-solved-icon">${ICONS.check}</span>
+              <span>Solved. Clue unlocked below.</span>
+            </div>
+          `;
+        }
+        if (timerEl) {
+          timerEl.textContent = 'SOLVED';
+        }
+        if (stage) {
+          stage.classList.add('puzzle-stage-solved-locked');
+          stage.querySelectorAll('input, button, textarea, select').forEach(el => {
+            el.disabled = true;
+            el.setAttribute('aria-disabled', 'true');
+          });
+        }
+        if (this.activePuzzleInterval) {
+          clearInterval(this.activePuzzleInterval);
+          this.activePuzzleInterval = null;
         }
         if (statusBanner) {
           statusBanner.innerHTML = `
             <div class="alert alert-success" role="status">
               <span class="alert-icon">${ICONS.check}</span>
               <div class="alert-content">
-                <strong>Puzzle Solved:</strong> Correct answer confirmed. Technical clue unsealed below.
+                <strong>Puzzle Solved:</strong> Correct answer confirmed. Technical clue unlocked below.
               </div>
             </div>
           `;
         }
       } else if (currentBlock.status === 'FAILED') {
-        if (checkBtnMain) checkBtnMain.disabled = true;
         if (hintBtn) hintBtn.disabled = true;
         if (actionNotice) {
           actionNotice.textContent = 'LOCKED (Time limit expired)';
           actionNotice.className = 'action-bar-notice notice-danger mono';
+        }
+        if (actionBarRight) {
+          actionBarRight.innerHTML = `
+            <div class="action-failed-state mono" id="action-failed-state-indicator" role="status">
+              <span class="action-failed-icon">${ICONS.cross}</span>
+              <span>Task Failed</span>
+            </div>
+          `;
+        }
+        if (stage) {
+          stage.classList.add('puzzle-stage-solved-locked');
+          stage.querySelectorAll('input, button, textarea, select').forEach(el => {
+            el.disabled = true;
+            el.setAttribute('aria-disabled', 'true');
+          });
+        }
+        if (this.activePuzzleInterval) {
+          clearInterval(this.activePuzzleInterval);
+          this.activePuzzleInterval = null;
         }
         if (statusBanner) {
           statusBanner.innerHTML = `
@@ -1256,215 +1519,18 @@ export const Screens = {
         if (statusBanner) statusBanner.innerHTML = '';
       }
 
-      // Sealed Clue Card with 3D Flip
+      // Render Clue Card directly below the puzzle area
       if (clueContainer) {
         const clue = currentBlock.unlockedClue || CONFIG.PUZZLES[puzzleId]?.clue;
         if (currentBlock.status === 'SOLVED' && clue) {
           currentBlock.unlockedClue = clue;
-          let clueInnerHtml = '';
-
-          const specRows = (clue.specs || []).map(s => `
-            <tr>
-              <th scope="row" class="spec-label">${s.label}</th>
-              <td class="spec-value"><code>${s.value}</code></td>
-            </tr>
-          `).join('');
-
-          if (clue.type === 'spec') {
-            clueInnerHtml = `
-              <div class="clue-card clue-spec keycap" aria-labelledby="clue-heading">
-                <div class="clue-header">
-                  <div class="clue-header-badges">
-                    <span class="clue-tag mono">TASK ${tileNumber} SOLVED ✓ UNLOCKED POSTER CLUE</span>
-                    ${clue.textSize ? `<span class="clue-size-pill mono">TEXT SIZE: ${clue.textSize}</span>` : ''}
-                  </div>
-                  <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
-                </div>
-
-                ${clue.answerText ? `
-                  <div class="clue-unlocked-answer-box">
-                    <span class="answer-box-label mono">UNLOCKED CLUE / ANSWER:</span>
-                    <div class="answer-box-value mono">"${clue.answerText}"</div>
-                  </div>
-                ` : ''}
-
-                ${clue.placementTip ? `
-                  <div class="clue-placement-banner">
-                    <div class="placement-badge mono">💡 POSTER PLACEMENT TIP (HOW & WHERE TO APPLY)</div>
-                    <p class="placement-text">${clue.placementTip}</p>
-                    <div class="placement-subtext mono">Position this element at the specified location on your final poster.</div>
-                  </div>
-                ` : ''}
-
-                <div class="clue-body">
-                  <table class="spec-table">
-                    <tbody>${specRows}</tbody>
-                  </table>
-                </div>
-
-                <div class="clue-actions">
-                  <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-copy-specs">
-                    ${ICONS.copy} <span>Copy Specifications</span>
-                  </button>
-                  <button type="button" class="btn btn-secondary btn-sm keycap btn-clue-back-grid-action">
-                    ${ICONS.arrowLeft} <span>Back to Grid</span>
-                  </button>
-                </div>
-              </div>
-            `;
-          } else if (clue.type === 'text') {
-            clueInnerHtml = `
-              <div class="clue-card clue-text keycap" aria-labelledby="clue-heading">
-                <div class="clue-header">
-                  <div class="clue-header-badges">
-                    <span class="clue-tag mono">TASK ${tileNumber} SOLVED ✓ UNLOCKED TEXT CLUE</span>
-                    ${clue.textSize ? `<span class="clue-size-pill mono">TEXT SIZE: ${clue.textSize}</span>` : ''}
-                  </div>
-                  <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
-                </div>
-
-                ${clue.answerText ? `
-                  <div class="clue-unlocked-answer-box">
-                    <span class="answer-box-label mono">UNLOCKED CLUE / ANSWER:</span>
-                    <div class="answer-box-value mono">"${clue.answerText}"</div>
-                  </div>
-                ` : ''}
-
-                ${clue.placementTip ? `
-                  <div class="clue-placement-banner">
-                    <div class="placement-badge mono">💡 POSTER PLACEMENT TIP (HOW & WHERE TO APPLY)</div>
-                    <p class="placement-text">${clue.placementTip}</p>
-                    <div class="placement-subtext mono">Position this text at the specified location on your final poster.</div>
-                  </div>
-                ` : ''}
-
-                <div class="clue-body">
-                  <div class="clue-copy-box">
-                    <pre class="clue-pre mono"><code>${clue.content}</code></pre>
-                  </div>
-                </div>
-
-                <div class="clue-actions">
-                  <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-copy-text">
-                    ${ICONS.copy} <span>Copy Text</span>
-                  </button>
-                  <button type="button" class="btn btn-secondary btn-sm keycap btn-clue-back-grid-action">
-                    ${ICONS.arrowLeft} <span>Back to Grid</span>
-                  </button>
-                </div>
-              </div>
-            `;
-          } else if (clue.type === 'image') {
-            const isRaster = !!clue.imageUrl;
-            const imgContent = isRaster 
-              ? `
-                <div class="clue-image-preview-wrapper" style="text-align:center; padding:16px; background:#0B0814; border-radius:8px; border:1px solid #3D3063;">
-                  <img src="${clue.imageUrl}" alt="${clue.title}" class="clue-raster-preview" style="max-width:100%; max-height:240px; border-radius:6px; object-fit:contain;" />
-                  <div style="font-size:12px; color:#A78BFA; font-family:var(--font-mono); margin-top:8px;">${clue.filename || 'asset.png'}</div>
-                </div>
-              `
-              : (clue.svgContent || '');
-
-            const downloadBtn = isRaster
-              ? `<a href="${clue.imageUrl}" download="${clue.filename || 'clue-asset.png'}" class="btn btn-primary btn-sm keycap">${ICONS.download} <span>Download Image Asset</span></a>`
-              : `<button type="button" class="btn btn-primary btn-sm keycap" id="btn-download-svg">${ICONS.download} <span>Download SVG Asset</span></button>`;
-
-            clueInnerHtml = `
-              <div class="clue-card clue-image keycap" aria-labelledby="clue-heading">
-                <div class="clue-header">
-                  <div class="clue-header-badges">
-                    <span class="clue-tag mono">TASK ${tileNumber} SOLVED ✓ UNLOCKED GRAPHIC ASSET</span>
-                    ${clue.textSize ? `<span class="clue-size-pill mono">TEXT SIZE: ${clue.textSize}</span>` : ''}
-                  </div>
-                  <h3 id="clue-heading" class="clue-title">${clue.title}</h3>
-                  <p class="clue-caption">${clue.caption || ''}</p>
-                </div>
-
-                ${clue.answerText ? `
-                  <div class="clue-unlocked-answer-box">
-                    <span class="answer-box-label mono">UNLOCKED CLUE / ANSWER:</span>
-                    <div class="answer-box-value mono">"${clue.answerText}"</div>
-                  </div>
-                ` : ''}
-
-                ${clue.placementTip ? `
-                  <div class="clue-placement-banner">
-                    <div class="placement-badge mono">💡 POSTER PLACEMENT TIP (HOW & WHERE TO APPLY)</div>
-                    <p class="placement-text">${clue.placementTip}</p>
-                    <div class="placement-subtext mono">Download this asset and place it at the designated location on your poster.</div>
-                  </div>
-                ` : ''}
-
-                <div class="clue-body">
-                  ${imgContent}
-                  ${specRows ? `
-                    <table class="spec-table" style="margin-top: 14px;">
-                      <tbody>${specRows}</tbody>
-                    </table>
-                  ` : ''}
-                </div>
-
-                <div class="clue-actions">
-                  ${downloadBtn}
-                  ${clue.specs ? `
-                    <button type="button" class="btn btn-secondary btn-sm keycap" id="btn-copy-specs">
-                      ${ICONS.copy} <span>Copy Specifications</span>
-                    </button>
-                  ` : ''}
-                  <button type="button" class="btn btn-secondary btn-sm keycap btn-clue-back-grid-action">
-                    ${ICONS.arrowLeft} <span>Back to Grid</span>
-                  </button>
-                </div>
-              </div>
-            `;
-          }
-
-          clueContainer.innerHTML = `
-            <div class="sealed-clue-card is-unsealed">
-              <div class="sealed-flipper">
-                <div class="sealed-front">
-                  <span class="sealed-seal-icon">${ICONS.gem || ICONS.checkCircle}</span>
-                  <span class="sealed-label">TECHNICAL CLUE UNSEALED</span>
-                </div>
-                <div class="sealed-back">
-                  ${clueInnerHtml}
-                </div>
-              </div>
-            </div>
-          `;
-          clueContainer.classList.add('clue-visible');
-
-          const copySpecsBtn = clueContainer.querySelector('#btn-copy-specs');
-          if (copySpecsBtn) {
-            copySpecsBtn.addEventListener('click', () => {
-              const specText = (clue.specs || []).map(s => `${s.label}: ${s.value}`).join('\n');
-              this.copyToClipboard(specText, copySpecsBtn);
-            });
-          }
-
-          const copyTextBtn = clueContainer.querySelector('#btn-copy-text');
-          if (copyTextBtn) {
-            copyTextBtn.addEventListener('click', () => {
-              this.copyToClipboard(clue.content || '', copyTextBtn);
-            });
-          }
-
-          const downloadSvgBtn = clueContainer.querySelector('#btn-download-svg');
-          if (downloadSvgBtn) {
-            downloadSvgBtn.addEventListener('click', () => {
-              this.downloadSvg(clue.svgContent, clue.filename);
-            });
-          }
-
-          const backGridClueBtns = clueContainer.querySelectorAll('.btn-clue-back-grid-action');
-          backGridClueBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-              e.preventDefault();
-              this.unmountCurrentPuzzle();
-              GameState.leavePuzzle(puzzleId);
-              router.navigate('/grid');
-            });
+          clueContainer.innerHTML = this.renderClueCardHtml(clue, tileNumber, {
+            context: 'task',
+            animate: freshlySolved,
+            backToGrid: true
           });
+          clueContainer.classList.add('clue-visible');
+          this.bindClueCardEvents(clueContainer, router, puzzleId);
         } else {
           clueContainer.innerHTML = '';
           clueContainer.classList.remove('clue-visible');
@@ -1498,8 +1564,17 @@ export const Screens = {
           GameState.markSolved(puzzleId);
           triggerSolveBurst();
           showToast(`Task ${tileNumber} solved! Clue & placement tip unlocked.`, 'success');
-          renderStatusAndClue();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          renderStatusAndClue(true);
+
+          const clueContainer = container.querySelector('#puzzle-clue-container');
+          if (clueContainer) {
+            const isReducedMotion = document.body.classList.contains('lite-mode') || 
+              (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+            clueContainer.scrollIntoView({
+              behavior: isReducedMotion ? 'auto' : 'smooth',
+              block: 'start'
+            });
+          }
         },
         onWrongCheck: () => {
           const res = GameState.recordWrong(puzzleId);
@@ -1523,6 +1598,17 @@ export const Screens = {
       puzzleModule.mount(interactiveContainer, puzzleConfig.data, ctx);
       this.activePuzzleModule = puzzleModule;
       this.activePuzzleId = puzzleId;
+
+      if (block.status === 'SOLVED' || block.status === 'FAILED') {
+        const stage = container.querySelector('#puzzle-stage');
+        if (stage) {
+          stage.classList.add('puzzle-stage-solved-locked');
+          stage.querySelectorAll('input, button, textarea, select').forEach(el => {
+            el.disabled = true;
+            el.setAttribute('aria-disabled', 'true');
+          });
+        }
+      }
     }
 
     // Event Listeners
@@ -1737,96 +1823,18 @@ export const Screens = {
       const clue = block ? (block.unlockedClue || CONFIG.PUZZLES[itemId]?.clue) : null;
 
       if (isSolved && clue) {
-        let actionBtnHtml = '';
-        let clueBodyHtml = '';
-
-        if (clue.type === 'spec') {
-          const specSummary = (clue.specs || []).map(s => `${s.label}: ${s.value}`).join(' | ');
-          clueBodyHtml = `
-            ${clue.placementTip ? `<div class="vault-placement-tip"><span class="tip-pill mono">💡 PLACEMENT TIP</span> <strong>${clue.placementTip}</strong></div>` : ''}
-            ${clue.answerText ? `<div class="vault-answer-row mono" style="font-size: 13px; color: #38bdf8; margin: 4px 0 8px; font-weight: 700;">Answer: "${clue.answerText}" ${clue.textSize ? `<span style="color:#FFC928;">(Size: ${clue.textSize})</span>` : ''}</div>` : ''}
-            <div class="vault-clue-spec-snippet"><code>${specSummary}</code></div>
-          `;
-          const specExport = [
-            clue.answerText ? `Answer: ${clue.answerText}` : '',
-            clue.placementTip ? `Placement Tip: ${clue.placementTip}` : '',
-            ...(clue.specs || []).map(s => `${s.label}: ${s.value}`)
-          ].filter(Boolean).join('\n');
-          allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Specifications) ---\n${specExport}`);
-          actionBtnHtml = `
-            <button type="button" class="btn btn-secondary btn-sm btn-vault-copy" data-text="${encodeURIComponent(specExport)}">
-              ${ICONS.copy} <span>Copy Specs</span>
-            </button>
-          `;
-        } else if (clue.type === 'text') {
-          clueBodyHtml = `
-            ${clue.placementTip ? `<div class="vault-placement-tip"><span class="tip-pill mono">💡 PLACEMENT TIP</span> <strong>${clue.placementTip}</strong></div>` : ''}
-            ${clue.answerText ? `<div class="vault-answer-row mono" style="font-size: 13px; color: #38bdf8; margin: 4px 0 8px; font-weight: 700;">Answer: "${clue.answerText}" ${clue.textSize ? `<span style="color:#FFC928;">(Size: ${clue.textSize})</span>` : ''}</div>` : ''}
-            <div class="vault-clue-text-snippet">${clue.content}</div>
-          `;
-          const textExport = [
-            clue.answerText ? `Answer: ${clue.answerText}` : '',
-            clue.placementTip ? `Placement Tip: ${clue.placementTip}` : '',
-            clue.content
-          ].filter(Boolean).join('\n\n');
-          allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Text) ---\n${textExport}`);
-          actionBtnHtml = `
-            <button type="button" class="btn btn-secondary btn-sm btn-vault-copy" data-text="${encodeURIComponent(textExport)}">
-              ${ICONS.copy} <span>Copy Text</span>
-            </button>
-          `;
-        } else if (clue.type === 'image') {
-          const isRaster = !!clue.imageUrl;
-          if (isRaster) {
-            clueBodyHtml = `
-              ${clue.placementTip ? `<div class="vault-placement-tip"><span class="tip-pill mono">💡 PLACEMENT TIP</span> <strong>${clue.placementTip}</strong></div>` : ''}
-              ${clue.answerText ? `<div class="vault-answer-row mono" style="font-size: 13px; color: #38bdf8; margin: 4px 0 8px; font-weight: 700;">Answer: "${clue.answerText}" ${clue.textSize ? `<span style="color:#FFC928;">(Size: ${clue.textSize})</span>` : ''}</div>` : ''}
-              <div class="vault-clue-image-snippet" style="text-align:center; padding:10px; background:#0B0814; border:1px solid #3D3063; border-radius:6px; margin: 8px 0;">
-                <img src="${clue.imageUrl}" alt="${clue.title}" style="max-width:100%; max-height:140px; object-fit:contain; border-radius:4px;" />
-              </div>
-            `;
-            const imgExport = [
-              clue.answerText ? `Answer: ${clue.answerText}` : '',
-              `[Image File: ${clue.filename || clue.imageUrl}]`,
-              clue.placementTip ? `Placement Tip: ${clue.placementTip}` : '',
-              clue.caption ? `Caption: ${clue.caption}` : ''
-            ].filter(Boolean).join('\n');
-            allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Image Asset) ---\n${imgExport}`);
-            actionBtnHtml = `
-              <a href="${clue.imageUrl}" download="${clue.filename || 'asset.png'}" class="btn btn-secondary btn-sm">
-                ${ICONS.download} <span>Download Image</span>
-              </a>
-            `;
-          } else {
-            clueBodyHtml = `
-              ${clue.placementTip ? `<div class="vault-placement-tip"><span class="tip-pill mono">💡 PLACEMENT TIP</span> <strong>${clue.placementTip}</strong></div>` : ''}
-              ${clue.answerText ? `<div class="vault-answer-row mono" style="font-size: 13px; color: #38bdf8; margin: 4px 0 8px; font-weight: 700;">Answer: "${clue.answerText}" ${clue.textSize ? `<span style="color:#FFC928;">(Size: ${clue.textSize})</span>` : ''}</div>` : ''}
-              <div class="vault-clue-image-snippet">${clue.svgContent}</div>
-            `;
-            const svgExport = [
-              clue.answerText ? `Answer: ${clue.answerText}` : '',
-              `[Attached SVG: ${clue.filename}]`,
-              clue.placementTip ? `Placement Tip: ${clue.placementTip}` : '',
-              clue.caption ? `Caption: ${clue.caption}` : ''
-            ].filter(Boolean).join('\n');
-            allClueTexts.push(`--- Task ${tileNum}: ${clue.title} (Vector Asset) ---\n${svgExport}`);
-            actionBtnHtml = `
-              <button type="button" class="btn btn-secondary btn-sm btn-vault-download" data-svg="${encodeURIComponent(clue.svgContent)}" data-filename="${clue.filename}">
-                ${ICONS.download} <span>Download SVG</span>
-              </button>
-            `;
-          }
-        }
+        const cardExport = [
+          `--- Task ${tileNum}: ${clue.title} ---`,
+          clue.answerText ? `Answer: "${clue.answerText}"${clue.textSize ? ` (Size: ${clue.textSize})` : ''}` : '',
+          clue.placementTip ? `Placement Tip: ${clue.placementTip}` : '',
+          clue.content ? clue.content : '',
+          ...(clue.specs || []).map(s => `${s.label}: ${s.value}`)
+        ].filter(Boolean).join('\n');
+        allClueTexts.push(cardExport);
 
         inventoryHtml += `
           <div class="inventory-card inventory-unlocked vault-slot-card ${isLite ? '' : 'stagger-in'}" style="animation-delay: ${idx * 40}ms;">
-            <div class="inventory-header">
-              <span class="inventory-slot-badge">${slotLabel} (${formattedNum})</span>
-              <span class="inventory-status-badge status-solved">${ICONS.check} Solved</span>
-            </div>
-            <h4 class="inventory-title">${clue.title}</h4>
-            <div class="inventory-content">${clueBodyHtml}</div>
-            <div class="inventory-actions">${actionBtnHtml}</div>
+            ${this.renderClueCardHtml(clue, tileNum, { context: 'vault', animate: false })}
           </div>
         `;
       } else {
@@ -1986,6 +1994,8 @@ export const Screens = {
     `;
 
     // Bind copy and download handlers in vault
+    this.bindClueCardEvents(container);
+
     const copyAllBtn = container.querySelector('#btn-copy-all-clues');
     if (copyAllBtn) {
       copyAllBtn.addEventListener('click', () => {

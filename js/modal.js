@@ -233,6 +233,56 @@ class ModalManager {
 
     this.trapFocus(card);
   }
+
+  /**
+   * Show Clue Details Modal (used by Clue Pouch).
+   */
+  showClueModal(title, clueCardHtml, onOpenTask) {
+    this.init();
+    this.lastActiveElement = document.activeElement;
+
+    this.modalRoot.innerHTML = `
+      <div class="modal-backdrop" data-action="backdrop">
+        <div class="modal-card modal-card-clue" role="dialog" aria-modal="true" aria-labelledby="modal-clue-title">
+          <div class="modal-header">
+            <h2 id="modal-clue-title" class="modal-title mono">${title}</h2>
+            <button class="btn-icon" data-action="close" aria-label="Close dialog">
+              ${ICONS.close}
+            </button>
+          </div>
+          <div class="modal-body modal-body-clue">
+            ${clueCardHtml}
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" data-action="close">Close</button>
+            ${onOpenTask ? `<button type="button" class="btn btn-primary" id="btn-modal-open-task">Open Task Screen</button>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.modalRoot.classList.add('is-active');
+    const card = this.modalRoot.querySelector('.modal-card');
+    const openBtn = document.getElementById('btn-modal-open-task');
+
+    if (openBtn && onOpenTask) {
+      openBtn.addEventListener('click', () => {
+        this.close();
+        onOpenTask();
+      });
+    }
+
+    if (card) {
+      const innerOpenBtn = card.querySelector('.btn-modal-open-task');
+      if (innerOpenBtn && onOpenTask) {
+        innerOpenBtn.addEventListener('click', () => {
+          this.close();
+          onOpenTask();
+        });
+      }
+      this.trapFocus(card);
+    }
+  }
 }
 
 export const Modal = new ModalManager();

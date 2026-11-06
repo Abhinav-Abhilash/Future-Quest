@@ -11,7 +11,8 @@
     "test:routes": "npm --prefix server run test:routes",
     "test:e2e": "node tools/test-phase3-e2e.mjs",
     "test:reload": "node tools/test-reload-persistence.mjs",
-    "test": "npm run test:puzzles && npm run test:routes && npm run test:e2e && npm run test:reload"
+    "test:clues": "node tools/test-clue-and-tip.mjs",
+    "test": "npm run test:puzzles && npm run test:routes && npm run test:e2e && npm run test:reload && npm run test:clues"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
